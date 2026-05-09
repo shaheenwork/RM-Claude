@@ -1,0 +1,41 @@
+{
+  "rules": {
+    "presence": {
+      "$sessionId": {
+        ".read": "auth == null",
+        ".write": "auth == null",
+        ".validate": "newData.hasChildren(['online', 'lastSeen'])"
+      }
+    },
+    "waitingQueue": {
+      "$sessionId": {
+        ".read": "auth == null",
+        ".write": "auth == null",
+        ".validate": "newData.hasChildren(['sessionId', 'joinedAt'])"
+      }
+    },
+    "sessionAssignments": {
+      "$sessionId": {
+        ".read": "auth == null",
+        ".write": "auth == null",
+        ".validate": "!newData.exists() || newData.hasChildren(['roomId'])"
+      }
+    },
+    "rooms": {
+      "$roomId": {
+        ".read": "auth == null",
+        ".write": "auth == null",
+        "messages": {
+          "$messageId": {
+            ".validate": "newData.hasChildren(['senderId', 'type', 'timestamp']) && newData.child('content').val().length <= 500"
+          }
+        },
+        "typing": {
+          "$sessionId": {
+            ".validate": "newData.isNumber() || newData.val() == null"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "project_info": {
+    "project_number": "795151142846",
+    "firebase_url": "https://rcrc-48d59-default-rtdb.firebaseio.com",
+    "project_id": "rcrc-48d59",
+    "storage_bucket": "rcrc-48d59.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795151142846:android:fba40cfb9c97ab182073ef",
+        "android_client_info": {
+          "package_name": "com.randomchat.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhfsUBVCYsQ0qps63c7e_XBfqxVop5kvw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795151142846:android:f695e6bd7cc7fdc92073ef",
+        "android_client_info": {
+          "package_name": "com.randomchat.app.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhfsUBVCYsQ0qps63c7e_XBfqxVop5kvw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795151142846:android:e670b70b842de66d2073ef",
+        "android_client_info": {
+          "package_name": "com.randomchat.app.debug2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhfsUBVCYsQ0qps63c7e_XBfqxVop5kvw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795151142846:android:29f5c0fa8ea121d52073ef",
+        "android_client_info": {
+          "package_name": "com.randomchat.app.shn"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhfsUBVCYsQ0qps63c7e_XBfqxVop5kvw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795151142846:android:4bbef75a0ab5ffc92073ef",
+        "android_client_info": {
+          "package_name": "com.randomchat.app.shn.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhfsUBVCYsQ0qps63c7e_XBfqxVop5kvw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795151142846:android:adfca254c3dfdf892073ef",
+        "android_client_info": {
+          "package_name": "com.randomchat.shnapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhfsUBVCYsQ0qps63c7e_XBfqxVop5kvw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795151142846:android:776ed43af276f88f2073ef",
+        "android_client_info": {
+          "package_name": "com.randomchat.shnapp.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhfsUBVCYsQ0qps63c7e_XBfqxVop5kvw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795151142846:android:d7235bb3798024242073ef",
+        "android_client_info": {
+          "package_name": "com.shnapps.rc"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhfsUBVCYsQ0qps63c7e_XBfqxVop5kvw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795151142846:android:0dbdc16956cbde362073ef",
+        "android_client_info": {
+          "package_name": "com.strangerchat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhfsUBVCYsQ0qps63c7e_XBfqxVop5kvw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

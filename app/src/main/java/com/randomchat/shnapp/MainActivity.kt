@@ -1,0 +1,250 @@
+package com.randomchat.shnapp
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.randomchat.shnapp.ads.AdMobManager
+import com.randomchat.shnapp.theme.DeepSpace
+import com.randomchat.shnapp.theme.StrangerChatTheme
+import com.randomchat.shnapp.ui.dialogs.MatchmakingDialog
+import com.randomchat.shnapp.ui.screens.ChatScreen
+import com.randomchat.shnapp.ui.screens.HomeScreen
+import com.randomchat.shnapp.ui.screens.PremiumScreen
+import com.randomchat.shnapp.ui.screens.SavedChatsScreen
+import com.randomchat.shnapp.ui.screens.SettingsScreen
+import com.randomchat.shnapp.ui.screens.SplashScreen
+import com.randomchat.shnapp.utils.Constants
+import com.randomchat.shnapp.utils.SessionManager
+import com.randomchat.shnapp.viewmodel.ChatViewModel
+import com.randomchat.shnapp.viewmodel.HomeViewModel
+import kotlinx.coroutines.flow.first
+import com.randomchat.shnapp.viewmodel.PremiumViewModel
+import com.randomchat.shnapp.viewmodel.SavedChatsViewModel
+import kotlinx.coroutines.delay
+
+object Routes {
+    const val SPLASH = "splash"
+    const val HOME = "home"
+    const val CHAT = "chat"
+    const val PREMIUM = "premium"
+    const val SETTINGS = "settings"
+    const val SAVED_CHATS = "saved_chats"
+}
+
+class MainActivity : ComponentActivity() {
+
+    private val homeViewModel: HomeViewModel by viewModels()
+    private val chatViewModel: ChatViewModel by viewModels()
+    private val premiumViewModel: PremiumViewModel by viewModels()
+    private val savedChatsViewModel: SavedChatsViewModel by viewModels()
+
+    private var splashScreenReady = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition { !splashScreenReady }
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+
+        // Detect launch-from-push so AppNavHost can auto-start matchmaking after splash.
+        val launchedFromPush = intent?.getStringExtra("from") == "push"
+
+        setContent {
+            StrangerChatTheme {
+                Surface(modifier = Modifier.fillMaxSize(), color = DeepSpace) {
+                    AppNavHost(
+                        homeViewModel = homeViewModel,
+                        chatViewModel = chatViewModel,
+                        premiumViewModel = premiumViewModel,
+                        savedChatsViewModel = savedChatsViewModel,
+                        onSplashReady = { splashScreenReady = true },
+                        launchedFromPush = launchedFromPush
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AppNavHost(
+    homeViewModel: HomeViewModel,
+    chatViewModel: ChatViewModel,
+    premiumViewModel: PremiumViewModel,
+    savedChatsViewModel: SavedChatsViewModel,
+    onSplashReady: () -> Unit,
+    launchedFromPush: Boolean = false
+) {
+    val navController = rememberNavController()
+    val isPremium by homeViewModel.isPremium.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    // Matchmaking overlay state
+    var showMatchmakingDialog by remember { mutableStateOf(false) }
+
+    // Interstitial ad trigger
+    val triggerInterstitial by chatViewModel.triggerInterstitial.collectAsState()
+    LaunchedEffect(triggerInterstitial) {
+        if (triggerInterstitial) {
+            AdMobManager.getInstance(context).showInterstitialIfReady(
+                context as android.app.Activity
+            ) { chatViewModel.interstitialShown() }
+        }
+    }
+
+    // ── Notification permission ask (Android 13+) ─────────────────────────────
+    // Trigger once after first chat ends — never on first launch (avoids "pushy" feel).
+    val notifPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /* result ignored: user choice respected, no retry */ }
+
+    val chatEnded by chatViewModel.chatEnded.collectAsState()
+    LaunchedEffect(chatEnded) {
+        if (!chatEnded) return@LaunchedEffect
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return@LaunchedEffect
+        val sm = SessionManager.getInstance(context)
+        if (sm.notifPermAskedFlow.first()) return@LaunchedEffect
+        val granted = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+        sm.markNotifPermAsked()
+        if (!granted) notifPermLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
+
+    NavHost(
+        navController = navController,
+        startDestination = Routes.SPLASH,
+        enterTransition = { fadeIn(tween(300)) },
+        exitTransition = { fadeOut(tween(200)) }
+    ) {
+        composable(Routes.SPLASH) {
+            SplashScreen(
+                onReady = {
+                    onSplashReady()
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.SPLASH) { inclusive = true }
+                    }
+                    // Launched from notification → auto-trigger matchmaking on top of Home.
+                    if (launchedFromPush) {
+                        chatViewModel.startSearch()
+                        showMatchmakingDialog = true
+                    }
+                }
+            )
+        }
+
+        composable(
+            Routes.HOME,
+            enterTransition = { fadeIn(tween(400)) },
+            exitTransition = { fadeOut(tween(200)) }
+        ) {
+            HomeScreen(
+                viewModel = homeViewModel,
+                onStartChat = {
+                    // Start matchmaking immediately in background
+                    chatViewModel.startSearch()
+                    showMatchmakingDialog = true
+                },
+                onOpenPremium = { navController.navigate(Routes.PREMIUM) },
+                onOpenSettings = { navController.navigate(Routes.SETTINGS) }
+            )
+        }
+
+        composable(
+            Routes.CHAT,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { it } }
+        ) {
+            ChatScreen(
+                viewModel = chatViewModel,
+                onNavigateBack = {
+                    navController.popBackStack(Routes.HOME, false)
+                },
+                onNavigateToPremium = { navController.navigate(Routes.PREMIUM) }
+            )
+        }
+
+        composable(
+            Routes.PREMIUM,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { it } }
+        ) {
+            PremiumScreen(
+                viewModel = premiumViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            Routes.SETTINGS,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { it } }
+        ) {
+            SettingsScreen(
+                viewModel = homeViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onOpenPremium = { navController.navigate(Routes.PREMIUM) },
+                onOpenSavedChats = { navController.navigate(Routes.SAVED_CHATS) }
+            )
+        }
+
+        composable(
+            Routes.SAVED_CHATS,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { it } }
+        ) {
+            SavedChatsScreen(
+                viewModel = savedChatsViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+    }
+
+    // Matchmaking dialog overlay (shown on top of HomeScreen)
+    MatchmakingDialog(
+        visible = showMatchmakingDialog,
+        onCancel = {
+            showMatchmakingDialog = false
+            chatViewModel.newChat()
+        }
+    )
+
+    // Randomised 4-8 second delay then always navigate to chat
+    LaunchedEffect(showMatchmakingDialog) {
+        if (!showMatchmakingDialog) return@LaunchedEffect
+        val delay = Constants.MIN_MATCH_DELAY_MS +
+                (Math.random() * (Constants.MAX_MATCH_DELAY_MS - Constants.MIN_MATCH_DELAY_MS)).toLong()
+        delay(delay)
+        if (showMatchmakingDialog) {
+            showMatchmakingDialog = false
+            navController.navigate(Routes.CHAT)
+        }
+    }
+}

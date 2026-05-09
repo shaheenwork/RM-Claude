@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Subscriptions ────────────────────────────────────────────────────────
+    match /subscriptions/{sessionId} {
+      allow read: if true;
+      allow write: if request.resource.data.keys().hasOnly([
+        'sessionId', 'isPremium', 'expiryMs', 'purchaseToken', 'updatedAt'
+      ]);
+    }
+
+    // ── Reports ──────────────────────────────────────────────────────────────
+    match /reports/{reportId} {
+      allow create: if request.resource.data.keys().hasAll([
+        'reporter', 'reported', 'roomId', 'reason', 'timestamp'
+      ]) && request.resource.data.reason.size() <= 100;
+      allow read, update, delete: if false;
+    }
+
+    // ── Banned Sessions (read-only for clients) ────────────────────────────
+    match /banned_sessions/{sessionId} {
+      allow read: if true;
+      allow write: if false; // Cloud Function only
+    }
+
+    // ── Saved Chats ───────────────────────────────────────────────────────
+    match /saved_chats/{docId} {
+      allow read, write: if docId.matches(request.auth == null ?
+        '.*' : request.auth.uid + '_.*');
+      // Since we use anonymous sessions, allow write if sessionId matches
+      allow create: if request.resource.data.keys().hasAll([
+        'sessionId', 'roomId', 'savedAt', 'messageCount', 'preview'
+      ]);
+      allow read: if true;
+    }
+
+    // ── Analytics (write-only) ────────────────────────────────────────────
+    match /analytics/{docId} {
+      allow create: if request.resource.data.keys().hasAll([
+        'sessionId', 'event', 'timestamp'
+      ]);
+      allow read, update, delete: if false;
+    }
+  }
+}
