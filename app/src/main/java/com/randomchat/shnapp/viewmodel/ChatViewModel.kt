@@ -72,6 +72,14 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     val hasSavedFirstChat: StateFlow<Boolean> = sessionManager.hasSavedFirstChatFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    /** Whether this premium user has opted to broadcast their badge (default: true). */
+    val showMyBadge: StateFlow<Boolean> = sessionManager.showPremiumBadgeFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    /** Whether the connected stranger is showing a premium badge. */
+    private val _strangerHasBadge = MutableStateFlow(false)
+    val strangerHasBadge: StateFlow<Boolean> = _strangerHasBadge
+
     private val _statusChips = MutableStateFlow<List<ChatChip>>(emptyList())
     val statusChips: StateFlow<List<ChatChip>> = _statusChips
 
@@ -165,6 +173,19 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                         _currentRoomId.value = roomId
                         _currentStrangerId.value = strangerId
                         _isStrangerConnected.value = true
+                        _strangerHasBadge.value = false
+
+                        // Broadcast own premium badge immediately on match
+                        if (isPremium.value && showMyBadge.value) {
+                            rtdb.setPremiumBadge(roomId, sessionId, true)
+                        }
+
+                        // Observe stranger's premium badge for this room
+                        launch {
+                            rtdb.observeStrangerBadge(roomId, sessionId).collect { hasBadge ->
+                                _strangerHasBadge.value = hasBadge
+                            }
+                        }
 
                         delay(Constants.STRANGER_JOIN_CHIP_DELAY_MS)
                         addChip(ChatChipType.STRANGER_CONNECTED, "✅  Stranger connected")
@@ -194,9 +215,26 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         _statusChips.value = emptyList()
         _isStrangerConnected.value = false
         _chatEnded.value = false
+        _strangerHasBadge.value = false
         matchmakingManager.startSearch()
         startSystemChipSequence()
         startLongWaitBuffer()
+    }
+
+    /**
+     * Toggle the user's own premium badge visibility.
+     * Persists preference and immediately updates RTDB if in an active room.
+     */
+    fun toggleMyBadge() {
+        viewModelScope.launch {
+            val newValue = !showMyBadge.value
+            sessionManager.setShowPremiumBadge(newValue)
+            _currentRoomId.value?.let { roomId ->
+                if (isPremium.value) {
+                    rtdb.setPremiumBadge(roomId, sessionId, newValue)
+                }
+            }
+        }
     }
 
     fun sendMessage(content: String) {

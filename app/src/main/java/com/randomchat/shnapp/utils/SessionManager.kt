@@ -25,7 +25,8 @@ class SessionManager(private val context: Context) {
     private val hasSavedFirstChatKey = booleanPreferencesKey("has_saved_first_chat")
     private val notifPermAskedKey   = booleanPreferencesKey("notif_perm_asked")
     private val notifsEnabledKey    = booleanPreferencesKey("notifs_enabled")
-    private val firstChatEndedKey   = booleanPreferencesKey("first_chat_ended")
+    private val firstChatEndedKey    = booleanPreferencesKey("first_chat_ended")
+    private val showPremiumBadgeKey  = booleanPreferencesKey("show_premium_badge")
 
     val sessionId: String by lazy {
         runBlocking {
@@ -86,6 +87,15 @@ class SessionManager(private val context: Context) {
 
     suspend fun markFirstChatEnded() {
         context.dataStore.edit { it[firstChatEndedKey] = true }
+    }
+
+    // ── Premium Badge ──────────────────────────────────────────────────────────
+    /** Whether the user has opted to show their premium badge to strangers (default: on). */
+    val showPremiumBadgeFlow: Flow<Boolean> = context.dataStore.data
+        .map { it[showPremiumBadgeKey] ?: true }
+
+    suspend fun setShowPremiumBadge(show: Boolean) {
+        context.dataStore.edit { it[showPremiumBadgeKey] = show }
     }
 
     companion object {

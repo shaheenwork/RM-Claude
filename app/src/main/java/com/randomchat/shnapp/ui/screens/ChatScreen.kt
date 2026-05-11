@@ -53,6 +53,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Collections
@@ -69,6 +70,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -106,6 +109,7 @@ import com.randomchat.shnapp.ui.components.MessageBubble
 import com.randomchat.shnapp.ui.components.OnlineStatusChip
 import com.randomchat.shnapp.ui.components.SystemChip
 import androidx.compose.animation.core.LinearEasing
+import com.randomchat.shnapp.theme.PremiumGold
 import com.randomchat.shnapp.ui.dialogs.ReportDialog
 import com.randomchat.shnapp.viewmodel.ChatViewModel
 import com.randomchat.shnapp.viewmodel.SaveProgress
@@ -132,6 +136,8 @@ fun ChatScreen(
     val reactions by viewModel.reactions.collectAsState()
     val currentRoomId by viewModel.currentRoomId.collectAsState()
     val strangerDraftText by viewModel.strangerDraftText.collectAsState()
+    val strangerHasBadge by viewModel.strangerHasBadge.collectAsState()
+    val showMyBadge by viewModel.showMyBadge.collectAsState()
     // Ghost bubble visible when premium + stranger is actively drafting
     val showGhostBubble = isPremium && strangerDraftText != null && !chatEnded
 
@@ -267,12 +273,47 @@ fun ChatScreen(
                 }
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        "Anonymous Stranger",
-                        color = TextPrimary,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            "Anonymous Stranger",
+                            color = TextPrimary,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 15.sp
+                        )
+                        // Gold badge pill shown when stranger has premium badge enabled
+                        AnimatedVisibility(
+                            visible = strangerHasBadge && isStrangerConnected && !chatEnded,
+                            enter = fadeIn(tween(300)) + slideInVertically(tween(300)) { -8 },
+                            exit = fadeOut(tween(200))
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .background(
+                                        PremiumGold.copy(0.15f),
+                                        RoundedCornerShape(6.dp)
+                                    )
+                                    .padding(horizontal = 5.dp, vertical = 2.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.AutoAwesome,
+                                    contentDescription = null,
+                                    tint = PremiumGold,
+                                    modifier = Modifier.size(9.dp)
+                                )
+                                Text(
+                                    " Premium",
+                                    color = PremiumGold,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.2.sp
+                                )
+                            }
+                        }
+                    }
                     // When premium ghost bubble is showing, suppress the redundant "typing…"
                     // label — still show recording/sending activities since those aren't in the bubble
                     val suppressTyping = showGhostBubble && strangerActivity == "typing"
@@ -306,6 +347,43 @@ fun ChatScreen(
                             DropdownMenuItem(
                                 text = { Text("Save Chat", color = AccentCyan, fontSize = 14.sp) },
                                 onClick = { showMenu = false; showSaveChatDialog = true }
+                            )
+                        }
+                        if (isPremium) {
+                            HorizontalDivider(color = SubtleBorder.copy(0.5f))
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            "Show Premium Badge",
+                                            color = PremiumGold,
+                                            fontSize = 14.sp
+                                        )
+                                        Switch(
+                                            checked = showMyBadge,
+                                            onCheckedChange = null,
+                                            colors = SwitchDefaults.colors(
+                                                checkedThumbColor = PremiumGold,
+                                                checkedTrackColor = PremiumGold.copy(0.35f),
+                                                uncheckedThumbColor = TextMuted,
+                                                uncheckedTrackColor = SubtleBorder
+                                            )
+                                        )
+                                    }
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.AutoAwesome,
+                                        contentDescription = null,
+                                        tint = PremiumGold,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                },
+                                onClick = { viewModel.toggleMyBadge() }
                             )
                         }
                     }
@@ -656,13 +734,13 @@ fun ChatScreen(
                     Box(
                         modifier = Modifier
                             .size(44.dp)
-                            .background(com.randomchat.shnapp.theme.PremiumGold.copy(alpha = 0.12f), CircleShape),
+                            .background(PremiumGold.copy(alpha = 0.12f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.Collections,
                             contentDescription = null,
-                            tint     = com.randomchat.shnapp.theme.PremiumGold,
+                            tint     = PremiumGold,
                             modifier = Modifier.size(22.dp)
                         )
                     }

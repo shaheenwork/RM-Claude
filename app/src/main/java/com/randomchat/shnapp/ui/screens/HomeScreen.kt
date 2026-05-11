@@ -19,10 +19,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ChatBubble
@@ -112,14 +110,14 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .systemBarsPadding()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp),
+                .systemBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Top bar
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -136,120 +134,121 @@ fun HomeScreen(
                 } else {
                     Box(modifier = Modifier.size(40.dp))
                 }
-
                 IconButton(onClick = onOpenSettings) {
                     Icon(Icons.Default.Settings, null, tint = TextMuted)
                 }
             }
 
-            Spacer(Modifier.height(40.dp))
-
-            // Logo
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.size(80.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .background(AccentCyanGlow, CircleShape)
-                        .blur(20.dp)
-                )
-                Icon(
-                    imageVector = Icons.Default.ChatBubble,
-                    contentDescription = null,
-                    tint = AccentCyan,
-                    modifier = Modifier.size(44.dp)
-                )
-            }
-
-            Spacer(Modifier.height(24.dp))
-
-            Text(
-                "StrangerChat",
-                color = TextPrimary,
-                fontWeight = FontWeight.Black,
-                fontSize = 32.sp,
-                letterSpacing = 0.5.sp
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                "Talk to a random stranger.\nAnonymous. Private. Free.",
-                color = TextSecondary,
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center,
-                lineHeight = 22.sp
-            )
-
-            Spacer(Modifier.height(40.dp))
-
-            // Online count illusion
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            // Hero content — vertically centered in remaining space
+            Column(
                 modifier = Modifier
-                    .background(Color(0xFF0A1A10), RoundedCornerShape(20.dp))
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .weight(1f)
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .background(com.randomchat.shnapp.theme.OnlineGreen, CircleShape)
-                )
-                Text(
-                    "1,240+ strangers online",
-                    color = com.randomchat.shnapp.theme.OnlineGreen,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            Spacer(Modifier.height(32.dp))
-
-            // Main CTA button
-            if (isBanned) {
-                Text(
-                    "Your session has been temporarily suspended.",
-                    color = com.randomchat.shnapp.theme.ErrorRed,
-                    textAlign = TextAlign.Center,
-                    fontSize = 14.sp
-                )
-            } else {
-                CyanButton(
-                    text = "⚡  Start Anonymous Chat",
-                    onClick = onStartChat,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            Spacer(Modifier.height(32.dp))
-
-            // Premium card (hidden for premium users)
-            if (!isPremium) {
-                HomePremiumCard(onUpgradeClick = onOpenPremium)
-                Spacer(Modifier.height(24.dp))
-            }
-
-            // Feature hint chips
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.wrapContentWidth()
-            ) {
-                listOf("🔒 Anonymous", "⚡ Instant", "🌐 Global").forEach { label ->
-                    Text(
-                        label,
-                        color = TextMuted,
-                        fontSize = 12.sp,
+                // Logo
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(80.dp)) {
+                    Box(
                         modifier = Modifier
-                            .background(Color(0xFF111827), RoundedCornerShape(12.dp))
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                            .size(80.dp)
+                            .background(AccentCyanGlow, CircleShape)
+                            .blur(20.dp)
                     )
+                    Icon(
+                        imageVector = Icons.Default.ChatBubble,
+                        contentDescription = null,
+                        tint = AccentCyan,
+                        modifier = Modifier.size(44.dp)
+                    )
+                }
+
+                Spacer(Modifier.height(20.dp))
+
+                Text(
+                    "StrangerChat",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 32.sp,
+                    letterSpacing = 0.5.sp
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "Talk to a random stranger.\nAnonymous. Private. Free.",
+                    color = TextSecondary,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 22.sp
+                )
+
+                Spacer(Modifier.height(28.dp))
+
+                // Online count
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier
+                        .background(Color(0xFF0A1A10), RoundedCornerShape(20.dp))
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .background(com.randomchat.shnapp.theme.OnlineGreen, CircleShape)
+                    )
+                    Text(
+                        "1,240+ strangers online",
+                        color = com.randomchat.shnapp.theme.OnlineGreen,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Spacer(Modifier.height(24.dp))
+
+                // Main CTA
+                if (isBanned) {
+                    Text(
+                        "Your session has been temporarily suspended.",
+                        color = com.randomchat.shnapp.theme.ErrorRed,
+                        textAlign = TextAlign.Center,
+                        fontSize = 14.sp
+                    )
+                } else {
+                    CyanButton(
+                        text = "⚡  Start Anonymous Chat",
+                        onClick = onStartChat,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                Spacer(Modifier.height(20.dp))
+
+                // Premium upsell card
+                if (!isPremium) {
+                    HomePremiumCard(onUpgradeClick = onOpenPremium)
+                    Spacer(Modifier.height(16.dp))
+                }
+
+                // Feature chips
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.wrapContentWidth()
+                ) {
+                    listOf("🔒 Anonymous", "⚡ Instant", "🌐 Global").forEach { label ->
+                        Text(
+                            label,
+                            color = TextMuted,
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .background(Color(0xFF111827), RoundedCornerShape(12.dp))
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
                 }
             }
 
-            Spacer(Modifier.height(32.dp))
-
-            // Banner ad (hidden for premium)
+            // Ad banner — always visible at bottom, never scrolls away
             if (!isPremium) {
                 AndroidView(
                     factory = { ctx ->
@@ -261,10 +260,7 @@ fun HomeScreen(
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.height(16.dp))
             }
-
-            Spacer(Modifier.height(24.dp))
         }
     }
 }

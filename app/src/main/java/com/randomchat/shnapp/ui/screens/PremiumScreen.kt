@@ -439,9 +439,11 @@ private fun PlanCard(
             .background(bgBrush, RoundedCornerShape(16.dp))
             .border(if (isSelected) 1.5.dp else 1.dp, borderBrush, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+        ) {
             Icon(
                 imageVector = if (isSelected) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
                 contentDescription = null,
@@ -461,6 +463,25 @@ private fun PlanCard(
                 }
             }
             Column(horizontalAlignment = Alignment.End) {
+                plan.badge?.let { badge ->
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                if (badge == "Best Value") OnlineGreen.copy(0.18f) else PremiumGold.copy(0.18f),
+                                RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 7.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            badge,
+                            color = if (badge == "Best Value") OnlineGreen else PremiumGold,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.3.sp
+                        )
+                    }
+                    Spacer(Modifier.height(2.dp))
+                }
                 Text(
                     plan.formattedPrice,
                     color = if (isSelected) PremiumGold else TextPrimary,
@@ -468,26 +489,6 @@ private fun PlanCard(
                     fontSize = 17.sp
                 )
                 Text("/ ${plan.period.lowercase()}", color = TextMuted, fontSize = 11.sp)
-            }
-        }
-
-        plan.badge?.let { badge ->
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .background(
-                        if (badge == "Best Value") OnlineGreen.copy(0.18f) else PremiumGold.copy(0.18f),
-                        RoundedCornerShape(bottomStart = 12.dp, topEnd = 14.dp)
-                    )
-                    .padding(horizontal = 8.dp, vertical = 3.dp)
-            ) {
-                Text(
-                    badge,
-                    color = if (badge == "Best Value") OnlineGreen else PremiumGold,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.3.sp
-                )
             }
         }
     }

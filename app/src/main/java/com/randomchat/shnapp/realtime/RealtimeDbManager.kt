@@ -365,6 +365,36 @@ class RealtimeDbManager {
         awaitClose { ref.removeEventListener(listener) }
     }
 
+    // ─── Premium Badge ────────────────────────────────────────────────────────
+
+    /**
+     * Write or remove the caller's premium badge in the room.
+     * show=false removes the node so RTDB doesn't retain stale data after chat ends.
+     */
+    fun setPremiumBadge(roomId: String, sessionId: String, show: Boolean) {
+        val ref = root.child(Constants.PATH_ROOMS).child(roomId)
+            .child("badges").child(sessionId)
+        if (show) ref.setValue(true) else ref.removeValue()
+    }
+
+    /**
+     * Emits true when the stranger (other participant) has their premium badge enabled.
+     * Filters out mySessionId so we always observe only the partner's badge.
+     */
+    fun observeStrangerBadge(roomId: String, mySessionId: String): Flow<Boolean> = callbackFlow {
+        val ref = root.child(Constants.PATH_ROOMS).child(roomId).child("badges")
+        val listener = ref.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val hasBadge = snapshot.children
+                    .firstOrNull { it.key != mySessionId }
+                    ?.getValue(Boolean::class.java) == true
+                trySend(hasBadge)
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        })
+        awaitClose { ref.removeEventListener(listener) }
+    }
+
     // ─── Cleanup / Archive ───────────────────────────────────────────────────
 
     suspend fun archiveReportedRoom(roomId: String) {
