@@ -40,6 +40,7 @@ object Constants {
     const val DRAFT_TEXT_DEBOUNCE_MS = 120L  // max write rate to RTDB
 
     const val HEARTBEAT_INTERVAL_MS = 20_000L
+    const val MAX_AUDIO_DURATION_MS = 60_000L
     const val QUEUE_ENTRY_TTL_MS = 60_000L
 
     // Matchmaking

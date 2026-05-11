@@ -32,7 +32,7 @@ data class PremiumPlan(
 
 class BillingManager(
     private val context: Context,
-    private val onPremiumGranted: suspend (purchaseToken: String, expiryMs: Long) -> Unit,
+    private val onPremiumGranted: suspend (purchaseToken: String, productId: String, expiryMs: Long) -> Unit,
     private val onPremiumRevoked: suspend () -> Unit
 ) {
 
@@ -158,15 +158,16 @@ class BillingManager(
         }
 
         if (activePurchase != null) {
+            val grantedProductId = activePurchase.products.firstOrNull { it in Constants.ALL_PREMIUM_PRODUCTS } ?: ""
             _isPremium.value = true
-            _activePlanId.value = activePurchase.products.firstOrNull { it in Constants.ALL_PREMIUM_PRODUCTS }
+            _activePlanId.value = grantedProductId
             if (!activePurchase.isAcknowledged) {
                 val ackParams = AcknowledgePurchaseParams.newBuilder()
                     .setPurchaseToken(activePurchase.purchaseToken)
                     .build()
                 billingClient.acknowledgePurchase(ackParams) {}
             }
-            onPremiumGranted(activePurchase.purchaseToken, 0L)
+            onPremiumGranted(activePurchase.purchaseToken, grantedProductId, 0L)
         } else {
             _isPremium.value = false
             _activePlanId.value = null
@@ -183,7 +184,7 @@ class BillingManager(
 
         fun getInstance(
             context: Context,
-            onPremiumGranted: suspend (String, Long) -> Unit = { _, _ -> },
+            onPremiumGranted: suspend (String, String, Long) -> Unit = { _, _, _ -> },
             onPremiumRevoked: suspend () -> Unit = {}
         ): BillingManager {
             return instance ?: synchronized(this) {

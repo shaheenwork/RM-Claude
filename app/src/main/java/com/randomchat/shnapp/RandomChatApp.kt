@@ -3,15 +3,17 @@ package com.randomchat.shnapp
 import android.app.Application
 import android.util.Log
 import com.google.firebase.FirebaseApp
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.functions.ktx.functions
 import com.randomchat.shnapp.ads.AdMobManager
 import com.randomchat.shnapp.billing.BillingManager
 import com.randomchat.shnapp.firebase.FcmManager
-import com.randomchat.shnapp.firebase.FirestoreManager
 import com.randomchat.shnapp.utils.SessionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class RandomChatApp : Application() {
@@ -47,14 +49,21 @@ class RandomChatApp : Application() {
         // Init billing
         BillingManager.getInstance(
             context = this,
-            onPremiumGranted = { token, expiry ->
+            onPremiumGranted = { token, productId, expiry ->
+                // Grant locally for instant UX — Play SDK already verified the purchase state.
                 sessionManager.setPremium(true, expiry)
-                FirestoreManager.getInstance().savePremiumStatus(
-                    sessionId = sessionManager.sessionId,
-                    isPremium = true,
-                    expiryMs = expiry,
-                    purchaseToken = token
-                )
+                // Server-side verification: CF calls Play Developer API and writes Firestore.
+                // Firestore rules block direct client writes to subscriptions/.
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        Firebase.functions("us-central1")
+                            .getHttpsCallable("verifyPurchase")
+                            .call(hashMapOf("purchaseToken" to token, "productId" to productId))
+                            .await()
+                    } catch (e: Exception) {
+                        Log.w("RandomChatApp", "verifyPurchase CF failed: ${e.message}")
+                    }
+                }
             },
             onPremiumRevoked = {
                 sessionManager.setPremium(false)

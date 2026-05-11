@@ -13,8 +13,8 @@ android {
         applicationId = "com.randomchat.shnapp"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.0.12"
+        versionCode = 6
+        versionName = "1.0.1234"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.splashscreen)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.exifinterface)
     implementation(libs.androidx.navigation.compose)
 
     implementation(platform(libs.androidx.compose.bom))
@@ -72,6 +73,7 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.functions)
 
     implementation(libs.play.services.ads)
     implementation(libs.billing.ktx)

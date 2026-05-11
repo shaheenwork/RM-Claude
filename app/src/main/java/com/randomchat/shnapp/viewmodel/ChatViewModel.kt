@@ -415,7 +415,12 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         recordingTimerJob = viewModelScope.launch {
             while (true) {
                 delay(100)
-                _recordingDurationMs.value = System.currentTimeMillis() - startTime
+                val elapsed = System.currentTimeMillis() - startTime
+                _recordingDurationMs.value = elapsed
+                if (elapsed >= Constants.MAX_AUDIO_DURATION_MS) {
+                    stopAndSendAudio()
+                    break
+                }
             }
         }
         } catch (e: Exception) {
