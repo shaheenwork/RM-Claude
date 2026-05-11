@@ -1,6 +1,7 @@
 package com.randomchat.shnapp.utils
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -8,10 +9,13 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeout
 import java.util.UUID
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "stranger_chat_prefs")
@@ -28,15 +32,44 @@ class SessionManager(private val context: Context) {
     private val firstChatEndedKey    = booleanPreferencesKey("first_chat_ended")
     private val showPremiumBadgeKey  = booleanPreferencesKey("show_premium_badge")
 
+    /**
+     * Stable per-install identity = FirebaseAuth anonymous UID.
+     *
+     * If signed in (typical after first launch), returns instantly.
+     * If not, performs a blocking anonymous sign-in. First launch only — UID then
+     * persists in FirebaseAuth's local cache for offline reuse.
+     *
+     * Fallback to a locally-generated UUID only if auth fails (offline first-launch).
+     * In that fallback case, RTDB writes will be rejected by rules — that's intentional;
+     * the app surfaces "no connection" rather than running on a forgeable identity.
+     */
     val sessionId: String by lazy {
         runBlocking {
-            val prefs = context.dataStore.data.first()
-            prefs[sessionIdKey] ?: run {
-                val newId = UUID.randomUUID().toString().replace("-", "").take(20)
-                context.dataStore.edit { it[sessionIdKey] = newId }
-                newId
+            val auth = FirebaseAuth.getInstance()
+            auth.currentUser?.uid ?: try {
+                withTimeout(10_000) {
+                    auth.signInAnonymously().await().user!!.uid
+                }
+            } catch (e: Exception) {
+                Log.e("SessionManager", "Anonymous sign-in failed: ${e.message}", e)
+                // Fallback to legacy/local UUID — RTDB writes will fail until auth recovers
+                val prefs = context.dataStore.data.first()
+                prefs[sessionIdKey] ?: run {
+                    val newId = UUID.randomUUID().toString().replace("-", "").take(20)
+                    context.dataStore.edit { it[sessionIdKey] = newId }
+                    newId
+                }
             }
         }
+    }
+
+    /**
+     * Eagerly trigger anonymous sign-in. Call early in Application.onCreate so
+     * the first access to sessionId is non-blocking.
+     */
+    suspend fun ensureSignedIn(): String {
+        val auth = FirebaseAuth.getInstance()
+        return auth.currentUser?.uid ?: auth.signInAnonymously().await().user!!.uid
     }
 
     val isPremiumFlow: Flow<Boolean> = context.dataStore.data.map { prefs ->

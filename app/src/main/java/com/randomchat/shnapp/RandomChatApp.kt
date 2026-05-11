@@ -1,6 +1,7 @@
 package com.randomchat.shnapp
 
 import android.app.Application
+import android.util.Log
 import com.google.firebase.FirebaseApp
 import com.randomchat.shnapp.ads.AdMobManager
 import com.randomchat.shnapp.billing.BillingManager
@@ -26,9 +27,17 @@ class RandomChatApp : Application() {
 
         val sessionManager = SessionManager.getInstance(this)
 
-        // FCM — token, TZ topic, notification channels.
-        // Read enabled flag synchronously on background thread (DataStore is async by default).
+        // Pre-warm Firebase Auth anonymous sign-in off the main thread.
+        // After this completes, SessionManager.sessionId returns instantly
+        // (FirebaseAuth caches the UID locally for offline reuse).
         CoroutineScope(Dispatchers.IO).launch {
+            try {
+                sessionManager.ensureSignedIn()
+            } catch (e: Exception) {
+                Log.w("RandomChatApp", "ensureSignedIn failed at startup: ${e.message}")
+            }
+
+            // FCM init depends on sessionId — run after auth is ready
             val enabled = sessionManager.notifsEnabledFlow.first()
             withContext(Dispatchers.Main) {
                 FcmManager.init(this@RandomChatApp, sessionManager.sessionId, enabled)
