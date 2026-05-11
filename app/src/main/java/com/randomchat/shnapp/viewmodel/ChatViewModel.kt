@@ -203,6 +203,8 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                 if (status == "ENDED" && _isStrangerConnected.value) {
                     addChip(ChatChipType.STRANGER_LEFT, "👋  Stranger has left")
                     _chatEnded.value = true
+                    // Clean up assignment so the next startSearch() doesn't re-attach to this room
+                    matchmakingManager.cancelSearch()
                 }
             }
         }
@@ -216,6 +218,8 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         _isStrangerConnected.value = false
         _chatEnded.value = false
         _strangerHasBadge.value = false
+        _currentRoomId.value = null
+        _currentStrangerId.value = null
         matchmakingManager.startSearch()
         startSystemChipSequence()
         startLongWaitBuffer()

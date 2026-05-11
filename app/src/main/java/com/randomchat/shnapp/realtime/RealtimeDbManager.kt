@@ -4,12 +4,9 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.MutableData
 import com.google.firebase.database.ServerValue
-import com.google.firebase.database.Transaction
 import com.google.firebase.database.ValueEventListener
 import com.randomchat.shnapp.model.ChatMessage
-import com.randomchat.shnapp.model.WaitingUser
 import com.randomchat.shnapp.utils.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
@@ -86,23 +83,6 @@ class RealtimeDbManager {
         }
     }
 
-    // Observe waiting queue - used by server-side logic simulation in MatchmakingManager
-    fun observeWaitingQueue(): Flow<List<WaitingUser>> = callbackFlow {
-        val ref = root.child(Constants.PATH_WAITING_QUEUE)
-        val listener = ref.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val users = snapshot.children.mapNotNull { child ->
-                    val sessionId = child.child("sessionId").getValue(String::class.java) ?: return@mapNotNull null
-                    val joinedAt = child.child("joinedAt").getValue(Long::class.java) ?: 0L
-                    WaitingUser(sessionId = sessionId, joinedAt = joinedAt)
-                }
-                trySend(users)
-            }
-            override fun onCancelled(error: DatabaseError) {}
-        })
-        awaitClose { ref.removeEventListener(listener) }
-    }
-
     // ─── Session Assignments ─────────────────────────────────────────────────
 
     fun observeAssignment(sessionId: String): Flow<String?> = callbackFlow {
@@ -120,17 +100,6 @@ class RealtimeDbManager {
         awaitClose { ref.removeEventListener(listener) }
     }
 
-    suspend fun writeAssignment(sessionId: String, roomId: String) {
-        try {
-            root.child(Constants.PATH_SESSION_ASSIGNMENTS).child(sessionId)
-                .setValue(mapOf("roomId" to roomId, "assignedAt" to ServerValue.TIMESTAMP)).await()
-            root.child(Constants.PATH_SESSION_ASSIGNMENTS).child(sessionId)
-                .onDisconnect().removeValue()
-        } catch (e: Exception) {
-            android.util.Log.w("RTDB", "writeAssignment failed: ${e.message}")
-        }
-    }
-
     suspend fun clearAssignment(sessionId: String) {
         try {
             root.child(Constants.PATH_SESSION_ASSIGNMENTS).child(sessionId).removeValue().await()
@@ -140,21 +109,6 @@ class RealtimeDbManager {
     }
 
     // ─── Rooms ────────────────────────────────────────────────────────────────
-
-    suspend fun createRoom(roomId: String, participantA: String, participantB: String) {
-        try {
-            val room = mapOf(
-                "id" to roomId,
-                "participants" to listOf(participantA, participantB),
-                "status" to "ACTIVE",
-                "createdAt" to ServerValue.TIMESTAMP
-            )
-            root.child(Constants.PATH_ROOMS).child(roomId).setValue(room).await()
-        } catch (e: Exception) {
-            android.util.Log.w("RTDB", "createRoom failed: ${e.message}")
-            throw e // rethrow so MatchmakingManager can handle it
-        }
-    }
 
     suspend fun endRoom(roomId: String) {
         try {
@@ -298,33 +252,6 @@ class RealtimeDbManager {
             override fun onCancelled(error: DatabaseError) {}
         })
         awaitClose { ref.removeEventListener(listener) }
-    }
-
-    // ─── Transaction-safe matchmaking ─────────────────────────────────────────
-
-    fun tryMatchFromQueue(mySessionId: String, onMatched: (String, String) -> Unit) {
-        val queueRef = root.child(Constants.PATH_WAITING_QUEUE)
-        queueRef.runTransaction(object : Transaction.Handler {
-            override fun doTransaction(currentData: MutableData): Transaction.Result {
-                val entries = currentData.children.toList()
-                val candidate = entries.firstOrNull { it.key != mySessionId } ?: return Transaction.success(currentData)
-                val candidateId = candidate.child("sessionId").getValue(String::class.java) ?: return Transaction.success(currentData)
-                currentData.child(mySessionId).value = null
-                currentData.child(candidateId).value = null
-                return Transaction.success(currentData)
-            }
-
-            override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
-                if (!committed || error != null) return
-                // Find who we matched with by looking at what was removed
-                val removedKeys = currentData?.children?.map { it.key }?.toSet() ?: return
-                // Re-read queue to find candidate - simplified approach
-                queueRef.get().addOnSuccessListener { snapshot ->
-                    // The match already happened in transaction; we need to re-derive it
-                    // In production you'd use Cloud Functions for this
-                }
-            }
-        })
     }
 
     // ─── Reactions ────────────────────────────────────────────────────────────

@@ -4,7 +4,6 @@ import android.util.Log
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ServerValue
 import com.randomchat.shnapp.utils.Constants
-import com.randomchat.shnapp.utils.generateRoomId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,7 +34,6 @@ class MatchmakingManager(
     val state: StateFlow<MatchmakingState> = _state
 
     private var assignmentListenerJob: Job? = null
-    private var matchPollingJob: Job? = null
     private var heartbeatJob: Job? = null
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -45,10 +43,10 @@ class MatchmakingManager(
         _state.value = MatchmakingState.Searching
         scope.launch {
             try {
+                rtdb.clearAssignment(sessionId) // wipe any stale assignment before listening
                 rtdb.setOnline(sessionId)
                 writeQueueEntry()
                 listenForAssignment()
-                startMatchPolling()
                 startHeartbeat()
             } catch (e: Exception) {
                 Log.e("Matchmaking", "startSearch failed: ${e.message}")
@@ -99,70 +97,10 @@ class MatchmakingManager(
                 .mapNotNull { it.getValue(String::class.java) }
             val strangerId = participants.firstOrNull { it != sessionId } ?: "stranger"
             _state.value = MatchmakingState.Matched(roomId, strangerId)
-            stopPollingAndHeartbeat()
+            stopHeartbeat()
         } catch (e: Exception) {
             _state.value = MatchmakingState.Matched(roomId, "stranger")
-            stopPollingAndHeartbeat()
-        }
-    }
-
-    // ── Polling loop — retries every 3s until matched ─────────────────────────
-    //
-    // Key design: whichever device has the lexicographically SMALLER sessionId
-    // acts as the match initiator. The other device waits for the assignment
-    // listener. This prevents double-room race conditions when both devices
-    // poll simultaneously.
-
-    private fun startMatchPolling() {
-        matchPollingJob?.cancel()
-        matchPollingJob = scope.launch {
-            var attempt = 0
-            while (_state.value is MatchmakingState.Searching) {
-                attempt++
-                delay(if (attempt == 1) 1000L else 3000L)
-                if (_state.value !is MatchmakingState.Searching) break
-                tryMatchOnce()
-            }
-        }
-    }
-
-    private suspend fun tryMatchOnce() {
-        try {
-            val queueSnap = FirebaseDatabase.getInstance().reference
-                .child(Constants.PATH_WAITING_QUEUE).get().await()
-
-            val candidates = queueSnap.children.mapNotNull { child ->
-                child.child("sessionId").getValue(String::class.java)
-                    ?.takeIf { it != sessionId }
-            }
-
-            Log.d("Matchmaking", "Poll: ${candidates.size} candidates. me=$sessionId")
-
-            if (candidates.isEmpty()) return
-
-            val partnerId = candidates.first()
-
-            // Only the smaller sessionId initiates to prevent double-match
-            if (sessionId > partnerId) {
-                Log.d("Matchmaking", "Waiting (not initiator)")
-                return
-            }
-
-            Log.d("Matchmaking", "Initiating match with $partnerId")
-            val roomId = generateRoomId(sessionId, partnerId)
-
-            rtdb.createRoom(roomId, sessionId, partnerId)
-            rtdb.writeAssignment(sessionId, roomId)
-            rtdb.writeAssignment(partnerId, roomId)
-            rtdb.leaveWaitingQueue(sessionId)
-            rtdb.leaveWaitingQueue(partnerId)
-
-            if (_state.value is MatchmakingState.Searching) {
-                _state.value = MatchmakingState.Matched(roomId, partnerId)
-                stopPollingAndHeartbeat()
-            }
-        } catch (e: Exception) {
-            Log.w("Matchmaking", "tryMatchOnce failed, will retry: ${e.message}")
+            stopHeartbeat()
         }
     }
 
@@ -186,9 +124,7 @@ class MatchmakingManager(
         }
     }
 
-    private fun stopPollingAndHeartbeat() {
-        matchPollingJob?.cancel()
-        matchPollingJob = null
+    private fun stopHeartbeat() {
         heartbeatJob?.cancel()
         heartbeatJob = null
     }
@@ -197,7 +133,7 @@ class MatchmakingManager(
 
     fun cancelSearch() {
         _state.value = MatchmakingState.Idle
-        stopPollingAndHeartbeat()
+        stopHeartbeat()
         assignmentListenerJob?.cancel()
         scope.launch {
             try {
