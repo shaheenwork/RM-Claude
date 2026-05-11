@@ -39,6 +39,8 @@ firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
 firebase-functions = { group = "com.google.firebase", name = "firebase-functions-ktx" }
+firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "firebase-appcheck-playintegrity" }
+firebase-appcheck-debug = { group = "com.google.firebase", name = "firebase-appcheck-debug" }
 
 play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
 billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billingKtx" }

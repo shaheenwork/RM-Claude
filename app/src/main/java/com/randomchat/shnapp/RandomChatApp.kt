@@ -3,6 +3,7 @@ package com.randomchat.shnapp
 import android.app.Application
 import android.util.Log
 import com.google.firebase.FirebaseApp
+import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.functions.ktx.functions
 import com.randomchat.shnapp.ads.AdMobManager
@@ -23,6 +24,12 @@ class RandomChatApp : Application() {
 
         // Firebase
         FirebaseApp.initializeApp(this)
+
+        // App Check — Play Integrity in release, debug token in debug builds.
+        // Enforce in Firebase Console: App Check → each product → Enforce.
+        FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
+            appCheckProviderFactory()
+        )
 
         // Init AdMob
         AdMobManager.getInstance(this).initialize()
