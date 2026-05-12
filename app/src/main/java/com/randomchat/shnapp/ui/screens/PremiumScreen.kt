@@ -46,6 +46,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -106,6 +107,7 @@ fun PremiumScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val haptics = com.randomchat.shnapp.utils.LocalHaptics.current
     val isPremium by viewModel.isPremium.collectAsState()
     val plans by viewModel.plans.collectAsState()
     val selectedPlanId by viewModel.selectedPlanId.collectAsState()
@@ -113,6 +115,13 @@ fun PremiumScreen(
     val uiMessage by viewModel.uiMessage.collectAsState()
 
     var showCancelDialog by remember { mutableStateOf(false) }
+
+    // Celebratory haptic when premium becomes active
+    var wasPremium by remember { mutableStateOf(isPremium) }
+    LaunchedEffect(isPremium) {
+        if (isPremium && !wasPremium) haptics.match()
+        wasPremium = isPremium
+    }
 
     val infiniteTransition = rememberInfiniteTransition(label = "prem_glow")
     val glowAlpha by infiniteTransition.animateFloat(

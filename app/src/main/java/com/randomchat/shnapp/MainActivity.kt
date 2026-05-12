@@ -127,16 +127,21 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             StrangerChatTheme {
-                Surface(modifier = Modifier.fillMaxSize(), color = DeepSpace) {
-                    AppNavHost(
-                        homeViewModel = homeViewModel,
-                        chatViewModel = chatViewModel,
-                        premiumViewModel = premiumViewModel,
-                        savedChatsViewModel = savedChatsViewModel,
-                        onSplashReady = { splashScreenReady = true },
-                        launchedFromPush = launchedFromPush,
-                        onTryUnlock = { showLockPrompt() }
-                    )
+                val haptics = com.randomchat.shnapp.utils.rememberHaptics()
+                androidx.compose.runtime.CompositionLocalProvider(
+                    com.randomchat.shnapp.utils.LocalHaptics provides haptics
+                ) {
+                    Surface(modifier = Modifier.fillMaxSize(), color = DeepSpace) {
+                        AppNavHost(
+                            homeViewModel = homeViewModel,
+                            chatViewModel = chatViewModel,
+                            premiumViewModel = premiumViewModel,
+                            savedChatsViewModel = savedChatsViewModel,
+                            onSplashReady = { splashScreenReady = true },
+                            launchedFromPush = launchedFromPush,
+                            onTryUnlock = { showLockPrompt() }
+                        )
+                    }
                 }
             }
         }

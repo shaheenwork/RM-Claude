@@ -132,6 +132,7 @@ fun ChatScreen(
     val context  = LocalContext.current
     val activity = context as android.app.Activity
     val scope    = rememberCoroutineScope()
+    val haptics  = com.randomchat.shnapp.utils.LocalHaptics.current
 
     val messages by viewModel.messages.collectAsState()
     val strangerActivity by viewModel.strangerActivity.collectAsState()
@@ -167,6 +168,21 @@ fun ChatScreen(
         reactionsReady = false
     }
 
+    // Haptic on stranger-connected transition (match found)
+    LaunchedEffect(isStrangerConnected) {
+        if (isStrangerConnected && !chatEnded) haptics.match()
+    }
+
+    // Haptic on chat ended (sharp warning)
+    LaunchedEffect(chatEnded) {
+        if (chatEnded) haptics.warning()
+    }
+
+    // Haptic on save success
+    LaunchedEffect(saveProgress?.isDone) {
+        if (saveProgress?.isDone == true) haptics.success()
+    }
+
     // Detect new reactions added by the stranger
     LaunchedEffect(reactions) {
         if (!reactionsReady) {
@@ -181,6 +197,7 @@ fun ChatScreen(
             for ((sid, emoji) in perMsg) {
                 if (sid != myId && prev[sid] != emoji) {
                     flyingEmoji = emoji
+                    haptics.tick() // stranger reacted to my message
                     break@outer
                 }
             }
@@ -448,8 +465,8 @@ fun ChatScreen(
                         messageReactions = reactions[message.id] ?: emptyMap(),
                         mySessionId = viewModel.sessionId,
                         isPremium = isPremium,
-                        onLongPress = { reactionTargetMessage = it },
-                        onReactionTap = { emoji -> viewModel.reactToMessage(message.id, emoji) }
+                        onLongPress = { haptics.click(); reactionTargetMessage = it },
+                        onReactionTap = { emoji -> haptics.tick(); viewModel.reactToMessage(message.id, emoji) }
                     )
                 }
 
@@ -589,7 +606,7 @@ fun ChatScreen(
 
                     com.randomchat.shnapp.ui.components.CyanButton(
                         text = "New Stranger",
-                        onClick = { viewModel.newChat(); onNavigateBack() },
+                        onClick = { haptics.click(); viewModel.newChat(); onNavigateBack() },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -627,8 +644,8 @@ fun ChatScreen(
                 if (isRecording) {
                     RecordingBar(
                         durationMs = recordingDurationMs,
-                        onSend = { viewModel.stopAndSendAudio() },
-                        onCancel = { viewModel.cancelAudioRecording() }
+                        onSend = { haptics.click(); viewModel.stopAndSendAudio() },
+                        onCancel = { haptics.tick(); viewModel.cancelAudioRecording() }
                     )
                 } else {
                     Row(
@@ -647,6 +664,7 @@ fun ChatScreen(
                             isPremium   = isPremium,
                             creditCount = rewardedPhotoCredits,
                             onClick = {
+                                haptics.tick()
                                 if (!isPremium && rewardedPhotoCredits == 0) {
                                     onNavigateToPremium()
                                     return@ImageButton
@@ -666,6 +684,7 @@ fun ChatScreen(
                             creditCount = rewardedAudioCredits,
                             isRecording = false,
                             onClick = {
+                                haptics.tick()
                                 if (!isPremium && rewardedAudioCredits == 0) {
                                     onNavigateToPremium()
                                     return@AudioButton
@@ -719,6 +738,7 @@ fun ChatScreen(
                                 onClick = {
                                     val text = inputText.trim()
                                     if (text.isNotBlank()) {
+                                        haptics.click()
                                         viewModel.sendMessage(text)
                                         inputText = ""
                                         viewModel.notifyTyping(false)

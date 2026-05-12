@@ -75,6 +75,7 @@ fun SettingsScreen(
     val notifsEnabled   by viewModel.notifsEnabled.collectAsState()
     val appLockEnabled  by viewModel.appLockEnabled.collectAsState()
     val uriHandler      = LocalUriHandler.current
+    val haptics         = com.randomchat.shnapp.utils.LocalHaptics.current
 
     Column(
         modifier = Modifier
@@ -159,7 +160,7 @@ fun SettingsScreen(
                     subtitle = "Require device lock when app resumes",
                     iconTint = PremiumGold,
                     checked  = appLockEnabled,
-                    onChange = { viewModel.setAppLockEnabled(it) }
+                    onChange = { haptics.tick(); viewModel.setAppLockEnabled(it) }
                 )
             } else {
                 SettingsRow(
@@ -195,7 +196,7 @@ fun SettingsScreen(
                 title    = "Daily activity ping",
                 subtitle = "One reminder per day when strangers are around",
                 checked  = notifsEnabled,
-                onChange = { viewModel.setNotifsEnabled(it) }
+                onChange = { haptics.tick(); viewModel.setNotifsEnabled(it) }
             )
             Spacer(Modifier.height(4.dp))
 

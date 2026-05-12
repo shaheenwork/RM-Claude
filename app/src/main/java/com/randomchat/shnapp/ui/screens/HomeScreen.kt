@@ -78,6 +78,7 @@ fun HomeScreen(
 ) {
     val context  = LocalContext.current
     val activity = context as Activity
+    val haptics  = com.randomchat.shnapp.utils.LocalHaptics.current
 
     val isPremium        by viewModel.isPremium.collectAsState()
     val isBanned         by viewModel.isBanned.collectAsState()
@@ -237,7 +238,7 @@ fun HomeScreen(
                 } else {
                     CyanButton(
                         text = "⚡  Start Anonymous Chat",
-                        onClick = onStartChat,
+                        onClick = { haptics.heavy(); onStartChat() },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -256,10 +257,11 @@ fun HomeScreen(
                         photoCredits = photoCredits,
                         audioCredits = audioCredits,
                         onEarnCredits = {
+                            haptics.tick()
                             if (AdMobManager.getInstance(context).isRewardedReady()) {
                                 AdMobManager.getInstance(context).showRewardedIfReady(
                                     activity     = activity,
-                                    onRewarded   = { viewModel.addRewardedCredits() },
+                                    onRewarded   = { haptics.success(); viewModel.addRewardedCredits() },
                                     onNotAvailable = {
                                         Toast.makeText(
                                             context,
