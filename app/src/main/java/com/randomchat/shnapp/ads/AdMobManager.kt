@@ -3,6 +3,7 @@ package com.randomchat.shnapp.ads
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
@@ -10,6 +11,8 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.gms.ads.rewarded.RewardedAd
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import com.randomchat.shnapp.utils.Constants
 
 class AdMobManager(private val context: Context) {
@@ -17,26 +20,30 @@ class AdMobManager(private val context: Context) {
     private val app: Application = context.applicationContext as Application
 
     /**
-     * Shared flag — true whenever ANY full-screen ad (interstitial or app-open)
-     * is currently occupying the screen. [AppOpenAdManager] reads this to avoid
-     * stacking two full-screen ads simultaneously.
+     * Shared flag — true whenever ANY full-screen ad (interstitial, rewarded, or app-open)
+     * is currently on screen. [AppOpenAdManager] reads this to prevent stacking.
      */
     var isShowingFullScreenAd = false
 
-    private var interstitialAd: InterstitialAd? = null
-    private var isInitialized  = false
+    private var interstitialAd   : InterstitialAd? = null
+    private var rewardedAd       : RewardedAd?     = null
+    private var isLoadingRewarded = false
+    private var isInitialized     = false
+
+    // ── Initialisation ────────────────────────────────────────────────────────
 
     fun initialize() {
         if (isInitialized) return
         MobileAds.initialize(context) {
             isInitialized = true
             preloadInterstitial()
-            // Trigger the app-open ad preload now that the AdMob SDK is ready.
-            // AppOpenAdManager.register() must have been called before this point
-            // (done in RandomChatApp.onCreate) so lifecycle tracking is already active.
+            preloadRewarded()
+            // App Open Ad preload — runs after SDK is ready.
             AppOpenAdManager.getInstance(app).preloadAd()
         }
     }
+
+    // ── Interstitial ─────────────────────────────────────────────────────────
 
     fun preloadInterstitial() {
         InterstitialAd.load(
@@ -44,12 +51,8 @@ class AdMobManager(private val context: Context) {
             Constants.ADMOB_INTERSTITIAL_ID,
             AdRequest.Builder().build(),
             object : InterstitialAdLoadCallback() {
-                override fun onAdLoaded(ad: InterstitialAd) {
-                    interstitialAd = ad
-                }
-                override fun onAdFailedToLoad(error: LoadAdError) {
-                    interstitialAd = null
-                }
+                override fun onAdLoaded(ad: InterstitialAd) { interstitialAd = ad }
+                override fun onAdFailedToLoad(error: LoadAdError) { interstitialAd = null }
             }
         )
     }
@@ -82,6 +85,76 @@ class AdMobManager(private val context: Context) {
     }
 
     fun isInterstitialReady() = interstitialAd != null
+
+    // ── Rewarded ──────────────────────────────────────────────────────────────
+
+    fun preloadRewarded() {
+        if (isLoadingRewarded || rewardedAd != null) return
+        isLoadingRewarded = true
+        Log.d("AdMobManager", "Loading rewarded ad…")
+        RewardedAd.load(
+            context,
+            Constants.ADMOB_REWARDED_ID,
+            AdRequest.Builder().build(),
+            object : RewardedAdLoadCallback() {
+                override fun onAdLoaded(ad: RewardedAd) {
+                    Log.d("AdMobManager", "Rewarded ad loaded ✓")
+                    rewardedAd        = ad
+                    isLoadingRewarded = false
+                }
+                override fun onAdFailedToLoad(error: LoadAdError) {
+                    Log.d("AdMobManager", "Rewarded ad failed: ${error.message}")
+                    rewardedAd        = null
+                    isLoadingRewarded = false
+                }
+            }
+        )
+    }
+
+    /**
+     * Show the rewarded ad if one is loaded.
+     *
+     * @param onRewarded    Called when the user completes the ad and earns the reward.
+     * @param onNotAvailable Called when no ad is ready (treat as soft failure — let user try again).
+     * @param onDismissed   Called when the ad is dismissed WITHOUT earning (user skipped early).
+     */
+    fun showRewardedIfReady(
+        activity      : Activity,
+        onRewarded    : () -> Unit,
+        onNotAvailable: () -> Unit = {},
+        onDismissed   : () -> Unit = {}
+    ) {
+        val ad = rewardedAd
+        if (ad == null) {
+            onNotAvailable()
+            preloadRewarded()
+            return
+        }
+        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdShowedFullScreenContent() {
+                isShowingFullScreenAd = true
+            }
+            override fun onAdDismissedFullScreenContent() {
+                rewardedAd            = null
+                isShowingFullScreenAd = false
+                preloadRewarded()
+                onDismissed()
+            }
+            override fun onAdFailedToShowFullScreenContent(error: AdError) {
+                rewardedAd            = null
+                isShowingFullScreenAd = false
+                preloadRewarded()
+                onNotAvailable()
+            }
+        }
+        // The reward callback fires before onAdDismissed
+        ad.show(activity) { _ -> onRewarded() }
+    }
+
+    /** True if a rewarded ad is loaded and ready to show instantly. */
+    fun isRewardedReady() = rewardedAd != null
+
+    // ── Singleton ─────────────────────────────────────────────────────────────
 
     companion object {
         @Volatile private var instance: AdMobManager? = null

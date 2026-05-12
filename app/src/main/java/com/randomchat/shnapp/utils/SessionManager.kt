@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -31,7 +32,9 @@ class SessionManager(private val context: Context) {
     private val notifPermAskedKey   = booleanPreferencesKey("notif_perm_asked")
     private val notifsEnabledKey    = booleanPreferencesKey("notifs_enabled")
     private val firstChatEndedKey    = booleanPreferencesKey("first_chat_ended")
-    private val showPremiumBadgeKey  = booleanPreferencesKey("show_premium_badge")
+    private val showPremiumBadgeKey   = booleanPreferencesKey("show_premium_badge")
+    private val rewardedPhotoKey      = intPreferencesKey("rewarded_photo_credits")
+    private val rewardedAudioKey      = intPreferencesKey("rewarded_audio_credits")
 
     /**
      * Stable per-install identity = FirebaseAuth anonymous UID.
@@ -139,6 +142,39 @@ class SessionManager(private val context: Context) {
 
     suspend fun setShowPremiumBadge(show: Boolean) {
         context.dataStore.edit { it[showPremiumBadgeKey] = show }
+    }
+
+    // ── Rewarded-ad credits ───────────────────────────────────────────────────
+    /** Remaining rewarded photo sends (0 when exhausted). */
+    val rewardedPhotoCreditsFlow: Flow<Int> = context.dataStore.data
+        .map { it[rewardedPhotoKey] ?: 0 }
+
+    /** Remaining rewarded audio sends (0 when exhausted). */
+    val rewardedAudioCreditsFlow: Flow<Int> = context.dataStore.data
+        .map { it[rewardedAudioKey] ?: 0 }
+
+    /** Called when user completes a rewarded ad. Grants +1 photo and +1 audio send. */
+    suspend fun addRewardedMediaCredits() {
+        context.dataStore.edit { prefs ->
+            prefs[rewardedPhotoKey] = (prefs[rewardedPhotoKey] ?: 0) + 1
+            prefs[rewardedAudioKey] = (prefs[rewardedAudioKey] ?: 0) + 1
+        }
+    }
+
+    /** Decrements photo credit by 1. No-op if already zero. */
+    suspend fun consumePhotoCredit() {
+        context.dataStore.edit { prefs ->
+            val c = prefs[rewardedPhotoKey] ?: 0
+            if (c > 0) prefs[rewardedPhotoKey] = c - 1
+        }
+    }
+
+    /** Decrements audio credit by 1. No-op if already zero. */
+    suspend fun consumeAudioCredit() {
+        context.dataStore.edit { prefs ->
+            val c = prefs[rewardedAudioKey] ?: 0
+            if (c > 0) prefs[rewardedAudioKey] = c - 1
+        }
     }
 
     companion object {

@@ -67,6 +67,14 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     val hasSavedFirstChat: StateFlow<Boolean> = sessionManager.hasSavedFirstChatFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    /** Remaining rewarded photo sends for non-premium users. */
+    val rewardedPhotoCredits: StateFlow<Int> = sessionManager.rewardedPhotoCreditsFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    /** Remaining rewarded audio sends for non-premium users. */
+    val rewardedAudioCredits: StateFlow<Int> = sessionManager.rewardedAudioCreditsFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     /** Whether this premium user has opted to broadcast their badge (default: true). */
     val showMyBadge: StateFlow<Boolean> = sessionManager.showPremiumBadgeFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
@@ -98,6 +106,10 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _saveProgress = MutableStateFlow<SaveProgress?>(null)
     val saveProgress: StateFlow<SaveProgress?> = _saveProgress
+
+    /** True once the current chat session has been saved (via premium or rewarded ad). */
+    private val _chatSaved = MutableStateFlow(false)
+    val chatSaved: StateFlow<Boolean> = _chatSaved
 
     private val _reportStatus = MutableStateFlow<String?>(null)
     val reportStatus: StateFlow<String?> = _reportStatus
@@ -174,6 +186,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         _currentRoomId.value = null
         _currentStrangerId.value = null
         adFiredForCurrentChat = false
+        _chatSaved.value = false
         matchmakingManager.startSearch()
     }
 
@@ -290,7 +303,8 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun saveChat() {
-        val roomId = _currentRoomId.value ?: return
+        // Fall back to a stable UUID so a null room ID never silently drops the save.
+        val roomId = _currentRoomId.value ?: UUID.randomUUID().toString().replace("-", "").take(20)
         val msgs = messages.value
         val mediaCount = msgs.count {
             it.mediaUrl.isNotBlank() && !it.mediaUrl.startsWith("/") &&
@@ -309,6 +323,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                     } else null
                 )
                 sessionManager.markSavedFirstChat()
+                _chatSaved.value = true
                 if (mediaCount == 0) _saveProgress.value = SaveProgress(0, 0, isDone = true)
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "saveChat failed: ${e.message}")
@@ -321,11 +336,23 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         _saveProgress.value = null
     }
 
+    /** Deduct one photo credit. Fire-and-forget; called just before upload starts. */
+    fun consumePhotoCredit() {
+        viewModelScope.launch { sessionManager.consumePhotoCredit() }
+    }
+
+    /** Deduct one audio credit. Fire-and-forget; called just before recording starts. */
+    fun consumeAudioCredit() {
+        viewModelScope.launch { sessionManager.consumeAudioCredit() }
+    }
+
     fun uploadAndSendImage(rawBytes: ByteArray) {
         val pendingId = "pending_img_${UUID.randomUUID()}"
         chatManager.addPendingMediaMessage(pendingId, MessageType.IMAGE)
         chatManager.setActivity("sending_photo")
         viewModelScope.launch {
+            // Non-premium users spent a rewarded credit to reach here — deduct it now.
+            if (!isPremium.value) sessionManager.consumePhotoCredit()
             try {
                 // Compress on IO: scale to 1024 px long-side, JPEG 72 % → typically 60–180 KB.
                 val compressed = withContext(kotlinx.coroutines.Dispatchers.IO) {
@@ -404,6 +431,8 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
             val pendingId = "pending_audio_${UUID.randomUUID()}"
             chatManager.addPendingMediaMessage(pendingId, MessageType.AUDIO)
             chatManager.setActivity("sending_audio")
+            // Past all cancel/discard guards — audio is definitely uploading. Consume credit now.
+            if (!isPremium.value) viewModelScope.launch { sessionManager.consumeAudioCredit() }
             viewModelScope.launch {
                 try {
                     val bytes = file.readBytes()

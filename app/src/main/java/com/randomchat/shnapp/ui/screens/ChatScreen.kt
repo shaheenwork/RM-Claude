@@ -44,6 +44,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.shape.CircleShape
@@ -55,6 +56,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
+import com.randomchat.shnapp.ads.AdMobManager
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -64,6 +66,7 @@ import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -117,6 +120,7 @@ import com.randomchat.shnapp.theme.PremiumGold
 import com.randomchat.shnapp.ui.dialogs.ReportDialog
 import com.randomchat.shnapp.viewmodel.ChatViewModel
 import com.randomchat.shnapp.viewmodel.SaveProgress
+import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -125,7 +129,10 @@ fun ChatScreen(
     onNavigateBack: () -> Unit,
     onNavigateToPremium: () -> Unit
 ) {
-    val context = LocalContext.current
+    val context  = LocalContext.current
+    val activity = context as android.app.Activity
+    val scope    = rememberCoroutineScope()
+
     val messages by viewModel.messages.collectAsState()
     val strangerActivity by viewModel.strangerActivity.collectAsState()
     val isStrangerConnected by viewModel.isStrangerConnected.collectAsState()
@@ -140,7 +147,10 @@ fun ChatScreen(
     val currentRoomId by viewModel.currentRoomId.collectAsState()
     val strangerDraftText by viewModel.strangerDraftText.collectAsState()
     val strangerHasBadge by viewModel.strangerHasBadge.collectAsState()
-    val showMyBadge by viewModel.showMyBadge.collectAsState()
+    val showMyBadge         by viewModel.showMyBadge.collectAsState()
+    val rewardedPhotoCredits by viewModel.rewardedPhotoCredits.collectAsState()
+    val rewardedAudioCredits by viewModel.rewardedAudioCredits.collectAsState()
+    val chatSaved            by viewModel.chatSaved.collectAsState()
     // Ghost bubble visible when premium + stranger is actively drafting
     val showGhostBubble = isPremium && strangerDraftText != null && !chatEnded
 
@@ -472,6 +482,89 @@ fun ChatScreen(
                         Spacer(Modifier.height(12.dp))
                     }
 
+                    // "Watch ad to save" strip — hide once saved or if premium
+                    if (!isPremium && messages.isNotEmpty() && !chatSaved) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+                                .background(AccentCyan.copy(alpha = 0.07f))
+                                .border(
+                                    1.dp,
+                                    AccentCyan.copy(alpha = 0.25f),
+                                    androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                                )
+                                .clickable {
+                                    if (AdMobManager.getInstance(context).isRewardedReady()) {
+                                        AdMobManager.getInstance(context).showRewardedIfReady(
+                                            activity       = activity,
+                                            onRewarded     = { viewModel.saveChat() },
+                                            onNotAvailable = {
+                                                scope.launch {
+                                                    snackbarHostState.showSnackbar(
+                                                        "Ad not ready — try again in a moment."
+                                                    )
+                                                }
+                                            },
+                                            onDismissed    = {
+                                                // onRewarded fires before onDismissed,
+                                                // so chatSaved is already true if user earned reward
+                                                if (viewModel.chatSaved.value) {
+                                                    scope.launch {
+                                                        snackbarHostState.showSnackbar("Chat saved ✓")
+                                                    }
+                                                }
+                                            }
+                                        )
+                                    } else {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                "Ad not ready — try again in a moment."
+                                            )
+                                        }
+                                    }
+                                }
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape)
+                                    .background(AccentCyan.copy(alpha = 0.15f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.PlayArrow,
+                                    contentDescription = null,
+                                    tint = AccentCyan,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    "Watch Ad to Save Chat",
+                                    color = AccentCyan,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    "Watch a short ad · Save this conversation once",
+                                    color = AccentCyan.copy(alpha = 0.6f),
+                                    fontSize = 11.sp
+                                )
+                            }
+                            Icon(
+                                Icons.Default.Bookmark,
+                                contentDescription = null,
+                                tint = AccentCyan.copy(alpha = 0.5f),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        Spacer(Modifier.height(10.dp))
+                    }
+
                     // First-time save hint for premium users
                     if (isPremium && !hasSavedFirstChat) {
                         Row(
@@ -549,10 +642,15 @@ fun ChatScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         // Image button — opens Camera / Gallery picker
+                        // Non-premium: allowed if they have a rewarded credit, else → premium screen
                         ImageButton(
-                            isPremium = isPremium,
+                            isPremium   = isPremium,
+                            creditCount = rewardedPhotoCredits,
                             onClick = {
-                                if (!isPremium) { onNavigateToPremium(); return@ImageButton }
+                                if (!isPremium && rewardedPhotoCredits == 0) {
+                                    onNavigateToPremium()
+                                    return@ImageButton
+                                }
                                 val hasCam = ContextCompat.checkSelfPermission(
                                     context, Manifest.permission.CAMERA
                                 ) == PackageManager.PERMISSION_GRANTED
@@ -562,11 +660,16 @@ fun ChatScreen(
                         )
 
                         // Mic button — tap to start recording
+                        // Non-premium: allowed if they have a rewarded credit, else → premium screen
                         AudioButton(
-                            isPremium = isPremium,
+                            isPremium   = isPremium,
+                            creditCount = rewardedAudioCredits,
                             isRecording = false,
                             onClick = {
-                                if (!isPremium) { onNavigateToPremium(); return@AudioButton }
+                                if (!isPremium && rewardedAudioCredits == 0) {
+                                    onNavigateToPremium()
+                                    return@AudioButton
+                                }
                                 cancelTriggered = false
                                 audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                             }

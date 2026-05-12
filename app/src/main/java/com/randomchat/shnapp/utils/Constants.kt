@@ -26,6 +26,7 @@ object Constants {
     const val ADMOB_INTERSTITIAL_ID  = "ca-app-pub-3940256099942544/1033173712"
     const val ADMOB_NATIVE_ID        = "ca-app-pub-3940256099942544/2247696110"
     const val ADMOB_APP_OPEN_ID      = "ca-app-pub-3940256099942544/9257395921"
+    const val ADMOB_REWARDED_ID      = "ca-app-pub-3940256099942544/5224354917"
 
     // Billing — product IDs must match Google Play Console exactly
     const val PRODUCT_PREMIUM_WEEKLY  = "premium_weekly"

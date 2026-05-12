@@ -69,9 +69,10 @@ fun SettingsScreen(
     onOpenPremium: () -> Unit,
     onOpenSavedChats: () -> Unit = {}
 ) {
-    val isPremium     by viewModel.isPremium.collectAsState()
-    val notifsEnabled by viewModel.notifsEnabled.collectAsState()
-    val uriHandler    = LocalUriHandler.current
+    val isPremium       by viewModel.isPremium.collectAsState()
+    val hasSavedChat    by viewModel.hasSavedFirstChat.collectAsState()
+    val notifsEnabled   by viewModel.notifsEnabled.collectAsState()
+    val uriHandler      = LocalUriHandler.current
 
     Column(
         modifier = Modifier
@@ -138,7 +139,9 @@ fun SettingsScreen(
 
             // Premium section
             SectionHeader("Subscription")
-            if (isPremium) {
+            // Show "Saved Conversations" for premium users AND non-premium who
+            // have saved at least one chat via rewarded ad.
+            if (isPremium || hasSavedChat) {
                 SettingsRow(
                     icon = Icons.Default.Bookmark,
                     title = "Saved Conversations",
@@ -146,6 +149,8 @@ fun SettingsScreen(
                     iconTint = AccentCyan,
                     onClick = onOpenSavedChats
                 )
+            }
+            if (isPremium) {
                 SettingsRow(
                     icon = Icons.Default.CardMembership,
                     title = "Manage Subscription",

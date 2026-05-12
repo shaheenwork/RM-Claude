@@ -24,8 +24,20 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     val isPremium: StateFlow<Boolean> = sessionManager.isPremiumFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    /** Remaining rewarded photo sends earned via ads. */
+    val rewardedPhotoCredits: StateFlow<Int> = sessionManager.rewardedPhotoCreditsFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    /** Remaining rewarded audio sends earned via ads. */
+    val rewardedAudioCredits: StateFlow<Int> = sessionManager.rewardedAudioCreditsFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     private val _isBanned = MutableStateFlow(false)
     val isBanned: StateFlow<Boolean> = _isBanned
+
+    /** True once at least one chat has been saved (premium OR rewarded-ad save). */
+    val hasSavedFirstChat: StateFlow<Boolean> = sessionManager.hasSavedFirstChatFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     val notifsEnabled: StateFlow<Boolean> = sessionManager.notifsEnabledFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
@@ -43,6 +55,11 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             _isBanned.value = firestore.isSessionBanned(sessionId)
         }
+    }
+
+    /** Called after user completes a rewarded ad on the home screen. */
+    fun addRewardedCredits() {
+        viewModelScope.launch { sessionManager.addRewardedMediaCredits() }
     }
 
     fun checkBanStatus() {
