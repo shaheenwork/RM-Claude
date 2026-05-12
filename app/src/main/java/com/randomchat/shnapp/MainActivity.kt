@@ -1,9 +1,12 @@
 package com.randomchat.shnapp
 
 import android.Manifest
+import android.app.KeyguardManager
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -36,6 +39,7 @@ import com.randomchat.shnapp.theme.StrangerChatTheme
 import com.randomchat.shnapp.ui.dialogs.MatchmakingDialog
 import com.randomchat.shnapp.ui.screens.ChatScreen
 import com.randomchat.shnapp.ui.screens.HomeScreen
+import com.randomchat.shnapp.ui.screens.LockScreen
 import com.randomchat.shnapp.ui.screens.PremiumScreen
 import com.randomchat.shnapp.ui.screens.SavedChatsScreen
 import com.randomchat.shnapp.ui.screens.OnboardingScreen
@@ -68,6 +72,49 @@ class MainActivity : ComponentActivity() {
     private val savedChatsViewModel: SavedChatsViewModel by viewModels()
 
     private var splashScreenReady = false
+    private var isFirstStart = true   // skip lock check on cold start
+
+    // Handles result from system credential screen
+    private val unlockLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) homeViewModel.setLocked(false)
+        // cancelled/failed: stay on LockScreen — user taps Unlock to retry
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (homeViewModel.appLockEnabled.value && homeViewModel.isPremium.value) {
+            homeViewModel.setLocked(true)
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (isFirstStart) { isFirstStart = false; return }
+        if (homeViewModel.isLocked.value) showLockPrompt()
+    }
+
+    fun showLockPrompt() {
+        val km = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        if (!km.isDeviceSecure) {
+            homeViewModel.setAppLockEnabled(false)
+            homeViewModel.setLocked(false)
+            Toast.makeText(
+                this,
+                "No device screen lock found. App Lock has been disabled.",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+        @Suppress("DEPRECATION")
+        val intent = km.createConfirmDeviceCredentialIntent(
+            "StrangerChat",
+            "Verify your identity to continue"
+        )
+        if (intent != null) unlockLauncher.launch(intent)
+        else { homeViewModel.setAppLockEnabled(false); homeViewModel.setLocked(false) }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -87,7 +134,8 @@ class MainActivity : ComponentActivity() {
                         premiumViewModel = premiumViewModel,
                         savedChatsViewModel = savedChatsViewModel,
                         onSplashReady = { splashScreenReady = true },
-                        launchedFromPush = launchedFromPush
+                        launchedFromPush = launchedFromPush,
+                        onTryUnlock = { showLockPrompt() }
                     )
                 }
             }
@@ -102,10 +150,18 @@ fun AppNavHost(
     premiumViewModel: PremiumViewModel,
     savedChatsViewModel: SavedChatsViewModel,
     onSplashReady: () -> Unit,
-    launchedFromPush: Boolean = false
+    launchedFromPush: Boolean = false,
+    onTryUnlock: () -> Unit = {}
 ) {
     val navController = rememberNavController()
     val context = androidx.compose.ui.platform.LocalContext.current
+
+    // ── App Lock gate ──────────────────────────────────────────────────────────
+    val isLocked by homeViewModel.isLocked.collectAsState()
+    if (isLocked) {
+        LockScreen(onUnlock = onTryUnlock)
+        return
+    }
 
     // Matchmaking overlay state
     var showMatchmakingDialog by remember { mutableStateOf(false) }

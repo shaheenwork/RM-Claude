@@ -42,6 +42,19 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     val notifsEnabled: StateFlow<Boolean> = sessionManager.notifsEnabledFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    val appLockEnabled: StateFlow<Boolean> = sessionManager.appLockEnabledFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    private val _isLocked = MutableStateFlow(false)
+    val isLocked: StateFlow<Boolean> = _isLocked
+
+    fun setAppLockEnabled(enabled: Boolean) {
+        viewModelScope.launch { sessionManager.setAppLockEnabled(enabled) }
+    }
+
+    /** Called by MainActivity when app goes to background with lock enabled. */
+    fun setLocked(locked: Boolean) { _isLocked.value = locked }
+
     fun setNotifsEnabled(enabled: Boolean) {
         viewModelScope.launch {
             sessionManager.setNotifsEnabled(enabled)

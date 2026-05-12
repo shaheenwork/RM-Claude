@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.CardMembership
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Shield
@@ -72,6 +73,7 @@ fun SettingsScreen(
     val isPremium       by viewModel.isPremium.collectAsState()
     val hasSavedChat    by viewModel.hasSavedFirstChat.collectAsState()
     val notifsEnabled   by viewModel.notifsEnabled.collectAsState()
+    val appLockEnabled  by viewModel.appLockEnabled.collectAsState()
     val uriHandler      = LocalUriHandler.current
 
     Column(
@@ -148,6 +150,24 @@ fun SettingsScreen(
                     subtitle = "View your saved chats",
                     iconTint = AccentCyan,
                     onClick = onOpenSavedChats
+                )
+            }
+            if (isPremium) {
+                SettingsToggleRow(
+                    icon     = Icons.Default.Lock,
+                    title    = "App Lock",
+                    subtitle = "Require device lock when app resumes",
+                    iconTint = PremiumGold,
+                    checked  = appLockEnabled,
+                    onChange = { viewModel.setAppLockEnabled(it) }
+                )
+            } else {
+                SettingsRow(
+                    icon     = Icons.Default.Lock,
+                    title    = "App Lock",
+                    subtitle = "Upgrade to Premium to enable",
+                    iconTint = PremiumGold,
+                    onClick  = onOpenPremium
                 )
             }
             if (isPremium) {
@@ -275,6 +295,7 @@ private fun SettingsRow(
     subtitle: String,
     iconTint: Color = AccentCyan,
     showArrow: Boolean = true,
+    badge: Boolean = false,
     onClick: () -> Unit
 ) {
     Row(
@@ -294,7 +315,18 @@ private fun SettingsRow(
                 Text(subtitle, color = TextSecondary, fontSize = 12.sp)
             }
         }
-        if (showArrow) {
+        if (badge) {
+            androidx.compose.foundation.layout.Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(3.dp),
+                modifier = Modifier
+                    .background(PremiumGold.copy(0.15f), androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+                    .padding(horizontal = 7.dp, vertical = 3.dp)
+            ) {
+                Icon(Icons.Default.AutoAwesome, null, tint = PremiumGold, modifier = Modifier.size(10.dp))
+                Text("Premium", color = PremiumGold, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+            }
+        } else if (showArrow) {
             Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, null, tint = TextMuted, modifier = Modifier.size(14.dp))
         }
     }

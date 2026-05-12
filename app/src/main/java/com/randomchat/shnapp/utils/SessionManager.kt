@@ -35,6 +35,7 @@ class SessionManager(private val context: Context) {
     private val showPremiumBadgeKey   = booleanPreferencesKey("show_premium_badge")
     private val rewardedPhotoKey      = intPreferencesKey("rewarded_photo_credits")
     private val rewardedAudioKey      = intPreferencesKey("rewarded_audio_credits")
+    private val appLockEnabledKey     = booleanPreferencesKey("app_lock_enabled")
 
     /**
      * Stable per-install identity = FirebaseAuth anonymous UID.
@@ -120,6 +121,13 @@ class SessionManager(private val context: Context) {
 
     suspend fun setNotifsEnabled(enabled: Boolean) {
         context.dataStore.edit { it[notifsEnabledKey] = enabled }
+    }
+
+    // ── App Lock ──────────────────────────────────────────────────────────────
+    val appLockEnabledFlow: Flow<Boolean> = context.dataStore.data.map { it[appLockEnabledKey] ?: false }
+
+    suspend fun setAppLockEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[appLockEnabledKey] = enabled }
     }
 
     suspend fun markFirstChatEnded() {
