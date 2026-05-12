@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -83,4 +84,52 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
             _isBanned.value = firestore.isSessionBanned(sessionId)
         }
     }
+
+    // ── Account deletion (GDPR) ───────────────────────────────────────────────
+    private val _deleteAccountState = MutableStateFlow<DeleteAccountState>(DeleteAccountState.Idle)
+    val deleteAccountState: StateFlow<DeleteAccountState> = _deleteAccountState
+
+    /**
+     * Permanently deletes the user's account.
+     * Wipes Firestore, RTDB, local saved chats, DataStore prefs, FCM topics,
+     * and the FirebaseAuth anonymous user. On next launch the app behaves
+     * like first-ever install.
+     */
+    fun deleteAccount() {
+        if (_deleteAccountState.value is DeleteAccountState.InProgress) return
+        _deleteAccountState.value = DeleteAccountState.InProgress
+        viewModelScope.launch {
+            val ctx = getApplication<Application>()
+            val sid = sessionId
+            try {
+                // 1. Firestore — subscription, ban, saved chats
+                firestore.deleteUserData(sid)
+                // 2. Realtime DB — presence, queue, assignments
+                rtdb.deleteUserData(sid)
+                // 3. Local saved chats
+                com.randomchat.shnapp.utils.LocalChatStore.clearAll(ctx)
+                // 4. FCM unsubscribe
+                com.randomchat.shnapp.firebase.FcmManager.unsubscribeAll(ctx)
+                // 5. DataStore — wipe everything
+                sessionManager.clearAllPrefs()
+                // 6. FirebaseAuth — delete anonymous user (best effort)
+                runCatching {
+                    com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.delete()?.await()
+                }
+                runCatching {
+                    com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                }
+                _deleteAccountState.value = DeleteAccountState.Done
+            } catch (e: Exception) {
+                _deleteAccountState.value = DeleteAccountState.Error(e.message ?: "Deletion failed")
+            }
+        }
+    }
+}
+
+sealed class DeleteAccountState {
+    data object Idle : DeleteAccountState()
+    data object InProgress : DeleteAccountState()
+    data object Done : DeleteAccountState()
+    data class Error(val message: String) : DeleteAccountState()
 }

@@ -143,6 +143,39 @@ class FirestoreManager {
         } catch (e: Exception) { emptyList() }
     }
 
+    // ─── Account deletion (GDPR) ──────────────────────────────────────────────
+
+    /**
+     * Permanently wipes user's Firestore data: subscription, ban status, saved chats.
+     * Reports filed by the user and analytics logs are intentionally retained for
+     * moderation integrity and aggregate stats (anonymized via random sessionId on next launch).
+     */
+    suspend fun deleteUserData(sessionId: String) {
+        // Subscription doc
+        runCatching {
+            db.collection(Constants.COL_SUBSCRIPTIONS).document(sessionId).delete().await()
+        }
+        // Ban doc (if any)
+        runCatching {
+            db.collection(Constants.COL_BANNED_SESSIONS).document(sessionId).delete().await()
+        }
+        // All saved chats + their messages subcollections
+        runCatching {
+            val snap = db.collection(Constants.COL_SAVED_CHATS)
+                .whereEqualTo("sessionId", sessionId)
+                .get()
+                .await()
+            for (doc in snap.documents) {
+                // Delete messages subcollection (must be done per-doc; Firestore has no recursive delete client-side)
+                runCatching {
+                    val msgs = doc.reference.collection("messages").get().await()
+                    for (m in msgs.documents) m.reference.delete().await()
+                }
+                runCatching { doc.reference.delete().await() }
+            }
+        }
+    }
+
     // ─── Analytics ────────────────────────────────────────────────────────────
 
     fun logEvent(sessionId: String, event: String, extras: Map<String, Any> = emptyMap()) {

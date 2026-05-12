@@ -23,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.CardMembership
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
@@ -36,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.viewinterop.AndroidView
@@ -74,8 +76,24 @@ fun SettingsScreen(
     val hasSavedChat    by viewModel.hasSavedFirstChat.collectAsState()
     val notifsEnabled   by viewModel.notifsEnabled.collectAsState()
     val appLockEnabled  by viewModel.appLockEnabled.collectAsState()
+    val deleteState     by viewModel.deleteAccountState.collectAsState()
     val uriHandler      = LocalUriHandler.current
     val haptics         = com.randomchat.shnapp.utils.LocalHaptics.current
+    val context         = androidx.compose.ui.platform.LocalContext.current
+
+    var showDeleteDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+
+    // On successful deletion: restart app to onboarding (fresh first-launch flow)
+    androidx.compose.runtime.LaunchedEffect(deleteState) {
+        if (deleteState is com.randomchat.shnapp.viewmodel.DeleteAccountState.Done) {
+            haptics.success()
+            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                ?.apply { flags = android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK or
+                                  android.content.Intent.FLAG_ACTIVITY_NEW_TASK }
+            context.startActivity(intent)
+            (context as? android.app.Activity)?.finishAffinity()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -220,6 +238,18 @@ fun SettingsScreen(
                 showArrow = false,
                 onClick = {}
             )
+
+            Spacer(Modifier.height(12.dp))
+
+            // ── Danger Zone ──────────────────────────────────────────────────
+            SectionHeader("Danger Zone")
+            DangerRow(
+                icon     = Icons.Default.DeleteForever,
+                title    = "Delete Account",
+                subtitle = "Permanently erase all your data",
+                onClick  = { haptics.warning(); showDeleteDialog = true }
+            )
+            Spacer(Modifier.height(12.dp))
         }
 
         // Banner ad pinned at bottom — non-premium only
@@ -235,6 +265,118 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth()
             )
         }
+    }
+
+    // ── Delete-account confirmation dialog ────────────────────────────────────
+    if (showDeleteDialog) {
+        DeleteAccountDialog(
+            inProgress = deleteState is com.randomchat.shnapp.viewmodel.DeleteAccountState.InProgress,
+            errorMsg = (deleteState as? com.randomchat.shnapp.viewmodel.DeleteAccountState.Error)?.message,
+            onConfirm = { viewModel.deleteAccount() },
+            onDismiss = {
+                if (deleteState !is com.randomchat.shnapp.viewmodel.DeleteAccountState.InProgress) {
+                    showDeleteDialog = false
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun DeleteAccountDialog(
+    inProgress: Boolean,
+    errorMsg: String?,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = CardSurface,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(Icons.Default.DeleteForever, null, tint = com.randomchat.shnapp.theme.ErrorRed, modifier = Modifier.size(22.dp))
+                Text("Delete Account?", color = TextPrimary, fontWeight = FontWeight.Bold)
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    "This will permanently delete:",
+                    color = TextSecondary,
+                    fontSize = 13.sp
+                )
+                Text("• Your session and anonymous identity\n• Saved conversations\n• Subscription record\n• All locally stored data",
+                    color = TextSecondary,
+                    fontSize = 12.sp,
+                    lineHeight = 18.sp
+                )
+                Text(
+                    "This action cannot be undone. The app will restart.",
+                    color = com.randomchat.shnapp.theme.ErrorRed,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                if (errorMsg != null) {
+                    Text(
+                        "Error: $errorMsg",
+                        color = com.randomchat.shnapp.theme.ErrorRed,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(
+                onClick = onConfirm,
+                enabled = !inProgress
+            ) {
+                if (inProgress) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            color = com.randomchat.shnapp.theme.ErrorRed,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text("Deleting...", color = com.randomchat.shnapp.theme.ErrorRed)
+                    }
+                } else {
+                    Text("Delete Forever", color = com.randomchat.shnapp.theme.ErrorRed, fontWeight = FontWeight.Bold)
+                }
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss, enabled = !inProgress) {
+                Text("Cancel", color = TextMuted)
+            }
+        }
+    )
+}
+
+@Composable
+private fun DangerRow(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(com.randomchat.shnapp.theme.ErrorRed.copy(0.06f), RoundedCornerShape(14.dp))
+            .border(1.dp, com.randomchat.shnapp.theme.ErrorRed.copy(0.30f), RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Icon(icon, null, tint = com.randomchat.shnapp.theme.ErrorRed, modifier = Modifier.size(22.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, color = com.randomchat.shnapp.theme.ErrorRed, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+            if (subtitle.isNotEmpty()) {
+                Text(subtitle, color = TextSecondary, fontSize = 12.sp)
+            }
+        }
+        Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, null, tint = com.randomchat.shnapp.theme.ErrorRed.copy(0.5f), modifier = Modifier.size(14.dp))
     }
 }
 

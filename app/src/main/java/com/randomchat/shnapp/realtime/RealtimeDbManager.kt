@@ -56,6 +56,20 @@ class RealtimeDbManager {
             .updateChildren(mapOf("online" to false, "lastSeen" to ServerValue.TIMESTAMP))
     }
 
+    /** Permanently removes user's RTDB footprint: presence, queue, assignments. */
+    suspend fun deleteUserData(sessionId: String) {
+        runCatching {
+            root.child(Constants.PATH_PRESENCE).child(sessionId).removeValue().await()
+        }
+        runCatching {
+            root.child(Constants.PATH_WAITING_QUEUE).child(sessionId).removeValue().await()
+        }
+        runCatching {
+            root.child(Constants.PATH_SESSION_ASSIGNMENTS).child(sessionId).removeValue().await()
+        }
+        // Room data is shared between two users — server-side cleanup expected.
+    }
+
     /** Live count of sessions with online == true in /presence. */
     fun observeOnlineCount(): Flow<Int> = callbackFlow {
         val ref = root.child(Constants.PATH_PRESENCE)

@@ -136,6 +136,14 @@ object LocalChatStore {
         writeIndex(context, index)
     }
 
+    /** Wipes every saved chat + the index. For account deletion. */
+    fun clearAll(context: Context) {
+        runCatching {
+            readIndex(context).forEach { meta -> chatDir(context, meta.id).deleteRecursively() }
+            indexFile(context).delete()
+        }
+    }
+
     private fun readIndex(context: Context): List<SavedChatMeta> {
         val file = indexFile(context)
         if (!file.exists()) return emptyList()

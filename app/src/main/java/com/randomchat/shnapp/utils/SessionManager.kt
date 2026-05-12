@@ -130,6 +130,12 @@ class SessionManager(private val context: Context) {
         context.dataStore.edit { it[appLockEnabledKey] = enabled }
     }
 
+    // ── Account deletion (GDPR) ───────────────────────────────────────────────
+    /** Wipes every preference. Next launch behaves like first-ever install. */
+    suspend fun clearAllPrefs() {
+        context.dataStore.edit { it.clear() }
+    }
+
     suspend fun markFirstChatEnded() {
         context.dataStore.edit { it[firstChatEndedKey] = true }
     }
