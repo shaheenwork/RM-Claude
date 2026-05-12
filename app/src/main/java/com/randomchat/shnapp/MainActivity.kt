@@ -105,7 +105,6 @@ fun AppNavHost(
     launchedFromPush: Boolean = false
 ) {
     val navController = rememberNavController()
-    val isPremium by homeViewModel.isPremium.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
 
     // Matchmaking overlay state
@@ -159,7 +158,7 @@ fun AppNavHost(
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.SPLASH) { inclusive = true }
                     }
-                    // Launched from notification → auto-trigger matchmaking on top of Home.
+                    // Launched from notification → show matchmaking dialog.
                     if (launchedFromPush) {
                         chatViewModel.startSearch()
                         showMatchmakingDialog = true
@@ -202,7 +201,6 @@ fun AppNavHost(
             HomeScreen(
                 viewModel = homeViewModel,
                 onStartChat = {
-                    // Start matchmaking immediately in background
                     chatViewModel.startSearch()
                     showMatchmakingDialog = true
                 },
@@ -261,7 +259,7 @@ fun AppNavHost(
         }
     }
 
-    // Matchmaking dialog overlay (shown on top of HomeScreen)
+    // Matchmaking dialog — full-screen overlay on HomeScreen
     MatchmakingDialog(
         visible = showMatchmakingDialog,
         onCancel = {
@@ -270,12 +268,14 @@ fun AppNavHost(
         }
     )
 
-    // Randomised 4-8 second delay then always navigate to chat
+    // 2-4 s random delay for believability, then navigate to chat.
+    // Matchmaking runs in parallel; if not yet matched, pending messages queue
+    // in ChatManager and flush automatically when stranger connects.
     LaunchedEffect(showMatchmakingDialog) {
         if (!showMatchmakingDialog) return@LaunchedEffect
-        val delay = Constants.MIN_MATCH_DELAY_MS +
-                (Math.random() * (Constants.MAX_MATCH_DELAY_MS - Constants.MIN_MATCH_DELAY_MS)).toLong()
-        delay(delay)
+        val waitMs = Constants.MIN_MATCH_DELAY_MS +
+            (Math.random() * (Constants.MAX_MATCH_DELAY_MS - Constants.MIN_MATCH_DELAY_MS)).toLong()
+        delay(waitMs)
         if (showMatchmakingDialog) {
             showMatchmakingDialog = false
             navController.navigate(Routes.CHAT)

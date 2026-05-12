@@ -51,6 +51,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.viewinterop.AndroidView
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -123,7 +127,6 @@ fun ChatScreen(
 ) {
     val context = LocalContext.current
     val messages by viewModel.messages.collectAsState()
-    val statusChips by viewModel.statusChips.collectAsState()
     val strangerActivity by viewModel.strangerActivity.collectAsState()
     val isStrangerConnected by viewModel.isStrangerConnected.collectAsState()
     val chatEnded by viewModel.chatEnded.collectAsState()
@@ -238,8 +241,7 @@ fun ChatScreen(
 
     // Auto-scroll to bottom on new messages, typing indicator, or ghost bubble appearing
     LaunchedEffect(messages.size, strangerActivity, showGhostBubble) {
-        val total = statusChips.size + messages.size
-        if (total > 0) listState.animateScrollToItem(total - 1)
+        if (messages.isNotEmpty()) listState.animateScrollToItem(messages.size - 1)
     }
 
     BackHandler {
@@ -320,7 +322,8 @@ fun ChatScreen(
                     if (strangerActivity != null && !suppressTyping) {
                         StrangerActivityText(activity = strangerActivity!!)
                     } else {
-                        OnlineStatusChip(isOnline = isStrangerConnected && !chatEnded)
+                        // Always show Online while chat is active — stranger is always "present"
+                        OnlineStatusChip(isOnline = !chatEnded)
                     }
                 }
 
@@ -397,21 +400,37 @@ fun ChatScreen(
                 }
             }
 
+            // ── "Connected" hint strip ────────────────────────────────────────
+            // Shown immediately when ChatScreen opens; gives the illusion of an
+            // established connection while matchmaking completes in the background.
+            AnimatedVisibility(
+                visible = !chatEnded,
+                enter = fadeIn(tween(400)),
+                exit = fadeOut(tween(200))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(AccentCyan.copy(alpha = 0.07f))
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    androidx.compose.material3.Text(
+                        "👋  You're connected to a random stranger — say Hi!",
+                        color = AccentCyan,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center,
+                        letterSpacing = 0.2.sp
+                    )
+                }
+            }
+
             // ── Messages ─────────────────────────────────────────────────────
             LazyColumn(
                 state = listState,
                 modifier = Modifier.weight(1f).padding(vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                // Status chips at top — key uses index+text to be unique even if text repeats
-                itemsIndexed(statusChips, key = { index, chip -> "chip_${index}_${chip.type.name}" }) { _, chip ->
-                    SystemChip(
-                        text = chip.text,
-                        animated = true,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
-                    )
-                }
-
                 // Messages — key is the stable Firebase push ID
                 items(messages, key = { it.id }) { message ->
                     MessageBubble(
@@ -437,6 +456,21 @@ fun ChatScreen(
                 ) {
                     SystemChip("Chat has ended")
                     Spacer(Modifier.height(12.dp))
+
+                    // Banner ad — shown to non-premium users during idle chat-ended moment
+                    if (!isPremium) {
+                        AndroidView(
+                            factory = { ctx ->
+                                AdView(ctx).apply {
+                                    setAdSize(AdSize.BANNER)
+                                    adUnitId = com.randomchat.shnapp.utils.Constants.ADMOB_BANNER_ID
+                                    loadAd(AdRequest.Builder().build())
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(Modifier.height(12.dp))
+                    }
 
                     // First-time save hint for premium users
                     if (isPremium && !hasSavedFirstChat) {
@@ -477,6 +511,22 @@ fun ChatScreen(
                 strangerDraftText?.let { draft ->
                     com.randomchat.shnapp.ui.components.GhostTypingBubble(text = draft)
                 }
+            }
+
+            // ── Active-chat banner — between messages and composer ────────────
+            // Hidden during recording (recording bar replaces composer),
+            // when chat ends (ended section has its own banner), and for premium users.
+            if (!chatEnded && !isPremium && !isRecording) {
+                AndroidView(
+                    factory = { ctx ->
+                        AdView(ctx).apply {
+                            setAdSize(AdSize.BANNER)
+                            adUnitId = com.randomchat.shnapp.utils.Constants.ADMOB_BANNER_ID
+                            loadAd(AdRequest.Builder().build())
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
             // ── Message Composer / Recording Bar ────────────────────────────

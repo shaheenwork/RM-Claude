@@ -8,6 +8,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.functions.ktx.functions
 import com.randomchat.shnapp.ads.AdMobManager
+import com.randomchat.shnapp.ads.AppOpenAdManager
 import com.randomchat.shnapp.billing.BillingManager
 import com.randomchat.shnapp.firebase.FcmManager
 import com.randomchat.shnapp.utils.SessionManager
@@ -36,8 +37,12 @@ class RandomChatApp : Application() {
             appCheckProviderFactory()
         )
 
-        // Init AdMob
+        // Init AdMob (interstitial + banner)
         AdMobManager.getInstance(this).initialize()
+        // App Open Ad — register lifecycle callbacks before any activity starts so the
+        // very first foreground event is captured. The actual ad preload is triggered
+        // inside AdMobManager.initialize() once the SDK is ready.
+        AppOpenAdManager.getInstance(this).register()
 
         val sessionManager = SessionManager.getInstance(this)
 

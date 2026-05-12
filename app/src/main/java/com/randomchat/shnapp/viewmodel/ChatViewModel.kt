@@ -30,11 +30,6 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.UUID
 
-// Status chip types shown in ChatScreen
-enum class ChatChipType { ROOM_SECURED, CONNECTING, ENCRYPTED, STRANGER_JOINING, SYNCING, EXPANDING, OPTIMIZING, STRANGER_CONNECTED, STRANGER_LEFT }
-
-data class ChatChip(val type: ChatChipType, val text: String)
-
 data class SaveProgress(val done: Int, val total: Int, val isDone: Boolean = false)
 
 class ChatViewModel(app: Application) : AndroidViewModel(app) {
@@ -80,9 +75,6 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     private val _strangerHasBadge = MutableStateFlow(false)
     val strangerHasBadge: StateFlow<Boolean> = _strangerHasBadge
 
-    private val _statusChips = MutableStateFlow<List<ChatChip>>(emptyList())
-    val statusChips: StateFlow<List<ChatChip>> = _statusChips
-
     private val _isStrangerConnected = MutableStateFlow(false)
     val isStrangerConnected: StateFlow<Boolean> = _isStrangerConnected
 
@@ -110,6 +102,10 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     private val _reportStatus = MutableStateFlow<String?>(null)
     val reportStatus: StateFlow<String?> = _reportStatus
 
+    // Ensures at most one interstitial fires per chat session, regardless of how
+    // many times endChat() is called (user ends + then taps "New Stranger").
+    private var adFiredForCurrentChat = false
+
     private var mediaRecorder: MediaRecorder? = null
     private var audioTempFile: File? = null
     private var recordingTimerJob: kotlinx.coroutines.Job? = null
@@ -119,46 +115,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     init {
         observeMatchmaking()
         observeRoomStatus()
-        startSystemChipSequence()
         viewModelScope.launch { rtdb.fetchAndStoreIp(sessionId) }
-    }
-
-    // ── System chip illusion sequence ─────────────────────────────────────────
-
-    private fun startSystemChipSequence() {
-        viewModelScope.launch {
-            delay(800)
-            addChip(ChatChipType.ROOM_SECURED, "🔒  Private room secured")
-            delay(1200)
-            addChip(ChatChipType.ENCRYPTED, "🛡️  Anonymous session encrypted")
-            delay(1500)
-            addChip(ChatChipType.CONNECTING, "⚡  Connecting to stranger...")
-            delay(2000)
-            addChip(ChatChipType.STRANGER_JOINING, "👤  Stranger joining...")
-        }
-    }
-
-    private fun startLongWaitBuffer() {
-        viewModelScope.launch {
-            delay(8000)
-            if (!_isStrangerConnected.value) {
-                addChip(ChatChipType.SYNCING, "🔄  Syncing connection...")
-                delay(5000)
-                if (!_isStrangerConnected.value) {
-                    addChip(ChatChipType.EXPANDING, "🌐  Expanding search...")
-                    delay(6000)
-                    if (!_isStrangerConnected.value) {
-                        addChip(ChatChipType.OPTIMIZING, "⚡  Optimizing route...")
-                    }
-                }
-            }
-        }
-    }
-
-    private fun addChip(type: ChatChipType, text: String) {
-        val current = _statusChips.value.toMutableList()
-        current.add(ChatChip(type, text))
-        _statusChips.value = current
     }
 
     // ── Matchmaking observation ───────────────────────────────────────────────
@@ -187,8 +144,6 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                             }
                         }
 
-                        delay(Constants.STRANGER_JOIN_CHIP_DELAY_MS)
-                        addChip(ChatChipType.STRANGER_CONNECTED, "✅  Stranger connected")
                         chatManager.attachRoom(roomId)
                     }
                     else -> {}
@@ -201,7 +156,6 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             roomStatus.collect { status ->
                 if (status == "ENDED" && _isStrangerConnected.value) {
-                    addChip(ChatChipType.STRANGER_LEFT, "👋  Stranger has left")
                     _chatEnded.value = true
                     // Clean up assignment so the next startSearch() doesn't re-attach to this room
                     matchmakingManager.cancelSearch()
@@ -214,15 +168,13 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     fun startSearch() {
         chatManager.clearMessages()
-        _statusChips.value = emptyList()
         _isStrangerConnected.value = false
         _chatEnded.value = false
         _strangerHasBadge.value = false
         _currentRoomId.value = null
         _currentStrangerId.value = null
+        adFiredForCurrentChat = false
         matchmakingManager.startSearch()
-        startSystemChipSequence()
-        startLongWaitBuffer()
     }
 
     /**
@@ -287,9 +239,8 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
             _chatEnded.value = true
             matchmakingManager.cancelSearch()
             sessionManager.markFirstChatEnded()  // signals MainActivity to ask notif permission
-            val count = sessionManager.incrementChatsSinceAd()
-            if (!isPremium.value && count >= Constants.INTERSTITIAL_AFTER_N_CHATS) {
-                sessionManager.resetChatsSinceAd()
+            if (!isPremium.value && !adFiredForCurrentChat) {
+                adFiredForCurrentChat = true
                 _triggerInterstitial.value = true
             }
         }

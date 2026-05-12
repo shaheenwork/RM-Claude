@@ -22,9 +22,10 @@ object Constants {
     const val COL_ANALYTICS = "analytics"
 
     // AdMob IDs (test IDs - replace with production)
-    const val ADMOB_BANNER_ID = "ca-app-pub-3940256099942544/6300978111"
-    const val ADMOB_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712"
-    const val ADMOB_NATIVE_ID = "ca-app-pub-3940256099942544/2247696110"
+    const val ADMOB_BANNER_ID        = "ca-app-pub-3940256099942544/6300978111"
+    const val ADMOB_INTERSTITIAL_ID  = "ca-app-pub-3940256099942544/1033173712"
+    const val ADMOB_NATIVE_ID        = "ca-app-pub-3940256099942544/2247696110"
+    const val ADMOB_APP_OPEN_ID      = "ca-app-pub-3940256099942544/9257395921"
 
     // Billing — product IDs must match Google Play Console exactly
     const val PRODUCT_PREMIUM_WEEKLY  = "premium_weekly"
@@ -44,8 +45,8 @@ object Constants {
     const val QUEUE_ENTRY_TTL_MS = 60_000L
 
     // Matchmaking
-    const val MIN_MATCH_DELAY_MS = 4_000L
-    const val MAX_MATCH_DELAY_MS = 8_000L
+    const val MIN_MATCH_DELAY_MS = 2_000L
+    const val MAX_MATCH_DELAY_MS = 4_000L
     const val STRANGER_JOIN_CHIP_DELAY_MS = 2_500L
 
     // Flood protection
