@@ -56,6 +56,20 @@ class RealtimeDbManager {
             .updateChildren(mapOf("online" to false, "lastSeen" to ServerValue.TIMESTAMP))
     }
 
+    /** Live count of sessions with online == true in /presence. */
+    fun observeOnlineCount(): Flow<Int> = callbackFlow {
+        val ref = root.child(Constants.PATH_PRESENCE)
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val count = snapshot.children.count { it.child("online").getValue(Boolean::class.java) == true }
+                trySend(count)
+            }
+            override fun onCancelled(error: DatabaseError) { trySend(0) }
+        }
+        ref.addValueEventListener(listener)
+        awaitClose { ref.removeEventListener(listener) }
+    }
+
     // ─── Waiting Queue ────────────────────────────────────────────────────────
 
     suspend fun joinWaitingQueue(sessionId: String) {

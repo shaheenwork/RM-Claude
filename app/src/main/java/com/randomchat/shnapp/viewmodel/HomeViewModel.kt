@@ -21,6 +21,9 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     val sessionId: String get() = sessionManager.sessionId
 
+    val onlineCount: StateFlow<Int> = rtdb.observeOnlineCount()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     val isPremium: StateFlow<Boolean> = sessionManager.isPremiumFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 

@@ -38,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -82,6 +83,10 @@ fun HomeScreen(
     val isBanned         by viewModel.isBanned.collectAsState()
     val photoCredits     by viewModel.rewardedPhotoCredits.collectAsState()
     val audioCredits     by viewModel.rewardedAudioCredits.collectAsState()
+    val onlineCount      by viewModel.onlineCount.collectAsState()
+    // Stable random offset per session — doesn't re-roll on recompose
+    val onlineOffset     = remember { (11..23).random() }
+    val displayedOnline  = onlineCount + onlineOffset
 
     // Ambient background animation
     val infiniteTransition = rememberInfiniteTransition(label = "bg")
@@ -212,7 +217,7 @@ fun HomeScreen(
                             .background(com.randomchat.shnapp.theme.OnlineGreen, CircleShape)
                     )
                     Text(
-                        "1,240+ strangers online",
+                        "$displayedOnline strangers online",
                         color = com.randomchat.shnapp.theme.OnlineGreen,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
