@@ -61,6 +61,10 @@ object Constants {
     // Interstitial frequency
     const val INTERSTITIAL_AFTER_N_CHATS = 3
 
+    // Legal URLs — replace with your actual hosted pages
+    const val URL_PRIVACY_POLICY = "https://www.privacypolicygenerator.info/"
+    const val URL_TERMS_OF_SERVICE = "https://strcht.app/terms"
+
     // Session
     const val PREF_SESSION_ID = "session_id"
     const val PREF_IS_PREMIUM = "is_premium"

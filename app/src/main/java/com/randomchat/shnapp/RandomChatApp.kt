@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.functions.ktx.functions
 import com.randomchat.shnapp.ads.AdMobManager
@@ -24,6 +25,10 @@ class RandomChatApp : Application() {
 
         // Firebase
         FirebaseApp.initializeApp(this)
+
+        // Crashlytics — off in debug so local runs don't pollute crash dashboard
+        FirebaseCrashlytics.getInstance()
+            .setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
 
         // App Check — Play Integrity in release, debug token in debug builds.
         // Enforce in Firebase Console: App Check → each product → Enforce.

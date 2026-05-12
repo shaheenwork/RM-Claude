@@ -147,6 +147,7 @@ class MatchmakingManager(
     fun reset() { cancelSearch() }
 
     fun destroy() {
+        synchronized(Companion) { instance = null } // clear before cancel so next getInstance() gets a fresh object
         cancelSearch()
         scope.cancel()
     }

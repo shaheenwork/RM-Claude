@@ -432,6 +432,7 @@ class ChatManager(
     }
 
     fun destroy() {
+        synchronized(Companion) { instance = null } // clear before cancel so next getInstance() gets a fresh object
         messageListenerJob?.cancel()
         typingListenerJob?.cancel()
         roomStatusJob?.cancel()

@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics.gradle)
 }
 
 android {
@@ -76,6 +77,7 @@ dependencies {
     implementation(libs.firebase.functions)
     releaseImplementation(libs.firebase.appcheck.playintegrity)
     debugImplementation(libs.firebase.appcheck.debug)
+    implementation(libs.firebase.crashlytics)
 
     implementation(libs.play.services.ads)
     implementation(libs.billing.ktx)

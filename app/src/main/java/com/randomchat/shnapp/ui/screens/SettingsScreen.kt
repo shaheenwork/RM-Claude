@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -53,6 +54,8 @@ import com.randomchat.shnapp.theme.SubtleBorder
 import com.randomchat.shnapp.theme.TextMuted
 import com.randomchat.shnapp.theme.TextPrimary
 import com.randomchat.shnapp.theme.TextSecondary
+import com.randomchat.shnapp.BuildConfig
+import com.randomchat.shnapp.utils.Constants
 import com.randomchat.shnapp.viewmodel.HomeViewModel
 
 @Composable
@@ -64,6 +67,7 @@ fun SettingsScreen(
 ) {
     val isPremium     by viewModel.isPremium.collectAsState()
     val notifsEnabled by viewModel.notifsEnabled.collectAsState()
+    val uriHandler    = LocalUriHandler.current
 
     Column(
         modifier = Modifier
@@ -171,18 +175,18 @@ fun SettingsScreen(
                 icon = Icons.Default.Shield,
                 title = "Privacy Policy",
                 subtitle = "How we protect your data",
-                onClick = { /* Open URL */ }
+                onClick = { uriHandler.openUri(Constants.URL_PRIVACY_POLICY) }
             )
             SettingsRow(
                 icon = Icons.Default.Policy,
                 title = "Terms of Service",
                 subtitle = "Usage rules and guidelines",
-                onClick = { /* Open URL */ }
+                onClick = { uriHandler.openUri(Constants.URL_TERMS_OF_SERVICE) }
             )
             SettingsRow(
                 icon = Icons.Default.Info,
                 title = "App Version",
-                subtitle = "1.0.0",
+                subtitle = BuildConfig.VERSION_NAME,
                 showArrow = false,
                 onClick = {}
             )
