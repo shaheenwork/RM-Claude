@@ -22,6 +22,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "st
 
 class SessionManager(private val context: Context) {
 
+    private val termsAcceptedKey = booleanPreferencesKey(Constants.PREF_TERMS_ACCEPTED)
     private val sessionIdKey = stringPreferencesKey(Constants.PREF_SESSION_ID)
     private val isPremiumKey = booleanPreferencesKey(Constants.PREF_IS_PREMIUM)
     private val premiumExpiryKey = longPreferencesKey(Constants.PREF_PREMIUM_EXPIRY)
@@ -120,6 +121,15 @@ class SessionManager(private val context: Context) {
 
     suspend fun markFirstChatEnded() {
         context.dataStore.edit { it[firstChatEndedKey] = true }
+    }
+
+    // ── Terms acceptance ──────────────────────────────────────────────────────
+    /** True once user has explicitly agreed to Privacy Policy + Terms of Service. */
+    val termsAcceptedFlow: Flow<Boolean> = context.dataStore.data
+        .map { it[termsAcceptedKey] ?: false }
+
+    suspend fun markTermsAccepted() {
+        context.dataStore.edit { it[termsAcceptedKey] = true }
     }
 
     // ── Premium Badge ──────────────────────────────────────────────────────────

@@ -66,6 +66,7 @@ object Constants {
     const val URL_TERMS_OF_SERVICE = "https://strcht.app/terms"
 
     // Session
+    const val PREF_TERMS_ACCEPTED = "terms_accepted"
     const val PREF_SESSION_ID = "session_id"
     const val PREF_IS_PREMIUM = "is_premium"
     const val PREF_PREMIUM_EXPIRY = "premium_expiry"

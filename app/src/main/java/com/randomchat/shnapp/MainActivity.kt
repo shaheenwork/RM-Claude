@@ -38,6 +38,7 @@ import com.randomchat.shnapp.ui.screens.ChatScreen
 import com.randomchat.shnapp.ui.screens.HomeScreen
 import com.randomchat.shnapp.ui.screens.PremiumScreen
 import com.randomchat.shnapp.ui.screens.SavedChatsScreen
+import com.randomchat.shnapp.ui.screens.OnboardingScreen
 import com.randomchat.shnapp.ui.screens.SettingsScreen
 import com.randomchat.shnapp.ui.screens.SplashScreen
 import com.randomchat.shnapp.utils.Constants
@@ -51,6 +52,7 @@ import kotlinx.coroutines.delay
 
 object Routes {
     const val SPLASH = "splash"
+    const val ONBOARDING = "onboarding"
     const val HOME = "home"
     const val CHAT = "chat"
     const val PREMIUM = "premium"
@@ -145,13 +147,45 @@ fun AppNavHost(
         exitTransition = { fadeOut(tween(200)) }
     ) {
         composable(Routes.SPLASH) {
-            SplashScreen(
-                onReady = {
-                    onSplashReady()
+            // State flip triggers an async LaunchedEffect that reads DataStore
+            // before deciding which destination to open.
+            var splashDone by remember { mutableStateOf(false) }
+
+            LaunchedEffect(splashDone) {
+                if (!splashDone) return@LaunchedEffect
+                onSplashReady()
+                val accepted = SessionManager.getInstance(context).termsAcceptedFlow.first()
+                if (accepted) {
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.SPLASH) { inclusive = true }
                     }
                     // Launched from notification → auto-trigger matchmaking on top of Home.
+                    if (launchedFromPush) {
+                        chatViewModel.startSearch()
+                        showMatchmakingDialog = true
+                    }
+                } else {
+                    // First launch — must accept policies before entering the app.
+                    navController.navigate(Routes.ONBOARDING) {
+                        popUpTo(Routes.SPLASH) { inclusive = true }
+                    }
+                }
+            }
+
+            SplashScreen(onReady = { splashDone = true })
+        }
+
+        composable(
+            Routes.ONBOARDING,
+            enterTransition = { fadeIn(tween(400)) },
+            exitTransition = { fadeOut(tween(250)) }
+        ) {
+            OnboardingScreen(
+                onAccepted = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.ONBOARDING) { inclusive = true }
+                    }
+                    // Edge case: launched from push notification on first-ever open.
                     if (launchedFromPush) {
                         chatViewModel.startSearch()
                         showMatchmakingDialog = true
