@@ -12,6 +12,7 @@ import com.randomchat.shnapp.ads.AppOpenAdManager
 import com.randomchat.shnapp.billing.BillingManager
 import com.randomchat.shnapp.firebase.FcmManager
 import com.randomchat.shnapp.utils.SessionManager
+import com.randomchat.shnapp.utils.Telemetry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -30,6 +31,9 @@ class RandomChatApp : Application() {
         // Crashlytics — off in debug so local runs don't pollute crash dashboard
         FirebaseCrashlytics.getInstance()
             .setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
+
+        // Telemetry — central wrapper for Crashlytics keys + Analytics events
+        Telemetry.init(this)
 
         // App Check — Play Integrity in release, debug token in debug builds.
         // Enforce in Firebase Console: App Check → each product → Enforce.
@@ -56,6 +60,10 @@ class RandomChatApp : Application() {
                 Log.w("RandomChatApp", "ensureSignedIn failed at startup: ${e.message}")
             }
 
+            // Crashlytics/Analytics — attach session + premium to every report/event
+            Telemetry.setSession(sessionManager.sessionId)
+            Telemetry.setPremium(sessionManager.isPremiumFlow.first())
+
             // FCM init depends on sessionId — run after auth is ready
             val enabled = sessionManager.notifsEnabledFlow.first()
             withContext(Dispatchers.Main) {
@@ -69,6 +77,8 @@ class RandomChatApp : Application() {
             onPremiumGranted = { token, productId, expiry ->
                 // Grant locally for instant UX — Play SDK already verified the purchase state.
                 sessionManager.setPremium(true, expiry)
+                Telemetry.setPremium(true)
+                Telemetry.premiumPurchased(productId)
                 // Server-side verification: CF calls Play Developer API and writes Firestore.
                 // Firestore rules block direct client writes to subscriptions/.
                 CoroutineScope(Dispatchers.IO).launch {
@@ -84,6 +94,7 @@ class RandomChatApp : Application() {
             },
             onPremiumRevoked = {
                 sessionManager.setPremium(false)
+                Telemetry.setPremium(false)
             }
         ).connect()
     }

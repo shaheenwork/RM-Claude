@@ -116,12 +116,14 @@ import com.randomchat.shnapp.ui.components.MessageBubble
 import com.randomchat.shnapp.ui.components.OnlineStatusChip
 import com.randomchat.shnapp.ui.components.SystemChip
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.material.icons.filled.PrivacyTip
 import com.randomchat.shnapp.theme.PremiumGold
 import com.randomchat.shnapp.ui.dialogs.ReportDialog
 import com.randomchat.shnapp.viewmodel.ChatViewModel
 import com.randomchat.shnapp.viewmodel.SaveProgress
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun ChatScreen(
@@ -170,12 +172,18 @@ fun ChatScreen(
 
     // Haptic on stranger-connected transition (match found)
     LaunchedEffect(isStrangerConnected) {
-        if (isStrangerConnected && !chatEnded) haptics.match()
+        if (isStrangerConnected && !chatEnded) {
+            haptics.match()
+            com.randomchat.shnapp.utils.Telemetry.chatStarted()
+        }
     }
 
     // Haptic on chat ended (sharp warning)
     LaunchedEffect(chatEnded) {
-        if (chatEnded) haptics.warning()
+        if (chatEnded) {
+            haptics.warning()
+            com.randomchat.shnapp.utils.Telemetry.chatEnded(messages.size)
+        }
     }
 
     // Haptic on save success
@@ -226,6 +234,7 @@ fun ChatScreen(
     var showEndChatDialog by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
     var showSaveChatDialog by remember { mutableStateOf(false) }
+    var piiBlockedKind by remember { mutableStateOf<com.randomchat.shnapp.utils.PiiDetector.Kind?>(null) }
 
     // Auto-dismiss "Saved ✓" after 2s
     LaunchedEffect(saveProgress?.isDone) {
@@ -242,10 +251,29 @@ fun ChatScreen(
     // Camera capture — FileProvider URI created just before launch
     var cameraOutputUri by remember { mutableStateOf<Uri?>(null) }
 
+    // Helper: scan bytes with on-device OCR, block upload if PII found
+    val handleImageBytes: (ByteArray) -> Unit = { bytes ->
+        android.util.Log.d("ChatScreen", "handleImageBytes called, ${bytes.size} bytes — starting OCR scan")
+        scope.launch {
+            val kind = withContext(kotlinx.coroutines.Dispatchers.Default) {
+                com.randomchat.shnapp.utils.ImagePiiScanner.scan(bytes)
+            }
+            android.util.Log.d("ChatScreen", "OCR scan result: $kind")
+            if (kind != null) {
+                haptics.warning()
+                piiBlockedKind = kind
+                com.randomchat.shnapp.utils.Telemetry.imagePiiBlocked(kind.name)
+            } else {
+                viewModel.uploadAndSendImage(bytes)
+                com.randomchat.shnapp.utils.Telemetry.messageSent("photo")
+            }
+        }
+    }
+
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri ?: return@rememberLauncherForActivityResult
         val bytes = context.contentResolver.openInputStream(uri)?.readBytes() ?: return@rememberLauncherForActivityResult
-        viewModel.uploadAndSendImage(bytes)
+        handleImageBytes(bytes)
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
@@ -254,7 +282,7 @@ fun ChatScreen(
         val bytes = context.contentResolver.openInputStream(uri)?.readBytes() ?: return@rememberLauncherForActivityResult
         // Delete temp file — bytes already in memory
         runCatching { File(uri.path ?: "").delete() }
-        viewModel.uploadAndSendImage(bytes)
+        handleImageBytes(bytes)
     }
 
     val cameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -644,7 +672,11 @@ fun ChatScreen(
                 if (isRecording) {
                     RecordingBar(
                         durationMs = recordingDurationMs,
-                        onSend = { haptics.click(); viewModel.stopAndSendAudio() },
+                        onSend = {
+                            haptics.click()
+                            viewModel.stopAndSendAudio()
+                            com.randomchat.shnapp.utils.Telemetry.messageSent("audio")
+                        },
                         onCancel = { haptics.tick(); viewModel.cancelAudioRecording() }
                     )
                 } else {
@@ -711,7 +743,12 @@ fun ChatScreen(
                                     if (new.length <= com.randomchat.shnapp.utils.Constants.MAX_MESSAGE_LENGTH) {
                                         inputText = new
                                         viewModel.notifyTyping(new.isNotEmpty())
-                                        viewModel.broadcastDraftText(new) // real-time preview for premium stranger
+                                        // Don't leak PII via live preview — only broadcast clean drafts
+                                        if (!com.randomchat.shnapp.utils.PiiDetector.containsPii(new)) {
+                                            viewModel.broadcastDraftText(new)
+                                        } else {
+                                            viewModel.broadcastDraftText("") // hide preview when PII typed
+                                        }
                                     }
                                 },
                                 textStyle = TextStyle(color = TextPrimary, fontSize = 15.sp),
@@ -737,12 +774,19 @@ fun ChatScreen(
                             IconButton(
                                 onClick = {
                                     val text = inputText.trim()
-                                    if (text.isNotBlank()) {
-                                        haptics.click()
-                                        viewModel.sendMessage(text)
-                                        inputText = ""
-                                        viewModel.notifyTyping(false)
+                                    if (text.isBlank()) return@IconButton
+                                    val piiKind = com.randomchat.shnapp.utils.PiiDetector.detect(text)
+                                    if (piiKind != null) {
+                                        haptics.warning()
+                                        piiBlockedKind = piiKind
+                                        com.randomchat.shnapp.utils.Telemetry.piiBlocked(piiKind.name)
+                                        return@IconButton  // Block — keep text in input
                                     }
+                                    haptics.click()
+                                    viewModel.sendMessage(text)
+                                    com.randomchat.shnapp.utils.Telemetry.messageSent("text")
+                                    inputText = ""
+                                    viewModel.notifyTyping(false)
                                 },
                                 enabled = inputText.isNotBlank()
                             ) {
@@ -790,6 +834,7 @@ fun ChatScreen(
         onDismiss = { showReportDialog = false },
         onReport = { reason ->
             viewModel.reportStranger(reason)
+            com.randomchat.shnapp.utils.Telemetry.reportSubmitted(reason)
             showReportDialog = false
         }
     )
@@ -938,6 +983,72 @@ fun ChatScreen(
             onDismiss = { showSaveChatDialog = false }
         )
     }
+
+    // ── PII blocked dialog ───────────────────────────────────────────────────
+    piiBlockedKind?.let { kind ->
+        PiiBlockedDialog(
+            kind = kind,
+            onDismiss = { piiBlockedKind = null }
+        )
+    }
+}
+
+@Composable
+private fun PiiBlockedDialog(
+    kind: com.randomchat.shnapp.utils.PiiDetector.Kind,
+    onDismiss: () -> Unit
+) {
+    val (label, hint) = when (kind) {
+        com.randomchat.shnapp.utils.PiiDetector.Kind.PHONE         ->
+            "phone number" to "Edit your message to remove the number."
+        com.randomchat.shnapp.utils.PiiDetector.Kind.EMAIL         ->
+            "email address" to "Edit your message to remove the email."
+        com.randomchat.shnapp.utils.PiiDetector.Kind.SOCIAL_HANDLE ->
+            "social media contact" to "Edit your message to remove the handle."
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = CardSurface,
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    androidx.compose.material.icons.Icons.Default.PrivacyTip,
+                    null,
+                    tint = com.randomchat.shnapp.theme.ErrorRed,
+                    modifier = Modifier.size(22.dp)
+                )
+                Text(
+                    "Personal info blocked",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp
+                )
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "To keep everyone safe, sharing a $label isn't allowed in anonymous chat.",
+                    color = TextSecondary,
+                    fontSize = 13.sp,
+                    lineHeight = 19.sp
+                )
+                Text(
+                    hint,
+                    color = TextMuted,
+                    fontSize = 12.sp
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Got it", color = AccentCyan, fontWeight = FontWeight.SemiBold)
+            }
+        }
+    )
 }
 
 @Composable

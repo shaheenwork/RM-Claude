@@ -87,6 +87,7 @@ fun SettingsScreen(
     androidx.compose.runtime.LaunchedEffect(deleteState) {
         if (deleteState is com.randomchat.shnapp.viewmodel.DeleteAccountState.Done) {
             haptics.success()
+            com.randomchat.shnapp.utils.Telemetry.accountDeleted()
             val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
                 ?.apply { flags = android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK or
                                   android.content.Intent.FLAG_ACTIVITY_NEW_TASK }
@@ -178,7 +179,11 @@ fun SettingsScreen(
                     subtitle = "Require device lock when app resumes",
                     iconTint = PremiumGold,
                     checked  = appLockEnabled,
-                    onChange = { haptics.tick(); viewModel.setAppLockEnabled(it) }
+                    onChange = {
+                        haptics.tick()
+                        viewModel.setAppLockEnabled(it)
+                        com.randomchat.shnapp.utils.Telemetry.appLockEnabled(it)
+                    }
                 )
             } else {
                 SettingsRow(

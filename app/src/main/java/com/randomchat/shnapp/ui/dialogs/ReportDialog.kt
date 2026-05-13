@@ -36,6 +36,7 @@ import com.randomchat.shnapp.theme.TextSecondary
 private val REPORT_REASONS = listOf(
     "Harassment / Bullying",
     "Explicit / Inappropriate content",
+    "Shared personal info / doxxing",
     "Spam or advertising",
     "Hate speech",
     "Impersonation",

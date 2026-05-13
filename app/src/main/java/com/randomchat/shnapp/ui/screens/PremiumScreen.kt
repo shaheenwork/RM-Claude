@@ -123,6 +123,11 @@ fun PremiumScreen(
         wasPremium = isPremium
     }
 
+    // Track that the user saw the premium screen — feeds into purchase funnel
+    LaunchedEffect(Unit) {
+        com.randomchat.shnapp.utils.Telemetry.premiumViewed("premium_screen")
+    }
+
     val infiniteTransition = rememberInfiniteTransition(label = "prem_glow")
     val glowAlpha by infiniteTransition.animateFloat(
         initialValue = 0.3f, targetValue = 0.8f,

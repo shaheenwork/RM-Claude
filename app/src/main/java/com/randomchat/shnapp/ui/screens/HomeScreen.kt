@@ -261,7 +261,11 @@ fun HomeScreen(
                             if (AdMobManager.getInstance(context).isRewardedReady()) {
                                 AdMobManager.getInstance(context).showRewardedIfReady(
                                     activity     = activity,
-                                    onRewarded   = { haptics.success(); viewModel.addRewardedCredits() },
+                                    onRewarded   = {
+                                        haptics.success()
+                                        viewModel.addRewardedCredits()
+                                        com.randomchat.shnapp.utils.Telemetry.rewardedAdEarned("home_credits")
+                                    },
                                     onNotAvailable = {
                                         Toast.makeText(
                                             context,
