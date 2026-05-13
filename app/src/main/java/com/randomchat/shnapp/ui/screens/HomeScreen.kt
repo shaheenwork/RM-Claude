@@ -89,44 +89,39 @@ fun HomeScreen(
     val onlineOffset     = remember { (11..23).random() }
     val displayedOnline  = onlineCount + onlineOffset
 
-    // Ambient background animation
-    val infiniteTransition = rememberInfiniteTransition(label = "bg")
-    val bgShift by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(8000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "bg_shift"
-    )
-
     Box(modifier = Modifier.fillMaxSize()) {
-        // Animated dark background
+        // Static background — radial gradients replace animated blur blobs
+        // (blur was ~3-5ms/frame GPU cost on mid-range devices, infinite anim drained battery)
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        listOf(
-                            DeepSpace,
-                            Color(0xFF080E1C).copy(0.8f + bgShift * 0.2f),
-                            GradientEnd
-                        )
+                        listOf(DeepSpace, Color(0xFF080E1C), GradientEnd)
                     )
                 )
         )
-
-        // Glowing accent circles (decorative)
         Box(
             modifier = Modifier
-                .size(300.dp)
-                .align(Alignment.TopEnd)
-                .blur(120.dp)
-                .background(AccentCyan.copy(0.04f + bgShift * 0.02f), CircleShape)
+                .fillMaxSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(AccentCyan.copy(0.05f), Color.Transparent),
+                        radius = 600f,
+                        center = androidx.compose.ui.geometry.Offset(800f, 200f)
+                    )
+                )
         )
         Box(
             modifier = Modifier
-                .size(200.dp)
-                .align(Alignment.BottomStart)
-                .blur(100.dp)
-                .background(Color(0xFF0050AA).copy(0.06f), CircleShape)
+                .fillMaxSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(Color(0xFF0050AA).copy(0.06f), Color.Transparent),
+                        radius = 500f,
+                        center = androidx.compose.ui.geometry.Offset(100f, 1600f)
+                    )
+                )
         )
 
         Column(
@@ -191,8 +186,8 @@ fun HomeScreen(
                     "StrangerChat",
                     color = TextPrimary,
                     fontWeight = FontWeight.Black,
-                    fontSize = 24.sp,
-                    letterSpacing = 0.5.sp
+                    fontSize = 28.sp,
+                    letterSpacing = (-0.5).sp  // negative kerning — premium-app trick
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(

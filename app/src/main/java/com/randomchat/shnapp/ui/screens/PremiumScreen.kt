@@ -128,11 +128,17 @@ fun PremiumScreen(
         com.randomchat.shnapp.utils.Telemetry.premiumViewed("premium_screen")
     }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "prem_glow")
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f, targetValue = 0.8f,
-        animationSpec = infiniteRepeatable(tween(2000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "prem_glow_a"
+    // Static glow alpha — infinite pulse was casino-aesthetic, not premium.
+    // Real premium products (Linear, Notion, Stripe, Vercel) use static gold borders.
+    // Call sites (background/border) reference `glowAlpha` directly.
+    val glowAlpha = 0.55f
+    // Single dummy infinite transition kept only to preserve param flow for nested composables.
+    // TODO: refactor to pass nothing once those composables are cleaned.
+    val infiniteTransition = rememberInfiniteTransition(label = "prem_unused")
+    val dummy by infiniteTransition.animateFloat(
+        initialValue = 0f, targetValue = 0f,
+        animationSpec = infiniteRepeatable(tween(60_000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "prem_dummy"
     )
 
     if (showCancelDialog) {
@@ -254,6 +260,26 @@ fun PremiumScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         plans.forEach { plan ->
+                            val isBestValue = plan.productId == Constants.PRODUCT_PREMIUM_YEARLY
+                            if (isBestValue) {
+                                // Highlight badge above the most-valuable plan
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Start
+                                ) {
+                                    Text(
+                                        text = "BEST VALUE",
+                                        color = androidx.compose.ui.graphics.Color(0xFF1A1100),
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 9.sp,
+                                        letterSpacing = 0.6.sp,
+                                        modifier = Modifier
+                                            .background(PremiumGold, RoundedCornerShape(4.dp))
+                                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                                            .padding(top = 0.dp)
+                                    )
+                                }
+                            }
                             PlanCard(
                                 plan = plan,
                                 isSelected = plan.productId == selectedPlanId,
@@ -313,7 +339,15 @@ fun PremiumScreen(
                     )
                 }
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    "Cancel anytime · No commitment",
+                    color = TextSecondary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(4.dp))
                 Text("Secure payment via Google Play", color = TextMuted, fontSize = 11.sp)
 
                 Spacer(Modifier.height(16.dp))

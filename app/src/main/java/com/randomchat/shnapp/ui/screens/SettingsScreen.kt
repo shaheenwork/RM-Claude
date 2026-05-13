@@ -161,88 +161,110 @@ fun SettingsScreen(
 
             // Premium section
             SectionHeader("Subscription")
-            // Show "Saved Conversations" for premium users AND non-premium who
-            // have saved at least one chat via rewarded ad.
-            if (isPremium || hasSavedChat) {
-                SettingsRow(
-                    icon = Icons.Default.Bookmark,
-                    title = "Saved Conversations",
-                    subtitle = "View your saved chats",
-                    iconTint = AccentCyan,
-                    onClick = onOpenSavedChats
-                )
-            }
-            if (isPremium) {
-                SettingsToggleRow(
-                    icon     = Icons.Default.Lock,
-                    title    = "App Lock",
-                    subtitle = "Require device lock when app resumes",
-                    iconTint = PremiumGold,
-                    checked  = appLockEnabled,
-                    onChange = {
-                        haptics.tick()
-                        viewModel.setAppLockEnabled(it)
-                        com.randomchat.shnapp.utils.Telemetry.appLockEnabled(it)
-                    }
-                )
-            } else {
-                SettingsRow(
-                    icon     = Icons.Default.Lock,
-                    title    = "App Lock",
-                    subtitle = "Upgrade to Premium to enable",
-                    iconTint = PremiumGold,
-                    onClick  = onOpenPremium
-                )
-            }
-            if (isPremium) {
-                SettingsRow(
-                    icon = Icons.Default.CardMembership,
-                    title = "Manage Subscription",
-                    subtitle = "Change plan or cancel",
-                    iconTint = PremiumGold,
-                    onClick = onOpenPremium
-                )
-            } else {
-                SettingsRow(
-                    icon = Icons.Default.AutoAwesome,
-                    title = "Upgrade to Premium",
-                    subtitle = "Unlock photos, audio & more",
-                    iconTint = PremiumGold,
-                    onClick = onOpenPremium
-                )
+            SettingsGroup {
+                var firstRow = true
+                if (isPremium || hasSavedChat) {
+                    SettingsRow(
+                        icon = Icons.Default.Bookmark,
+                        title = "Saved Conversations",
+                        subtitle = "View your saved chats",
+                        iconTint = AccentCyan,
+                        grouped = true,
+                        onClick = onOpenSavedChats
+                    )
+                    firstRow = false
+                }
+                if (isPremium) {
+                    if (!firstRow) SettingsRowDivider()
+                    SettingsToggleRow(
+                        icon     = Icons.Default.Lock,
+                        title    = "App Lock",
+                        subtitle = "Require device lock when app resumes",
+                        iconTint = PremiumGold,
+                        checked  = appLockEnabled,
+                        grouped  = true,
+                        onChange = {
+                            haptics.tick()
+                            viewModel.setAppLockEnabled(it)
+                            com.randomchat.shnapp.utils.Telemetry.appLockEnabled(it)
+                        }
+                    )
+                    firstRow = false
+                } else {
+                    if (!firstRow) SettingsRowDivider()
+                    SettingsRow(
+                        icon     = Icons.Default.Lock,
+                        title    = "App Lock",
+                        subtitle = "Upgrade to Premium to enable",
+                        iconTint = PremiumGold,
+                        grouped  = true,
+                        onClick  = onOpenPremium
+                    )
+                    firstRow = false
+                }
+                if (!firstRow) SettingsRowDivider()
+                if (isPremium) {
+                    SettingsRow(
+                        icon = Icons.Default.CardMembership,
+                        title = "Manage Subscription",
+                        subtitle = "Change plan or cancel",
+                        iconTint = PremiumGold,
+                        grouped = true,
+                        onClick = onOpenPremium
+                    )
+                } else {
+                    SettingsRow(
+                        icon = Icons.Default.AutoAwesome,
+                        title = "Upgrade to Premium",
+                        subtitle = "Unlock photos, audio & more",
+                        iconTint = PremiumGold,
+                        grouped = true,
+                        onClick = onOpenPremium
+                    )
+                }
             }
             Spacer(Modifier.height(4.dp))
 
             SectionHeader("Notifications")
-            SettingsToggleRow(
-                icon     = Icons.Default.Notifications,
-                title    = "Daily activity ping",
-                subtitle = "One reminder per day when strangers are around",
-                checked  = notifsEnabled,
-                onChange = { haptics.tick(); viewModel.setNotifsEnabled(it) }
-            )
+            SettingsGroup {
+                SettingsToggleRow(
+                    icon     = Icons.Default.Notifications,
+                    title    = "Daily activity ping",
+                    subtitle = "One reminder per day when strangers are around",
+                    checked  = notifsEnabled,
+                    grouped  = true,
+                    onChange = { haptics.tick(); viewModel.setNotifsEnabled(it) }
+                )
+            }
             Spacer(Modifier.height(4.dp))
 
             SectionHeader("About")
-            SettingsRow(
-                icon = Icons.Default.Shield,
-                title = "Privacy Policy",
-                subtitle = "How we protect your data",
-                onClick = { uriHandler.openUri(Constants.URL_PRIVACY_POLICY) }
-            )
-            SettingsRow(
-                icon = Icons.Default.Policy,
-                title = "Terms of Service",
-                subtitle = "Usage rules and guidelines",
-                onClick = { uriHandler.openUri(Constants.URL_TERMS_OF_SERVICE) }
-            )
-            SettingsRow(
-                icon = Icons.Default.Info,
-                title = "App Version",
-                subtitle = BuildConfig.VERSION_NAME,
-                showArrow = false,
-                onClick = {}
-            )
+            SettingsGroup {
+                SettingsRow(
+                    icon = Icons.Default.Shield,
+                    title = "Privacy Policy",
+                    subtitle = "How we protect your data",
+                    grouped = true,
+                    onClick = { uriHandler.openUri(Constants.URL_PRIVACY_POLICY) }
+                )
+                SettingsRowDivider()
+                SettingsRow(
+                    icon = Icons.Default.Policy,
+                    title = "Terms of Service",
+                    subtitle = "Usage rules and guidelines",
+                    grouped = true,
+                    onClick = { uriHandler.openUri(Constants.URL_TERMS_OF_SERVICE) }
+                )
+                SettingsRowDivider()
+                SettingsRow(
+                    icon = Icons.Default.Info,
+                    title = "App Version",
+                    subtitle = BuildConfig.VERSION_NAME,
+                    showArrow = false,
+                    grouped = true,
+                    onClick = {}
+                )
+            }
 
             Spacer(Modifier.height(12.dp))
 
@@ -385,15 +407,42 @@ private fun DangerRow(
     }
 }
 
+/**
+ * Grouped-list container — iOS-style. Wraps related rows in one card with
+ * shared rounded corners + hairline dividers between rows. Each child should
+ * be a SettingsRow / SettingsToggleRow with `grouped = true`.
+ */
+@Composable
+private fun SettingsGroup(content: @Composable () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(CardSurface, RoundedCornerShape(14.dp))
+            .border(1.dp, SubtleBorder, RoundedCornerShape(14.dp))
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun SettingsRowDivider() {
+    androidx.compose.material3.HorizontalDivider(
+        thickness = 0.5.dp,
+        color = SubtleBorder.copy(alpha = 0.5f),
+        modifier = Modifier.padding(start = 54.dp)  // align with text, not icon (iOS pattern)
+    )
+}
+
 @Composable
 private fun SectionHeader(title: String) {
+    // Modern style: title-case, no oversized letter-spacing.
+    // iOS Settings + Linear use 13sp medium-weight, warmer than M2-era uppercase chips.
     Text(
-        title.uppercase(),
-        color = TextMuted,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.SemiBold,
-        letterSpacing = 1.2.sp,
-        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+        title,
+        color = TextSecondary,
+        fontSize = 13.sp,
+        fontWeight = FontWeight.Medium,
+        modifier = Modifier.padding(start = 4.dp, end = 4.dp, top = 10.dp, bottom = 6.dp)
     )
 }
 
@@ -404,13 +453,18 @@ private fun SettingsToggleRow(
     subtitle: String,
     checked: Boolean,
     iconTint: Color = AccentCyan,
+    grouped: Boolean = false,
     onChange: (Boolean) -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(CardSurface, RoundedCornerShape(14.dp))
-            .border(1.dp, SubtleBorder, RoundedCornerShape(14.dp))
+            .then(
+                if (grouped) Modifier  // flat — parent SettingsGroup provides bg + border
+                else Modifier
+                    .background(CardSurface, RoundedCornerShape(14.dp))
+                    .border(1.dp, SubtleBorder, RoundedCornerShape(14.dp))
+            )
             .clickable { onChange(!checked) }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -444,13 +498,18 @@ private fun SettingsRow(
     iconTint: Color = AccentCyan,
     showArrow: Boolean = true,
     badge: Boolean = false,
+    grouped: Boolean = false,
     onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(CardSurface, RoundedCornerShape(14.dp))
-            .border(1.dp, SubtleBorder, RoundedCornerShape(14.dp))
+            .then(
+                if (grouped) Modifier  // flat — parent SettingsGroup provides bg + border
+                else Modifier
+                    .background(CardSurface, RoundedCornerShape(14.dp))
+                    .border(1.dp, SubtleBorder, RoundedCornerShape(14.dp))
+            )
             .clickable(onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,

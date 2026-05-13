@@ -35,11 +35,11 @@ class RandomChatApp : Application() {
         // Telemetry — central wrapper for Crashlytics keys + Analytics events
         Telemetry.init(this)
 
-        // App Check — Play Integrity in release, debug token in debug builds.
-        // Enforce in Firebase Console: App Check → each product → Enforce.
-        FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
-            appCheckProviderFactory()
-        )
+        // App Check — DISABLED for now (will implement before Play Store launch).
+        // TODO: re-enable + enforce in Firebase Console before release.
+        // FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
+        //     appCheckProviderFactory()
+        // )
 
         // Init AdMob (interstitial + banner)
         AdMobManager.getInstance(this).initialize()

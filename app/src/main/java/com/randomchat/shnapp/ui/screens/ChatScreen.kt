@@ -116,6 +116,7 @@ import com.randomchat.shnapp.ui.components.MessageBubble
 import com.randomchat.shnapp.ui.components.OnlineStatusChip
 import com.randomchat.shnapp.ui.components.SystemChip
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.PrivacyTip
 import com.randomchat.shnapp.theme.PremiumGold
 import com.randomchat.shnapp.ui.dialogs.ReportDialog
@@ -244,6 +245,14 @@ fun ChatScreen(
         }
     }
     val listState = rememberLazyListState()
+
+    // Derived: show scroll-to-bottom FAB when user scrolled up from latest
+    val showScrollFab by androidx.compose.runtime.remember {
+        androidx.compose.runtime.derivedStateOf {
+            messages.isNotEmpty() &&
+            listState.firstVisibleItemIndex < (messages.size - 4)
+        }
+    }
 
     // ── Photo source: gallery or camera ──────────────────────────────────────
     var showPhotoSourceDialog by remember { mutableStateOf(false) }
@@ -487,12 +496,27 @@ fun ChatScreen(
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 // Messages — key is the stable Firebase push ID
-                items(messages, key = { it.id }) { message ->
+                // contentType added so Compose recycles bubble types efficiently
+                itemsIndexed(messages, key = { _, m -> m.id }, contentType = { _, m -> m.type }) { idx, message ->
+                    // Group consecutive same-sender messages within 60s — Telegram/iMessage pattern
+                    val prev = messages.getOrNull(idx - 1)
+                    val next = messages.getOrNull(idx + 1)
+                    val isFirst = prev == null ||
+                        prev.senderId != message.senderId ||
+                        prev.type == com.randomchat.shnapp.model.MessageType.SYSTEM ||
+                        (message.timestamp - prev.timestamp) > 60_000L
+                    val isLast = next == null ||
+                        next.senderId != message.senderId ||
+                        next.type == com.randomchat.shnapp.model.MessageType.SYSTEM ||
+                        (next.timestamp - message.timestamp) > 60_000L
+
                     MessageBubble(
                         message = message,
                         messageReactions = reactions[message.id] ?: emptyMap(),
                         mySessionId = viewModel.sessionId,
                         isPremium = isPremium,
+                        isFirstInGroup = isFirst,
+                        isLastInGroup = isLast,
                         onLongPress = { haptics.click(); reactionTargetMessage = it },
                         onReactionTap = { emoji -> haptics.tick(); viewModel.reactToMessage(message.id, emoji) }
                     )
@@ -587,19 +611,13 @@ fun ChatScreen(
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    "Watch Ad to Save Chat",
-                                    color = AccentCyan,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                                Text(
-                                    "Watch a short ad · Save this conversation once",
-                                    color = AccentCyan.copy(alpha = 0.6f),
-                                    fontSize = 11.sp
-                                )
-                            }
+                            Text(
+                                "Watch ad to save this chat",
+                                color = AccentCyan,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.weight(1f)
+                            )
                             Icon(
                                 Icons.Default.Bookmark,
                                 contentDescription = null,
@@ -686,9 +704,9 @@ fun ChatScreen(
                             .background(CardSurface)
                             .navigationBarsPadding()
                             .imePadding()
-                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                            .padding(horizontal = 10.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)  // tighter — reads as one bar
                     ) {
                         // Image button — opens Camera / Gallery picker
                         // Non-premium: allowed if they have a rewarded credit, else → premium screen
@@ -726,13 +744,13 @@ fun ChatScreen(
                             }
                         )
 
-                        // Text input
+                        // Text input — pill, 22dp radius (modern), tighter v-padding
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .clip(RoundedCornerShape(24.dp))
+                                .clip(RoundedCornerShape(22.dp))
                                 .background(ElevatedCard)
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                .padding(horizontal = 16.dp, vertical = 11.dp)
                         ) {
                             if (inputText.isEmpty()) {
                                 Text("Message...", color = TextMuted, fontSize = 15.sp)
@@ -758,18 +776,24 @@ fun ChatScreen(
                             )
                         }
 
-                        // Send button
+                        // Send button — appears with scale+fade when text non-empty
+                        // Premium-app pattern: composer is calmer when empty, snappy reveal on input.
+                        AnimatedVisibility(
+                            visible = inputText.isNotBlank(),
+                            enter = androidx.compose.animation.scaleIn(
+                                animationSpec = androidx.compose.animation.core.spring(
+                                    dampingRatio = 0.6f,
+                                    stiffness = androidx.compose.animation.core.Spring.StiffnessMedium
+                                )
+                            ) + fadeIn(tween(150)),
+                            exit = androidx.compose.animation.scaleOut(tween(140)) + fadeOut(tween(140))
+                        ) {
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(CircleShape)
-                                .background(
-                                    if (inputText.isNotBlank())
-                                        Brush.radialGradient(listOf(AccentCyan, com.randomchat.shnapp.theme.AccentCyanDim))
-                                    else
-                                        Brush.radialGradient(listOf(SubtleBorder, SubtleBorder))
-                                )
+                                .background(AccentCyan)  // flat, no gradient — modern
                         ) {
                             IconButton(
                                 onClick = {
@@ -793,11 +817,12 @@ fun ChatScreen(
                                 Icon(
                                     Icons.AutoMirrored.Filled.Send,
                                     null,
-                                    tint = if (inputText.isNotBlank()) Color(0xFF001A22) else TextMuted,
+                                    tint = Color(0xFF001A22),
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
+                        } // close AnimatedVisibility
                     }
                 }
             }
@@ -819,6 +844,44 @@ fun ChatScreen(
         // ── Flying emoji — plays when stranger reacts ──────────────────────────
         flyingEmoji?.let { emoji ->
             FlyingEmojiOverlay(emoji = emoji, onFinished = { flyingEmoji = null })
+        }
+
+        // ── Scroll-to-bottom FAB ───────────────────────────────────────────────
+        // Appears when user scrolled up. Tap → smooth scroll to latest.
+        AnimatedVisibility(
+            visible = showScrollFab,
+            enter = androidx.compose.animation.scaleIn(
+                animationSpec = androidx.compose.animation.core.spring(
+                    dampingRatio = 0.7f,
+                    stiffness = androidx.compose.animation.core.Spring.StiffnessMedium
+                )
+            ) + fadeIn(tween(160)),
+            exit = androidx.compose.animation.scaleOut(tween(140)) + fadeOut(tween(140)),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 14.dp, bottom = 84.dp)  // sits above composer
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(ElevatedCard)
+                    .border(1.dp, SubtleBorder, CircleShape)
+                    .clickable {
+                        haptics.tick()
+                        scope.launch {
+                            listState.animateScrollToItem(messages.size - 1)
+                        }
+                    }
+            ) {
+                Icon(
+                    androidx.compose.material.icons.Icons.Default.KeyboardArrowDown,
+                    contentDescription = "Scroll to latest",
+                    tint = TextSecondary,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
         }
 
     }

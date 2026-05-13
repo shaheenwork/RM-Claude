@@ -106,6 +106,10 @@ fun MessageBubble(
     messageReactions: Map<String, String> = emptyMap(),
     mySessionId: String = "",
     isPremium: Boolean = false,
+    /** True if this is the first message in a consecutive same-sender group. */
+    isFirstInGroup: Boolean = true,
+    /** True if this is the last message in a consecutive same-sender group. */
+    isLastInGroup: Boolean = true,
     onLongPress: ((ChatMessage) -> Unit)? = null,
     onReactionTap: ((String) -> Unit)? = null // emoji tapped on existing pill
 ) {
@@ -124,12 +128,44 @@ fun MessageBubble(
 
     val myReaction = messageReactions[mySessionId]
 
+    // Entrance: subtle slide from direction-of-sender + fade-in.
+    // Spring-based — softer landing than tween, premium feel (iMessage / Telegram pattern).
     AnimatedVisibility(
         visible = true,
-        enter = fadeIn() + slideInHorizontally { if (message.isOutgoing) it else -it }
+        enter = fadeIn(tween(220)) + slideInHorizontally(
+            animationSpec = spring(
+                dampingRatio = 0.78f,
+                stiffness    = androidx.compose.animation.core.Spring.StiffnessMediumLow
+            )
+        ) { (if (message.isOutgoing) it else -it) / 3 }  // smaller travel — feels controlled, not loud
     ) {
+        // Tighter vertical spacing inside a group, more between groups
+        val topPadding = if (isFirstInGroup) 6.dp else 1.dp
+        val bottomPadding = if (isLastInGroup) 6.dp else 1.dp
+
+        // Asymmetric corners — full bubble corner stays on tail side,
+        // shared side corners tighten when adjacent bubble exists.
+        val topShared    = if (isFirstInGroup) 18.dp else 6.dp
+        val bottomShared = if (isLastInGroup)  18.dp else 6.dp
+        val tailRadius   = 4.dp
+        val bubbleShape = if (message.isOutgoing) {
+            RoundedCornerShape(
+                topStart    = 18.dp,
+                topEnd      = topShared,
+                bottomEnd   = if (isLastInGroup) tailRadius else 6.dp,
+                bottomStart = 18.dp
+            )
+        } else {
+            RoundedCornerShape(
+                topStart    = topShared,
+                topEnd      = 18.dp,
+                bottomEnd   = 18.dp,
+                bottomStart = if (isLastInGroup) tailRadius else 6.dp
+            )
+        }
+
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = topPadding, bottom = bottomPadding),
             horizontalArrangement = if (message.isOutgoing) Arrangement.End else Arrangement.Start
         ) {
             Column(
@@ -140,12 +176,7 @@ fun MessageBubble(
                     modifier = Modifier
                         .background(
                             color = if (message.isOutgoing) BubbleOutgoing else BubbleIncoming,
-                            shape = RoundedCornerShape(
-                                topStart = 18.dp,
-                                topEnd = 18.dp,
-                                bottomStart = if (message.isOutgoing) 18.dp else 4.dp,
-                                bottomEnd = if (message.isOutgoing) 4.dp else 18.dp
-                            )
+                            shape = bubbleShape
                         )
                         .combinedClickable(
                             onClick = {},
@@ -281,6 +312,8 @@ fun MessageBubble(
                     }
                 }
 
+                // Timestamp + status only on last bubble of a group — premium-app pattern
+                if (isLastInGroup) {
                 Spacer(Modifier.height(2.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -303,6 +336,7 @@ fun MessageBubble(
                         )
                     }
                 }
+                } // close isLastInGroup
             }
         }
     }

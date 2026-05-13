@@ -245,9 +245,8 @@ private fun WelcomePage() {
     )
 
     Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        modifier = Modifier.fillMaxSize().padding(top = 40.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Logo
         Box(contentAlignment = Alignment.Center, modifier = Modifier.size(140.dp)) {
@@ -333,17 +332,18 @@ private fun WelcomePage() {
 // ─── Page 2: Premium showcase ────────────────────────────────────────────────
 @Composable
 private fun PremiumPage() {
-    val infiniteTransition = rememberInfiniteTransition(label = "gold_sweep")
-    val sparkleRot by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 360f,
-        animationSpec = infiniteRepeatable(tween(8000, easing = FastOutSlowInEasing)),
-        label = "sparkle_rot"
+    // Subtle scale pulse instead of full 360° rotation — less visual noise.
+    val infiniteTransition = rememberInfiniteTransition(label = "gold_pulse")
+    val sparkleScale by infiniteTransition.animateFloat(
+        initialValue = 0.96f, targetValue = 1.04f,
+        animationSpec = infiniteRepeatable(tween(1800, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "sparkle_scale"
     )
+    val sparkleRot = 0f // kept for compat with graphicsLayer block below
 
     Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        modifier = Modifier.fillMaxSize().padding(top = 40.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Animated gold sparkle
         Box(contentAlignment = Alignment.Center, modifier = Modifier.size(80.dp)) {
@@ -359,7 +359,7 @@ private fun PremiumPage() {
                 tint = PremiumGold,
                 modifier = Modifier
                     .size(44.dp)
-                    .graphicsLayer { rotationZ = sparkleRot }
+                    .graphicsLayer { scaleX = sparkleScale; scaleY = sparkleScale }
             )
         }
 
@@ -457,9 +457,8 @@ private fun SafetyPage() {
     )
 
     Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        modifier = Modifier.fillMaxSize().padding(top = 40.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.size(120.dp)) {
             Box(
