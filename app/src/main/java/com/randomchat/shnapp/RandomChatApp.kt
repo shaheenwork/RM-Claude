@@ -41,12 +41,11 @@ class RandomChatApp : Application() {
         //     appCheckProviderFactory()
         // )
 
-        // Init AdMob (interstitial + banner)
-        AdMobManager.getInstance(this).initialize()
-        // App Open Ad — register lifecycle callbacks before any activity starts so the
-        // very first foreground event is captured. The actual ad preload is triggered
-        // inside AdMobManager.initialize() once the SDK is ready.
-        AppOpenAdManager.getInstance(this).register()
+        // Init AdMob — gated by ADS_ENABLED feature flag.
+        if (com.randomchat.shnapp.utils.Constants.ADS_ENABLED) {
+            AdMobManager.getInstance(this).initialize()
+            AppOpenAdManager.getInstance(this).register()
+        }
 
         val sessionManager = SessionManager.getInstance(this)
 

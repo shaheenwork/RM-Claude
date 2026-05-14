@@ -139,16 +139,39 @@ fun SavedChatsScreen(
         // List view
         if (chats.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.Bookmark, null, tint = TextMuted, modifier = Modifier.size(48.dp))
-                    Spacer(Modifier.height(12.dp))
-                    Text("No saved chats yet", color = TextMuted, fontSize = 15.sp)
-                    Spacer(Modifier.height(4.dp))
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(horizontal = 40.dp)
+                ) {
+                    // Icon in colored circle — more designed than flat icon
+                    Box(
+                        modifier = Modifier
+                            .size(72.dp)
+                            .background(AccentCyan.copy(0.10f), RoundedCornerShape(50)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Bookmark,
+                            null,
+                            tint = AccentCyan,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                    Spacer(Modifier.height(20.dp))
                     Text(
-                        "End a chat and tap ⋮ → Save Chat",
-                        color = TextMuted.copy(0.6f),
+                        "No saved chats yet",
+                        color = TextPrimary,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "Save a chat from the menu to keep it forever — works with photos and voice notes too.",
+                        color = TextSecondary,
                         fontSize = 13.sp,
-                        lineHeight = 20.sp
+                        lineHeight = 19.sp,
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
             }

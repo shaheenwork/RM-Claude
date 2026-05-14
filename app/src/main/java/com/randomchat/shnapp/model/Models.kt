@@ -22,7 +22,12 @@ data class ChatMessage(
     val status: MessageStatus = MessageStatus.SENT,
     val timestamp: Long = System.currentTimeMillis(),
     val isOutgoing: Boolean = false,    // computed locally
-    val durationMs: Long = 0L          // audio duration (backward-compat default 0)
+    val durationMs: Long = 0L,          // audio duration (backward-compat default 0)
+    // ── Reply context (Phase 3) ──────────────────────────────────────────────
+    val replyToId: String = "",         // empty = not a reply
+    val replyToPreview: String = "",    // short snippet of replied-to message (≤80 chars)
+    val replyToSenderId: String = "",   // sender of the replied-to message
+    val replyToType: MessageType = MessageType.TEXT  // type of the original (for icon hints)
 )
 
 // ─── ChatRoom ─────────────────────────────────────────────────────────────────

@@ -278,9 +278,23 @@ class ChatManager(
         content: String,
         type: MessageType = MessageType.TEXT,
         mediaUrl: String = "",
-        durationMs: Long = 0L
+        durationMs: Long = 0L,
+        replyTo: ChatMessage? = null
     ): ChatMessage? {
         if (!checkRateLimit()) return null
+
+        // Derive a short preview from the replied-to message (≤80 chars).
+        // For media, use a placeholder like "📷 Photo" / "🎤 Voice note".
+        val replyToId       = replyTo?.id ?: ""
+        val replyToSenderId = replyTo?.senderId ?: ""
+        val replyToType     = replyTo?.type ?: MessageType.TEXT
+        val replyToPreview  = when (replyTo?.type) {
+            MessageType.IMAGE  -> "📷 Photo"
+            MessageType.AUDIO  -> "🎤 Voice note"
+            MessageType.TEXT   -> (replyTo.content ?: "").take(80)
+            MessageType.SYSTEM -> ""
+            null               -> ""
+        }
 
         val roomId = activeRoomId ?: run {
             val pending = ChatMessage(
@@ -292,7 +306,11 @@ class ChatManager(
                 status = MessageStatus.PENDING,
                 isOutgoing = true,
                 timestamp = System.currentTimeMillis(),
-                durationMs = durationMs
+                durationMs = durationMs,
+                replyToId = replyToId,
+                replyToPreview = replyToPreview,
+                replyToSenderId = replyToSenderId,
+                replyToType = replyToType
             )
             pendingMessages.add(pending)
             scope.launch { upsert(pending) }
@@ -314,7 +332,11 @@ class ChatManager(
             status = MessageStatus.SENT,
             isOutgoing = true,
             timestamp = System.currentTimeMillis(),
-            durationMs = durationMs
+            durationMs = durationMs,
+            replyToId = replyToId,
+            replyToPreview = replyToPreview,
+            replyToSenderId = replyToSenderId,
+            replyToType = replyToType
         )
         scope.launch {
             upsert(optimistic)

@@ -14,6 +14,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +41,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Image
@@ -81,6 +83,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.input.pointer.pointerInput
 import java.io.File
 import com.randomchat.shnapp.model.ChatMessage
 import com.randomchat.shnapp.model.MessageStatus
@@ -95,6 +98,7 @@ import com.randomchat.shnapp.theme.TextMuted
 import com.randomchat.shnapp.theme.TextPrimary
 import com.randomchat.shnapp.theme.TextSecondary
 import com.randomchat.shnapp.utils.toTimeString
+import kotlinx.coroutines.launch
 
 val REACTION_EMOJIS = listOf("❤️", "😂", "😮", "😢", "👍", "👎")
 
@@ -111,7 +115,9 @@ fun MessageBubble(
     /** True if this is the last message in a consecutive same-sender group. */
     isLastInGroup: Boolean = true,
     onLongPress: ((ChatMessage) -> Unit)? = null,
-    onReactionTap: ((String) -> Unit)? = null // emoji tapped on existing pill
+    onReactionTap: ((String) -> Unit)? = null, // emoji tapped on existing pill
+    /** Called when user swipes the bubble horizontally past threshold. */
+    onSwipeReply: ((ChatMessage) -> Unit)? = null
 ) {
     if (message.type == MessageType.SYSTEM) {
         SystemChip(text = message.content, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp))
@@ -164,8 +170,69 @@ fun MessageBubble(
             )
         }
 
+        // ── Swipe-to-reply gesture ────────────────────────────────────────────
+        val density = androidx.compose.ui.platform.LocalDensity.current
+        val thresholdPx = with(density) { 60.dp.toPx() }
+        val maxDragPx   = with(density) { 100.dp.toPx() }
+        val dragOffset = remember(message.id) { androidx.compose.animation.core.Animatable(0f) }
+        val swipeScope = androidx.compose.runtime.rememberCoroutineScope()
+        var committed by remember(message.id) { mutableStateOf(false) }
+
+        // Outer Box hosts the reveal icon behind the bubble Row
+        Box(modifier = Modifier.fillMaxWidth()) {
+            // Reveal icon — fades in as user drags. Tinted by progress.
+            val progress = (kotlin.math.abs(dragOffset.value) / thresholdPx).coerceIn(0f, 1f)
+            if (progress > 0.05f) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .align(if (message.isOutgoing) Alignment.CenterEnd else Alignment.CenterStart)
+                        .padding(horizontal = 18.dp)
+                        .size(34.dp * (0.6f + progress * 0.4f))
+                        .alpha(progress)
+                        .background(AccentCyan.copy(alpha = 0.18f), CircleShape)
+                ) {
+                    Icon(
+                        androidx.compose.material.icons.Icons.AutoMirrored.Filled.Reply,
+                        null,
+                        tint = AccentCyan,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
         Row(
-            modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = topPadding, bottom = bottomPadding),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 12.dp, end = 12.dp, top = topPadding, bottom = bottomPadding)
+                .graphicsLayer { translationX = dragOffset.value }
+                .pointerInput(message.id) {
+                    detectHorizontalDragGestures(
+                        onDragStart = { committed = false },
+                        onDragEnd = {
+                            if (!committed && kotlin.math.abs(dragOffset.value) > thresholdPx) {
+                                onSwipeReply?.invoke(message)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                committed = true
+                            }
+                            swipeScope.launch {
+                                dragOffset.animateTo(
+                                    0f,
+                                    animationSpec = spring(
+                                        dampingRatio = 0.7f,
+                                        stiffness = androidx.compose.animation.core.Spring.StiffnessMedium
+                                    )
+                                )
+                            }
+                        },
+                        onDragCancel = {
+                            swipeScope.launch { dragOffset.animateTo(0f, spring(0.7f, 600f)) }
+                        }
+                    ) { _, dragAmount ->
+                        val newOffset = (dragOffset.value + dragAmount).coerceIn(-maxDragPx, maxDragPx)
+                        swipeScope.launch { dragOffset.snapTo(newOffset) }
+                    }
+                },
             horizontalArrangement = if (message.isOutgoing) Arrangement.End else Arrangement.Start
         ) {
             Column(
@@ -192,6 +259,16 @@ fun MessageBubble(
                             vertical   = if (message.type == MessageType.IMAGE) 4.dp else 10.dp
                         )
                 ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    // Reply context — small inset chip above the message content
+                    if (message.replyToId.isNotEmpty()) {
+                        ReplyContextChip(
+                            preview      = message.replyToPreview,
+                            isFromMe     = message.replyToSenderId == mySessionId,
+                            originalType = message.replyToType,
+                            onOutgoing   = message.isOutgoing
+                        )
+                    }
                     when (message.type) {
                         MessageType.IMAGE -> {
                             var showViewer by remember { mutableStateOf(false) }
@@ -288,6 +365,7 @@ fun MessageBubble(
                             )
                         }
                     }
+                    } // close reply-context Column
                 }
 
                 // ── Reaction pills ────────────────────────────────────────────
@@ -338,6 +416,62 @@ fun MessageBubble(
                 }
                 } // close isLastInGroup
             }
+        }
+        } // close outer Box (swipe gesture host)
+    }
+}
+
+/**
+ * Reply context — small inset card shown at the top of a reply message,
+ * showing what the user is replying to. WhatsApp / iMessage pattern.
+ */
+@Composable
+private fun ReplyContextChip(
+    preview: String,
+    isFromMe: Boolean,
+    originalType: MessageType,
+    onOutgoing: Boolean
+) {
+    val accentColor = if (onOutgoing) Color(0xFF9FE6FF) else AccentCyan
+    Row(
+        modifier = Modifier
+            .background(
+                color = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.18f),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .padding(start = 8.dp, end = 10.dp, top = 6.dp, bottom = 6.dp)
+            .widthIn(min = 80.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Left accent bar
+        Box(
+            modifier = Modifier
+                .width(3.dp)
+                .height(28.dp)
+                .background(accentColor, RoundedCornerShape(2.dp))
+        )
+        Spacer(Modifier.width(8.dp))
+        Column(modifier = Modifier.widthIn(max = 220.dp)) {
+            Text(
+                text = if (isFromMe) "You" else "Stranger",
+                color = accentColor,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = preview.ifEmpty {
+                    when (originalType) {
+                        MessageType.IMAGE -> "📷 Photo"
+                        MessageType.AUDIO -> "🎤 Voice note"
+                        else -> "Message"
+                    }
+                },
+                color = TextSecondary,
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
         }
     }
 }

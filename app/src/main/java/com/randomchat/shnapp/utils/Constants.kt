@@ -21,6 +21,10 @@ object Constants {
     const val COL_SAVED_CHATS = "saved_chats"
     const val COL_ANALYTICS = "analytics"
 
+    // ── Feature flags ────────────────────────────────────────────────────────
+    /** Master ad switch. Disables init, banners, interstitial, rewarded, app-open. */
+    const val ADS_ENABLED = false
+
     // AdMob IDs (test IDs - replace with production)
     const val ADMOB_BANNER_ID        = "ca-app-pub-3940256099942544/6300978111"
     const val ADMOB_INTERSTITIAL_ID  = "ca-app-pub-3940256099942544/1033173712"

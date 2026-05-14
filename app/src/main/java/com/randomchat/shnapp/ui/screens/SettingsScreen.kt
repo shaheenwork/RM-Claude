@@ -279,8 +279,8 @@ fun SettingsScreen(
             Spacer(Modifier.height(12.dp))
         }
 
-        // Banner ad pinned at bottom — non-premium only
-        if (!isPremium) {
+        // Banner ad pinned at bottom — non-premium + ADS_ENABLED only
+        if (!isPremium && Constants.ADS_ENABLED) {
             AndroidView(
                 factory = { ctx ->
                     AdView(ctx).apply {

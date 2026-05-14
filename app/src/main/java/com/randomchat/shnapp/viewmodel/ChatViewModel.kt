@@ -187,6 +187,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         _currentStrangerId.value = null
         adFiredForCurrentChat = false
         _chatSaved.value = false
+        _replyingTo.value = null  // clear any pending reply from previous chat
         matchmakingManager.startSearch()
     }
 
@@ -206,13 +207,28 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // ── Reply state (swipe-to-reply) ──────────────────────────────────────────
+    private val _replyingTo = MutableStateFlow<ChatMessage?>(null)
+    val replyingTo: StateFlow<ChatMessage?> = _replyingTo
+
+    fun startReply(message: ChatMessage) {
+        // Only allow reply to confirmed (non-pending) text/image/audio
+        if (message.status == MessageStatus.PENDING) return
+        if (message.type == MessageType.SYSTEM) return
+        _replyingTo.value = message
+    }
+
+    fun cancelReply() { _replyingTo.value = null }
+
     fun sendMessage(content: String) {
         if (content.isBlank()) return
         if (content.length > Constants.MAX_MESSAGE_LENGTH) return
         if (moderation.isFloodSpam(sessionId)) return
 
         val filtered = moderation.filterMessage(content)
-        chatManager.sendMessage(filtered, MessageType.TEXT)
+        val replyContext = _replyingTo.value
+        chatManager.sendMessage(filtered, MessageType.TEXT, replyTo = replyContext)
+        _replyingTo.value = null  // clear after send
     }
 
     fun sendMediaMessage(mediaUrl: String, type: MessageType) {

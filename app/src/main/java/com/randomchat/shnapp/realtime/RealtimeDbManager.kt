@@ -167,14 +167,21 @@ class RealtimeDbManager {
         val msgRef = root.child(Constants.PATH_ROOMS).child(roomId)
             .child(Constants.PATH_MESSAGES).push()
         val msgId = msgRef.key ?: System.currentTimeMillis().toString()
-        val data = mapOf(
-            "id" to msgId,
-            "senderId" to message.senderId,
-            "content" to message.content,
-            "mediaUrl" to message.mediaUrl,
-            "type" to message.type.name,
+        // Build map; reply fields only included if this message IS a reply (saves bytes for normal messages)
+        val data = mutableMapOf<String, Any>(
+            "id"        to msgId,
+            "senderId"  to message.senderId,
+            "content"   to message.content,
+            "mediaUrl"  to message.mediaUrl,
+            "type"      to message.type.name,
             "timestamp" to ServerValue.TIMESTAMP
         )
+        if (message.replyToId.isNotEmpty()) {
+            data["replyToId"]       = message.replyToId
+            data["replyToPreview"]  = message.replyToPreview
+            data["replyToSenderId"] = message.replyToSenderId
+            data["replyToType"]     = message.replyToType.name
+        }
         try {
             msgRef.setValue(data).await()
         } catch (e: Exception) {
@@ -215,13 +222,22 @@ class RealtimeDbManager {
             val mediaUrl = snapshot.child("mediaUrl").getValue(String::class.java) ?: ""
             val typeStr = snapshot.child("type").getValue(String::class.java) ?: "TEXT"
             val timestamp = snapshot.child("timestamp").getValue(Long::class.java) ?: 0L
+            // Reply context — optional, defaults are no-reply
+            val replyToId       = snapshot.child("replyToId").getValue(String::class.java) ?: ""
+            val replyToPreview  = snapshot.child("replyToPreview").getValue(String::class.java) ?: ""
+            val replyToSenderId = snapshot.child("replyToSenderId").getValue(String::class.java) ?: ""
+            val replyToTypeStr  = snapshot.child("replyToType").getValue(String::class.java) ?: "TEXT"
             ChatMessage(
                 id = id,
                 senderId = senderId,
                 content = content,
                 mediaUrl = mediaUrl,
                 type = enumValueOf(typeStr),
-                timestamp = timestamp
+                timestamp = timestamp,
+                replyToId = replyToId,
+                replyToPreview = replyToPreview,
+                replyToSenderId = replyToSenderId,
+                replyToType = enumValueOf(replyToTypeStr)
             )
         } catch (e: Exception) { null }
     }

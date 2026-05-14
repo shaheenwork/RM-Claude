@@ -33,6 +33,7 @@ class AdMobManager(private val context: Context) {
     // ── Initialisation ────────────────────────────────────────────────────────
 
     fun initialize() {
+        if (!Constants.ADS_ENABLED) return  // master switch off — no SDK init, no preloads
         if (isInitialized) return
         MobileAds.initialize(context) {
             isInitialized = true
@@ -58,6 +59,7 @@ class AdMobManager(private val context: Context) {
     }
 
     fun showInterstitialIfReady(activity: Activity, onDismissed: () -> Unit) {
+        if (!Constants.ADS_ENABLED) { onDismissed(); return }
         val ad = interstitialAd
         if (ad == null) {
             onDismissed()
@@ -84,7 +86,7 @@ class AdMobManager(private val context: Context) {
         ad.show(activity)
     }
 
-    fun isInterstitialReady() = interstitialAd != null
+    fun isInterstitialReady() = Constants.ADS_ENABLED && interstitialAd != null
 
     // ── Rewarded ──────────────────────────────────────────────────────────────
 
@@ -124,6 +126,7 @@ class AdMobManager(private val context: Context) {
         onNotAvailable: () -> Unit = {},
         onDismissed   : () -> Unit = {}
     ) {
+        if (!Constants.ADS_ENABLED) { onNotAvailable(); return }
         val ad = rewardedAd
         if (ad == null) {
             onNotAvailable()
@@ -152,7 +155,7 @@ class AdMobManager(private val context: Context) {
     }
 
     /** True if a rewarded ad is loaded and ready to show instantly. */
-    fun isRewardedReady() = rewardedAd != null
+    fun isRewardedReady() = Constants.ADS_ENABLED && rewardedAd != null
 
     // ── Singleton ─────────────────────────────────────────────────────────────
 

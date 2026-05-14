@@ -246,8 +246,8 @@ fun HomeScreen(
                     Spacer(Modifier.height(10.dp))
                 }
 
-                // Free-sends rewards card — compact one-row layout
-                if (!isPremium) {
+                // Free-sends rewards card — needs rewarded ads enabled
+                if (!isPremium && Constants.ADS_ENABLED) {
                     RewardsCard(
                         photoCredits = photoCredits,
                         audioCredits = audioCredits,
@@ -281,8 +281,8 @@ fun HomeScreen(
                 }
             }
 
-            // Ad banner — pinned at bottom, non-premium only
-            if (!isPremium) {
+            // Ad banner — pinned at bottom, non-premium + ADS_ENABLED only
+            if (!isPremium && Constants.ADS_ENABLED) {
                 AndroidView(
                     factory = { ctx ->
                         AdView(ctx).apply {

@@ -116,6 +116,7 @@ import com.randomchat.shnapp.ui.components.MessageBubble
 import com.randomchat.shnapp.ui.components.OnlineStatusChip
 import com.randomchat.shnapp.ui.components.SystemChip
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.PrivacyTip
 import com.randomchat.shnapp.theme.PremiumGold
@@ -153,6 +154,7 @@ fun ChatScreen(
     val strangerHasBadge by viewModel.strangerHasBadge.collectAsState()
     val showMyBadge         by viewModel.showMyBadge.collectAsState()
     val rewardedPhotoCredits by viewModel.rewardedPhotoCredits.collectAsState()
+    val replyingTo by viewModel.replyingTo.collectAsState()
     val rewardedAudioCredits by viewModel.rewardedAudioCredits.collectAsState()
     val chatSaved            by viewModel.chatSaved.collectAsState()
     // Ghost bubble visible when premium + stranger is actively drafting
@@ -518,7 +520,11 @@ fun ChatScreen(
                         isFirstInGroup = isFirst,
                         isLastInGroup = isLast,
                         onLongPress = { haptics.click(); reactionTargetMessage = it },
-                        onReactionTap = { emoji -> haptics.tick(); viewModel.reactToMessage(message.id, emoji) }
+                        onReactionTap = { emoji -> haptics.tick(); viewModel.reactToMessage(message.id, emoji) },
+                        onSwipeReply = { msg ->
+                            haptics.click()
+                            viewModel.startReply(msg)
+                        }
                     )
                 }
 
@@ -536,8 +542,8 @@ fun ChatScreen(
                     SystemChip("Chat has ended")
                     Spacer(Modifier.height(12.dp))
 
-                    // Banner ad — shown to non-premium users during idle chat-ended moment
-                    if (!isPremium) {
+                    // Banner ad — non-premium + ADS_ENABLED only
+                    if (!isPremium && com.randomchat.shnapp.utils.Constants.ADS_ENABLED) {
                         AndroidView(
                             factory = { ctx ->
                                 AdView(ctx).apply {
@@ -551,8 +557,8 @@ fun ChatScreen(
                         Spacer(Modifier.height(12.dp))
                     }
 
-                    // "Watch ad to save" strip — hide once saved or if premium
-                    if (!isPremium && messages.isNotEmpty() && !chatSaved) {
+                    // "Watch ad to save" strip — needs rewarded ads enabled
+                    if (!isPremium && messages.isNotEmpty() && !chatSaved && com.randomchat.shnapp.utils.Constants.ADS_ENABLED) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -672,7 +678,7 @@ fun ChatScreen(
             // ── Active-chat banner — between messages and composer ────────────
             // Hidden during recording (recording bar replaces composer),
             // when chat ends (ended section has its own banner), and for premium users.
-            if (!chatEnded && !isPremium && !isRecording) {
+            if (!chatEnded && !isPremium && !isRecording && com.randomchat.shnapp.utils.Constants.ADS_ENABLED) {
                 AndroidView(
                     factory = { ctx ->
                         AdView(ctx).apply {
@@ -683,6 +689,61 @@ fun ChatScreen(
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
+            }
+
+            // ── Reply chip — shown above composer when replying ──────────────
+            AnimatedVisibility(
+                visible = !chatEnded && !isRecording && replyingTo != null,
+                enter = androidx.compose.animation.expandVertically(tween(180)) + fadeIn(tween(160)),
+                exit  = androidx.compose.animation.shrinkVertically(tween(140)) + fadeOut(tween(120))
+            ) {
+                replyingTo?.let { target ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(CardSurface)
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .width(3.dp)
+                                .height(32.dp)
+                                .background(AccentCyan, androidx.compose.foundation.shape.RoundedCornerShape(2.dp))
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Replying to ${if (target.senderId == viewModel.sessionId) "yourself" else "Stranger"}",
+                                color = AccentCyan,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                when (target.type) {
+                                    com.randomchat.shnapp.model.MessageType.IMAGE -> "📷 Photo"
+                                    com.randomchat.shnapp.model.MessageType.AUDIO -> "🎤 Voice note"
+                                    else -> target.content.take(80)
+                                },
+                                color = TextSecondary,
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                            )
+                        }
+                        IconButton(onClick = {
+                            haptics.tick()
+                            viewModel.cancelReply()
+                        }) {
+                            Icon(
+                                androidx.compose.material.icons.Icons.Default.Close,
+                                null,
+                                tint = TextMuted,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
             }
 
             // ── Message Composer / Recording Bar ────────────────────────────
