@@ -35,6 +35,22 @@ class RandomChatApp : Application() {
         // Telemetry — central wrapper for Crashlytics keys + Analytics events
         Telemetry.init(this)
 
+        // Coil — register GIF decoder globally so MessageBubble's AsyncImage
+        // can play animated GIFs received from Tenor picker.
+        coil.Coil.setImageLoader(
+            coil.ImageLoader.Builder(this)
+                .components {
+                    add(
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P)
+                            coil.decode.ImageDecoderDecoder.Factory()
+                        else
+                            coil.decode.GifDecoder.Factory()
+                    )
+                }
+                .crossfade(150)
+                .build()
+        )
+
         // App Check — DISABLED for now (will implement before Play Store launch).
         // TODO: re-enable + enforce in Firebase Console before release.
         // FirebaseAppCheck.getInstance().installAppCheckProviderFactory(

@@ -116,8 +116,11 @@ import com.randomchat.shnapp.ui.components.MessageBubble
 import com.randomchat.shnapp.ui.components.OnlineStatusChip
 import com.randomchat.shnapp.ui.components.SystemChip
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.togetherWith
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PrivacyTip
 import com.randomchat.shnapp.theme.PremiumGold
 import com.randomchat.shnapp.ui.dialogs.ReportDialog
@@ -238,6 +241,8 @@ fun ChatScreen(
     var showMenu by remember { mutableStateOf(false) }
     var showSaveChatDialog by remember { mutableStateOf(false) }
     var piiBlockedKind by remember { mutableStateOf<com.randomchat.shnapp.utils.PiiDetector.Kind?>(null) }
+    var showGifPicker by remember { mutableStateOf(false) }
+    var showAttachSheet by remember { mutableStateOf(false) }
 
     // Auto-dismiss "Saved ✓" after 2s
     LaunchedEffect(saveProgress?.isDone) {
@@ -771,39 +776,28 @@ fun ChatScreen(
                     ) {
                         // Image button — opens Camera / Gallery picker
                         // Non-premium: allowed if they have a rewarded credit, else → premium screen
-                        ImageButton(
-                            isPremium   = isPremium,
-                            creditCount = rewardedPhotoCredits,
-                            onClick = {
-                                haptics.tick()
-                                if (!isPremium && rewardedPhotoCredits == 0) {
-                                    onNavigateToPremium()
-                                    return@ImageButton
+                        // ── Single attach button (Telegram pattern) ─────────────
+                        // Tap → opens AttachSheet with Camera / Gallery / GIF tiles.
+                        // Mic stays separate (trailing slot, toggles with send).
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(ElevatedCard)
+                                .border(1.dp, SubtleBorder, CircleShape)
+                                .clickable {
+                                    haptics.tick()
+                                    showAttachSheet = true
                                 }
-                                val hasCam = ContextCompat.checkSelfPermission(
-                                    context, Manifest.permission.CAMERA
-                                ) == PackageManager.PERMISSION_GRANTED
-                                if (hasCam) showPhotoSourceDialog = true
-                                else cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-                            }
-                        )
-
-                        // Mic button — tap to start recording
-                        // Non-premium: allowed if they have a rewarded credit, else → premium screen
-                        AudioButton(
-                            isPremium   = isPremium,
-                            creditCount = rewardedAudioCredits,
-                            isRecording = false,
-                            onClick = {
-                                haptics.tick()
-                                if (!isPremium && rewardedAudioCredits == 0) {
-                                    onNavigateToPremium()
-                                    return@AudioButton
-                                }
-                                cancelTriggered = false
-                                audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                            }
-                        )
+                        ) {
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.Add,
+                                contentDescription = "Attach",
+                                tint = TextSecondary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
 
                         // Text input — pill, 22dp radius (modern), tighter v-padding
                         Box(
@@ -837,53 +831,75 @@ fun ChatScreen(
                             )
                         }
 
-                        // Send button — appears with scale+fade when text non-empty
-                        // Premium-app pattern: composer is calmer when empty, snappy reveal on input.
-                        AnimatedVisibility(
-                            visible = inputText.isNotBlank(),
-                            enter = androidx.compose.animation.scaleIn(
-                                animationSpec = androidx.compose.animation.core.spring(
-                                    dampingRatio = 0.6f,
-                                    stiffness = androidx.compose.animation.core.Spring.StiffnessMedium
-                                )
-                            ) + fadeIn(tween(150)),
-                            exit = androidx.compose.animation.scaleOut(tween(140)) + fadeOut(tween(140))
-                        ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(CircleShape)
-                                .background(AccentCyan)  // flat, no gradient — modern
-                        ) {
-                            IconButton(
-                                onClick = {
-                                    val text = inputText.trim()
-                                    if (text.isBlank()) return@IconButton
-                                    val piiKind = com.randomchat.shnapp.utils.PiiDetector.detect(text)
-                                    if (piiKind != null) {
-                                        haptics.warning()
-                                        piiBlockedKind = piiKind
-                                        com.randomchat.shnapp.utils.Telemetry.piiBlocked(piiKind.name)
-                                        return@IconButton  // Block — keep text in input
+                        // ── Trailing slot: mic (empty) ↔ send (typing) ──────────
+                        // Smooth scale-cross-fade between the two states. One slot,
+                        // less visual weight than the old 3-button layout.
+                        androidx.compose.animation.AnimatedContent(
+                            targetState = inputText.isNotBlank(),
+                            transitionSpec = {
+                                (androidx.compose.animation.scaleIn(
+                                    animationSpec = androidx.compose.animation.core.spring(
+                                        dampingRatio = 0.65f,
+                                        stiffness = androidx.compose.animation.core.Spring.StiffnessMedium
+                                    )
+                                ) + fadeIn(tween(150))) togetherWith
+                                    (androidx.compose.animation.scaleOut(tween(140)) + fadeOut(tween(140)))
+                            },
+                            label = "send_mic"
+                        ) { hasText ->
+                            if (hasText) {
+                                // SEND button
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(CircleShape)
+                                        .background(AccentCyan)
+                                ) {
+                                    IconButton(
+                                        onClick = {
+                                            val text = inputText.trim()
+                                            if (text.isBlank()) return@IconButton
+                                            val piiKind = com.randomchat.shnapp.utils.PiiDetector.detect(text)
+                                            if (piiKind != null) {
+                                                haptics.warning()
+                                                piiBlockedKind = piiKind
+                                                com.randomchat.shnapp.utils.Telemetry.piiBlocked(piiKind.name)
+                                                return@IconButton
+                                            }
+                                            haptics.click()
+                                            viewModel.sendMessage(text)
+                                            com.randomchat.shnapp.utils.Telemetry.messageSent("text")
+                                            inputText = ""
+                                            viewModel.notifyTyping(false)
+                                        }
+                                    ) {
+                                        Icon(
+                                            Icons.AutoMirrored.Filled.Send,
+                                            null,
+                                            tint = Color(0xFF001A22),
+                                            modifier = Modifier.size(20.dp)
+                                        )
                                     }
-                                    haptics.click()
-                                    viewModel.sendMessage(text)
-                                    com.randomchat.shnapp.utils.Telemetry.messageSent("text")
-                                    inputText = ""
-                                    viewModel.notifyTyping(false)
-                                },
-                                enabled = inputText.isNotBlank()
-                            ) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.Send,
-                                    null,
-                                    tint = Color(0xFF001A22),
-                                    modifier = Modifier.size(20.dp)
+                                }
+                            } else {
+                                // MIC button — tap to start recording
+                                AudioButton(
+                                    isPremium   = isPremium,
+                                    creditCount = rewardedAudioCredits,
+                                    isRecording = false,
+                                    onClick = {
+                                        haptics.tick()
+                                        if (!isPremium && rewardedAudioCredits == 0) {
+                                            onNavigateToPremium()
+                                            return@AudioButton
+                                        }
+                                        cancelTriggered = false
+                                        audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                                    }
                                 )
                             }
                         }
-                        } // close AnimatedVisibility
                     }
                 }
             }
@@ -1113,6 +1129,90 @@ fun ChatScreen(
         PiiBlockedDialog(
             kind = kind,
             onDismiss = { piiBlockedKind = null }
+        )
+    }
+
+    // ── Attach sheet — Camera / Gallery / GIF tiles ──────────────────────────
+    if (showAttachSheet) {
+        AttachSheet(
+            isPremium = isPremium,
+            photoCredits = rewardedPhotoCredits,
+            audioCredits = rewardedAudioCredits,
+            onDismiss = { showAttachSheet = false },
+            onCamera = {
+                showAttachSheet = false
+                if (!isPremium && rewardedPhotoCredits == 0) {
+                    onNavigateToPremium()
+                    return@AttachSheet
+                }
+                val hasCam = ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+                if (hasCam) {
+                    val dir  = File(context.cacheDir, "camera").also { it.mkdirs() }
+                    val file = File(dir, "cam_${System.currentTimeMillis()}.jpg")
+                    val uri  = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+                    cameraOutputUri = uri
+                    cameraLauncher.launch(uri)
+                } else cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            },
+            onGallery = {
+                showAttachSheet = false
+                if (!isPremium && rewardedPhotoCredits == 0) {
+                    onNavigateToPremium()
+                    return@AttachSheet
+                }
+                galleryLauncher.launch("image/*")
+            },
+            onGif = {
+                showAttachSheet = false
+                if (!isPremium) {
+                    onNavigateToPremium()
+                    return@AttachSheet
+                }
+                showGifPicker = true
+            },
+            onWatchAd = {
+                // Inline rewarded ad flow — earn 1 photo + 1 audio credit
+                haptics.tick()
+                if (AdMobManager.getInstance(context).isRewardedReady()) {
+                    AdMobManager.getInstance(context).showRewardedIfReady(
+                        activity = activity,
+                        onRewarded = {
+                            haptics.success()
+                            // Same path home screen uses
+                            scope.launch {
+                                com.randomchat.shnapp.utils.SessionManager.getInstance(context)
+                                    .addRewardedMediaCredits()
+                            }
+                            com.randomchat.shnapp.utils.Telemetry.rewardedAdEarned("attach_sheet")
+                            // Keep sheet open so user sees the credit update + can attach
+                        },
+                        onNotAvailable = {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Ad not ready — try again in a moment.")
+                            }
+                        }
+                    )
+                } else {
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Ad not ready — try again in a moment.")
+                    }
+                }
+            }
+        )
+    }
+
+    // ── GIF picker sheet — premium only ──────────────────────────────────────
+    if (showGifPicker && isPremium) {
+        com.randomchat.shnapp.ui.components.GifPickerSheet(
+            onPick = { gif ->
+                haptics.click()
+                viewModel.sendMediaMessage(gif.fullUrl, com.randomchat.shnapp.model.MessageType.IMAGE)
+                com.randomchat.shnapp.utils.Telemetry.messageSent("gif")
+                showGifPicker = false
+            },
+            onDismiss = { showGifPicker = false }
         )
     }
 }
@@ -1409,6 +1509,247 @@ private fun RecordingBar(
                 tint = Color(0xFF001A22),
                 modifier = Modifier.size(20.dp)
             )
+        }
+    }
+}
+
+/**
+ * Attach sheet — Telegram-style consolidated media picker.
+ * Three tiles: Camera / Gallery / GIF. Reduces composer button count from 3 to 1.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AttachSheet(
+    isPremium: Boolean,
+    photoCredits: Int,
+    audioCredits: Int,
+    onDismiss: () -> Unit,
+    onCamera: () -> Unit,
+    onGallery: () -> Unit,
+    onGif: () -> Unit,
+    onWatchAd: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+    // Show "Watch Ad" only when: non-premium, ads enabled, and at least one credit type is 0
+    val showWatchAd = !isPremium &&
+        com.randomchat.shnapp.utils.Constants.ADS_ENABLED &&
+        (photoCredits == 0 || audioCredits == 0)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState       = sheetState,
+        containerColor   = com.randomchat.shnapp.theme.ElevatedCard,
+        tonalElevation   = 0.dp,
+        dragHandle       = {
+            Box(
+                modifier = Modifier
+                    .padding(top = 10.dp, bottom = 6.dp)
+                    .size(width = 32.dp, height = 3.dp)
+                    .background(com.randomchat.shnapp.theme.SubtleBorder, CircleShape)
+            )
+        }
+    ) {
+        Column(modifier = Modifier.navigationBarsPadding().padding(horizontal = 12.dp, vertical = 8.dp)) {
+            Text(
+                "Share",
+                color = TextPrimary,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(start = 8.dp, top = 4.dp, bottom = 14.dp)
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                AttachTile(
+                    icon  = Icons.Default.PhotoCamera,
+                    label = "Camera",
+                    bg    = AccentCyan.copy(alpha = 0.10f),
+                    tint  = AccentCyan,
+                    onClick = onCamera,
+                    creditBadge = if (!isPremium) photoCredits else null,
+                    modifier = Modifier.weight(1f)
+                )
+                AttachTile(
+                    icon  = Icons.Default.Collections,
+                    label = "Gallery",
+                    bg    = PremiumGold.copy(alpha = 0.10f),
+                    tint  = PremiumGold,
+                    onClick = onGallery,
+                    creditBadge = if (!isPremium) photoCredits else null,
+                    modifier = Modifier.weight(1f)
+                )
+                AttachGifTile(
+                    isPremium = isPremium,
+                    onClick   = onGif,
+                    modifier  = Modifier.weight(1f)
+                )
+            }
+
+            // ── Watch ad row — only when ads enabled, non-premium, credits depleted ──
+            if (showWatchAd) {
+                Spacer(Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(AccentCyan.copy(alpha = 0.08f))
+                        .border(1.dp, AccentCyan.copy(alpha = 0.25f), RoundedCornerShape(14.dp))
+                        .clickable(onClick = onWatchAd)
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(AccentCyan.copy(alpha = 0.15f), CircleShape)
+                    ) {
+                        Icon(
+                            Icons.Default.PlayArrow,
+                            null,
+                            tint = AccentCyan,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "Watch a short ad",
+                            color = AccentCyan,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            "Earn 1 Photo + 1 Voice note credit",
+                            color = AccentCyan.copy(alpha = 0.7f),
+                            fontSize = 11.sp
+                        )
+                    }
+                    Text(
+                        "Free",
+                        color = AccentCyan,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .background(AccentCyan.copy(alpha = 0.18f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+        }
+    }
+}
+
+@Composable
+private fun AttachTile(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    bg: Color,
+    tint: Color,
+    onClick: () -> Unit,
+    /** null = no badge (premium). >0 = ×N credit badge. 0 = lock badge (need premium or ad). */
+    creditBadge: Int? = null,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(CardSurface)
+            .border(1.dp, SubtleBorder, RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 16.dp, horizontal = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // Wrapper Box for icon + overhang badge
+        Box(modifier = Modifier.size(52.dp), contentAlignment = Alignment.Center) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(bg, CircleShape)
+            ) {
+                Icon(icon, null, tint = tint, modifier = Modifier.size(22.dp))
+            }
+            // Credit badge — overhang at bottom-right
+            if (creditBadge != null) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(if (creditBadge > 0) 18.dp else 16.dp)
+                        .clip(CircleShape)
+                        .background(if (creditBadge > 0) AccentCyan else PremiumGold)
+                ) {
+                    if (creditBadge > 0) {
+                        Text(
+                            "×$creditBadge",
+                            color = Color(0xFF001A22),
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    } else {
+                        Icon(
+                            androidx.compose.material.icons.Icons.Default.Lock,
+                            null,
+                            tint = Color.Black,
+                            modifier = Modifier.size(10.dp)
+                        )
+                    }
+                }
+            }
+        }
+        Text(label, color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+    }
+}
+
+@Composable
+private fun AttachGifTile(
+    isPremium: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(CardSurface)
+            .border(1.dp, SubtleBorder, RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 16.dp, horizontal = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(44.dp)
+                .background(
+                    if (isPremium) AccentCyan.copy(alpha = 0.10f)
+                    else PremiumGold.copy(alpha = 0.12f),
+                    CircleShape
+                )
+        ) {
+            Text(
+                "GIF",
+                color = if (isPremium) AccentCyan else PremiumGold,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 0.4.sp
+            )
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("GIFs", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+            if (!isPremium) {
+                Icon(
+                    Icons.Default.AutoAwesome,
+                    null,
+                    tint = PremiumGold,
+                    modifier = Modifier.size(10.dp)
+                )
+            }
         }
     }
 }

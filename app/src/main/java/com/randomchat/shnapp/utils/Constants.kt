@@ -23,7 +23,14 @@ object Constants {
 
     // ── Feature flags ────────────────────────────────────────────────────────
     /** Master ad switch. Disables init, banners, interstitial, rewarded, app-open. */
-    const val ADS_ENABLED = false
+    const val ADS_ENABLED = true
+
+    // ── Klipy API (GIF picker, premium-only) ─────────────────────────────────
+    // Klipy uses a "customer ID" embedded in the URL path (not a header API key).
+    // Get a free customer ID from https://klipy.com/dashboard/
+    // Replaced Tenor (discontinued Jan 2026) and Giphy (not viable).
+    // For production, move to BuildConfig + local.properties to avoid committing.
+    const val KLIPY_CUSTOMER_ID = "xGSGRUd6v2eIILTT7zKQsBiQNwo5GTlriuqX6WMeYTseftDByHcifG6BIcm2HG0y"
 
     // AdMob IDs (test IDs - replace with production)
     const val ADMOB_BANNER_ID        = "ca-app-pub-3940256099942544/6300978111"

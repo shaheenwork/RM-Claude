@@ -272,10 +272,14 @@ fun MessageBubble(
                     when (message.type) {
                         MessageType.IMAGE -> {
                             var showViewer by remember { mutableStateOf(false) }
-                            // Outgoing: always revealed. Incoming: starts blurred until first tap.
+                            // GIFs (from Klipy picker) auto-reveal — they're harmless animated reactions,
+                            // not user-uploaded photos. Detect by host: klipy.com / .gif suffix.
+                            val isGif = message.mediaUrl.contains("klipy.com", ignoreCase = true) ||
+                                        message.mediaUrl.endsWith(".gif", ignoreCase = true)
+                            // Outgoing OR GIF: always revealed. Incoming user photo: blurred until first tap.
                             // rememberSaveable keyed on message.id → reveal state survives scroll + process death.
                             var revealed by rememberSaveable(message.id) {
-                                mutableStateOf(message.isOutgoing)
+                                mutableStateOf(message.isOutgoing || isGif)
                             }
                             Box(
                                 modifier = Modifier

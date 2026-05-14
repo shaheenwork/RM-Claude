@@ -1,0 +1,77 @@
+{
+  "rules": {
+    "presence": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+
+    "waitingQueue": {
+      ".read": "auth != null",
+      ".indexOn": ["joinedAt"],
+      "$uid": {
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+
+    "sessionAssignments": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+
+    "rooms": {
+      "$roomId": {
+        ".read": "auth != null && (data.child('participants/0').val() == auth.uid || data.child('participants/1').val() == auth.uid)",
+        ".write": "auth != null && ((newData.child('participants/0').val() == auth.uid || newData.child('participants/1').val() == auth.uid) || (data.child('participants/0').val() == auth.uid || data.child('participants/1').val() == auth.uid))",
+
+        "messages": {
+          ".indexOn": ["timestamp"],
+          "$msgId": {
+            ".write": "auth != null && newData.child('senderId').val() == auth.uid && (root.child('rooms').child($roomId).child('participants/0').val() == auth.uid || root.child('rooms').child($roomId).child('participants/1').val() == auth.uid)"
+          }
+        },
+
+        "typing": {
+          "$uid": {
+            ".write": "auth != null && auth.uid == $uid && (root.child('rooms').child($roomId).child('participants/0').val() == auth.uid || root.child('rooms').child($roomId).child('participants/1').val() == auth.uid)"
+          }
+        },
+
+        "draftText": {
+          "$uid": {
+            ".write": "auth != null && auth.uid == $uid && (root.child('rooms').child($roomId).child('participants/0').val() == auth.uid || root.child('rooms').child($roomId).child('participants/1').val() == auth.uid)"
+          }
+        },
+
+        "reactions": {
+          "$msgId": {
+            "$uid": {
+              ".write": "auth != null && auth.uid == $uid && (root.child('rooms').child($roomId).child('participants/0').val() == auth.uid || root.child('rooms').child($roomId).child('participants/1').val() == auth.uid)"
+            }
+          }
+        },
+
+        "badges": {
+          "$uid": {
+            ".write": "auth != null && auth.uid == $uid && (root.child('rooms').child($roomId).child('participants/0').val() == auth.uid || root.child('rooms').child($roomId).child('participants/1').val() == auth.uid)"
+          }
+        }
+      }
+    },
+
+    "reportedRooms": {
+      ".read": false,
+      "$roomId": {
+        ".write": "auth != null"
+      }
+    },
+
+    "archivedRooms": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}
