@@ -241,9 +241,18 @@ fun MessageBubble(
             ) {
                 Box(
                     modifier = Modifier
-                        .background(
-                            color = if (message.isOutgoing) BubbleOutgoing else BubbleIncoming,
-                            shape = bubbleShape
+                        .then(
+                            if (message.isOutgoing)
+                                // Brand gradient (pink → violet) for outgoing — premium signature
+                                Modifier.background(
+                                    brush = com.randomchat.shnapp.theme.BrandGradients.primary,
+                                    shape = bubbleShape
+                                )
+                            else
+                                // Glassmorphic incoming — subtle warm-white wash + hairline border
+                                Modifier
+                                    .background(color = BubbleIncoming, shape = bubbleShape)
+                                    .border(1.dp, com.randomchat.shnapp.theme.BubbleIncomingBorder, bubbleShape)
                         )
                         .combinedClickable(
                             onClick = {},

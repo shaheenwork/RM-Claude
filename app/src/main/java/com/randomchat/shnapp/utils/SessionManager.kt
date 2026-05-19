@@ -35,7 +35,9 @@ class SessionManager(private val context: Context) {
     private val showPremiumBadgeKey   = booleanPreferencesKey("show_premium_badge")
     private val rewardedPhotoKey      = intPreferencesKey("rewarded_photo_credits")
     private val rewardedAudioKey      = intPreferencesKey("rewarded_audio_credits")
+    private val rewardedGifKey        = intPreferencesKey("rewarded_gif_credits")
     private val appLockEnabledKey     = booleanPreferencesKey("app_lock_enabled")
+    private val tutorialSeenKey       = booleanPreferencesKey("tutorial_seen")
 
     /**
      * Stable per-install identity = FirebaseAuth anonymous UID.
@@ -149,6 +151,15 @@ class SessionManager(private val context: Context) {
         context.dataStore.edit { it[termsAcceptedKey] = true }
     }
 
+    // ── Onboarding tutorial ───────────────────────────────────────────────────
+    /** True once user has finished (or skipped) the 3-page feature tutorial. */
+    val tutorialSeenFlow: Flow<Boolean> = context.dataStore.data
+        .map { it[tutorialSeenKey] ?: false }
+
+    suspend fun markTutorialSeen() {
+        context.dataStore.edit { it[tutorialSeenKey] = true }
+    }
+
     // ── Premium Badge ──────────────────────────────────────────────────────────
     /** Whether the user has opted to show their premium badge to strangers (default: on). */
     val showPremiumBadgeFlow: Flow<Boolean> = context.dataStore.data
@@ -167,11 +178,16 @@ class SessionManager(private val context: Context) {
     val rewardedAudioCreditsFlow: Flow<Int> = context.dataStore.data
         .map { it[rewardedAudioKey] ?: 0 }
 
-    /** Called when user completes a rewarded ad. Grants +1 photo and +1 audio send. */
+    /** Remaining rewarded GIF sends (0 when exhausted). */
+    val rewardedGifCreditsFlow: Flow<Int> = context.dataStore.data
+        .map { it[rewardedGifKey] ?: 0 }
+
+    /** Called when user completes a rewarded ad. Grants +1 photo, +1 audio, +1 GIF. */
     suspend fun addRewardedMediaCredits() {
         context.dataStore.edit { prefs ->
             prefs[rewardedPhotoKey] = (prefs[rewardedPhotoKey] ?: 0) + 1
             prefs[rewardedAudioKey] = (prefs[rewardedAudioKey] ?: 0) + 1
+            prefs[rewardedGifKey]   = (prefs[rewardedGifKey] ?: 0) + 1
         }
     }
 
@@ -188,6 +204,14 @@ class SessionManager(private val context: Context) {
         context.dataStore.edit { prefs ->
             val c = prefs[rewardedAudioKey] ?: 0
             if (c > 0) prefs[rewardedAudioKey] = c - 1
+        }
+    }
+
+    /** Decrements GIF credit by 1. No-op if already zero. */
+    suspend fun consumeGifCredit() {
+        context.dataStore.edit { prefs ->
+            val c = prefs[rewardedGifKey] ?: 0
+            if (c > 0) prefs[rewardedGifKey] = c - 1
         }
     }
 

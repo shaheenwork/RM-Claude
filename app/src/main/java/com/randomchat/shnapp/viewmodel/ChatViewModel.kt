@@ -75,6 +75,10 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     val rewardedAudioCredits: StateFlow<Int> = sessionManager.rewardedAudioCreditsFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    /** Remaining rewarded GIF sends earned via ads. */
+    val rewardedGifCredits: StateFlow<Int> = sessionManager.rewardedGifCreditsFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     /** Whether this premium user has opted to broadcast their badge (default: true). */
     val showMyBadge: StateFlow<Boolean> = sessionManager.showPremiumBadgeFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
@@ -360,6 +364,11 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     /** Deduct one audio credit. Fire-and-forget; called just before recording starts. */
     fun consumeAudioCredit() {
         viewModelScope.launch { sessionManager.consumeAudioCredit() }
+    }
+
+    /** Deduct one GIF credit. Fire-and-forget; called just after a GIF is sent. */
+    fun consumeGifCredit() {
+        viewModelScope.launch { sessionManager.consumeGifCredit() }
     }
 
     fun uploadAndSendImage(rawBytes: ByteArray) {

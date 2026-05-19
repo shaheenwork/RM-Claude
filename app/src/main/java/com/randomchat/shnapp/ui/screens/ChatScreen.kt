@@ -159,6 +159,7 @@ fun ChatScreen(
     val rewardedPhotoCredits by viewModel.rewardedPhotoCredits.collectAsState()
     val replyingTo by viewModel.replyingTo.collectAsState()
     val rewardedAudioCredits by viewModel.rewardedAudioCredits.collectAsState()
+    val rewardedGifCredits by viewModel.rewardedGifCredits.collectAsState()
     val chatSaved            by viewModel.chatSaved.collectAsState()
     // Ghost bubble visible when premium + stranger is actively drafting
     val showGhostBubble = isPremium && strangerDraftText != null && !chatEnded
@@ -848,13 +849,13 @@ fun ChatScreen(
                             label = "send_mic"
                         ) { hasText ->
                             if (hasText) {
-                                // SEND button
+                                // SEND button — brand gradient pink → violet
                                 Box(
                                     contentAlignment = Alignment.Center,
                                     modifier = Modifier
                                         .size(44.dp)
                                         .clip(CircleShape)
-                                        .background(AccentCyan)
+                                        .background(com.randomchat.shnapp.theme.BrandGradients.primary)
                                 ) {
                                     IconButton(
                                         onClick = {
@@ -877,7 +878,7 @@ fun ChatScreen(
                                         Icon(
                                             Icons.AutoMirrored.Filled.Send,
                                             null,
-                                            tint = Color(0xFF001A22),
+                                            tint = Color.White,
                                             modifier = Modifier.size(20.dp)
                                         )
                                     }
@@ -1138,6 +1139,7 @@ fun ChatScreen(
             isPremium = isPremium,
             photoCredits = rewardedPhotoCredits,
             audioCredits = rewardedAudioCredits,
+            gifCredits = rewardedGifCredits,
             onDismiss = { showAttachSheet = false },
             onCamera = {
                 showAttachSheet = false
@@ -1166,14 +1168,15 @@ fun ChatScreen(
             },
             onGif = {
                 showAttachSheet = false
-                if (!isPremium) {
+                // GIF is premium — non-premium needs a rewarded GIF credit
+                if (!isPremium && rewardedGifCredits == 0) {
                     onNavigateToPremium()
                     return@AttachSheet
                 }
                 showGifPicker = true
             },
             onWatchAd = {
-                // Inline rewarded ad flow — earn 1 photo + 1 audio credit
+                // Inline rewarded ad flow — earn +1 photo, +1 voice, +1 GIF credit
                 haptics.tick()
                 if (AdMobManager.getInstance(context).isRewardedReady()) {
                     AdMobManager.getInstance(context).showRewardedIfReady(
@@ -1203,12 +1206,14 @@ fun ChatScreen(
         )
     }
 
-    // ── GIF picker sheet — premium only ──────────────────────────────────────
-    if (showGifPicker && isPremium) {
+    // ── GIF picker sheet — premium OR has rewarded GIF credit ────────────────
+    if (showGifPicker && (isPremium || rewardedGifCredits > 0)) {
         com.randomchat.shnapp.ui.components.GifPickerSheet(
             onPick = { gif ->
                 haptics.click()
                 viewModel.sendMediaMessage(gif.fullUrl, com.randomchat.shnapp.model.MessageType.IMAGE)
+                // Non-premium: consume one GIF credit per send
+                if (!isPremium) viewModel.consumeGifCredit()
                 com.randomchat.shnapp.utils.Telemetry.messageSent("gif")
                 showGifPicker = false
             },
@@ -1494,19 +1499,19 @@ private fun RecordingBar(
             modifier = Modifier.weight(1f)
         )
 
-        // Send button
+        // Recording bar send button — brand gradient
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .size(44.dp)
                 .clip(CircleShape)
-                .background(Brush.radialGradient(listOf(AccentCyan, com.randomchat.shnapp.theme.AccentCyanDim)))
+                .background(com.randomchat.shnapp.theme.BrandGradients.primary)
                 .clickable(onClick = onSend)
         ) {
             Icon(
                 Icons.AutoMirrored.Filled.Send,
                 contentDescription = "Send",
-                tint = Color(0xFF001A22),
+                tint = Color.White,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -1523,6 +1528,7 @@ private fun AttachSheet(
     isPremium: Boolean,
     photoCredits: Int,
     audioCredits: Int,
+    gifCredits: Int,
     onDismiss: () -> Unit,
     onCamera: () -> Unit,
     onGallery: () -> Unit,
@@ -1530,10 +1536,10 @@ private fun AttachSheet(
     onWatchAd: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
-    // Show "Watch Ad" only when: non-premium, ads enabled, and at least one credit type is 0
+    // Show "Watch Ad" only when: non-premium, ads enabled, any credit type is 0
     val showWatchAd = !isPremium &&
         com.randomchat.shnapp.utils.Constants.ADS_ENABLED &&
-        (photoCredits == 0 || audioCredits == 0)
+        (photoCredits == 0 || audioCredits == 0 || gifCredits == 0)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -1561,11 +1567,13 @@ private fun AttachSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                // Camera + Gallery: same neutral violet — both are standard media,
+                // no special status. Consistent = calm = premium.
                 AttachTile(
                     icon  = Icons.Default.PhotoCamera,
                     label = "Camera",
-                    bg    = AccentCyan.copy(alpha = 0.10f),
-                    tint  = AccentCyan,
+                    bg    = com.randomchat.shnapp.theme.BrandViolet.copy(alpha = 0.12f),
+                    tint  = com.randomchat.shnapp.theme.BrandViolet,
                     onClick = onCamera,
                     creditBadge = if (!isPremium) photoCredits else null,
                     modifier = Modifier.weight(1f)
@@ -1573,14 +1581,15 @@ private fun AttachSheet(
                 AttachTile(
                     icon  = Icons.Default.Collections,
                     label = "Gallery",
-                    bg    = PremiumGold.copy(alpha = 0.10f),
-                    tint  = PremiumGold,
+                    bg    = com.randomchat.shnapp.theme.BrandViolet.copy(alpha = 0.12f),
+                    tint  = com.randomchat.shnapp.theme.BrandViolet,
                     onClick = onGallery,
                     creditBadge = if (!isPremium) photoCredits else null,
                     modifier = Modifier.weight(1f)
                 )
                 AttachGifTile(
                     isPremium = isPremium,
+                    gifCredits = gifCredits,
                     onClick   = onGif,
                     modifier  = Modifier.weight(1f)
                 )
@@ -1621,7 +1630,7 @@ private fun AttachSheet(
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            "Earn 1 Photo + 1 Voice note credit",
+                            "Earn 1 Photo + 1 Voice + 1 GIF",
                             color = AccentCyan.copy(alpha = 0.7f),
                             fontSize = 11.sp
                         )
@@ -1709,6 +1718,7 @@ private fun AttachTile(
 @Composable
 private fun AttachGifTile(
     isPremium: Boolean,
+    gifCredits: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -1722,34 +1732,50 @@ private fun AttachGifTile(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(44.dp)
-                .background(
-                    if (isPremium) AccentCyan.copy(alpha = 0.10f)
-                    else PremiumGold.copy(alpha = 0.12f),
-                    CircleShape
-                )
-        ) {
-            Text(
-                "GIF",
-                color = if (isPremium) AccentCyan else PremiumGold,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 0.4.sp
-            )
-        }
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("GIFs", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
-            if (!isPremium) {
-                Icon(
-                    Icons.Default.AutoAwesome,
-                    null,
-                    tint = PremiumGold,
-                    modifier = Modifier.size(10.dp)
+        // Same neutral violet as Camera/Gallery — standard media, consistent.
+        Box(modifier = Modifier.size(52.dp), contentAlignment = Alignment.Center) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(com.randomchat.shnapp.theme.BrandViolet.copy(alpha = 0.12f), CircleShape)
+            ) {
+                Text(
+                    "GIF",
+                    color = com.randomchat.shnapp.theme.BrandViolet,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 0.4.sp
                 )
             }
+            // Non-premium: credit badge (×N) or lock (0 = needs ad/premium)
+            if (!isPremium) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(if (gifCredits > 0) 18.dp else 16.dp)
+                        .clip(CircleShape)
+                        .background(if (gifCredits > 0) AccentCyan else PremiumGold)
+                ) {
+                    if (gifCredits > 0) {
+                        Text(
+                            "×$gifCredits",
+                            color = Color(0xFF001A22),
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    } else {
+                        Icon(
+                            androidx.compose.material.icons.Icons.Default.Lock,
+                            null,
+                            tint = Color.Black,
+                            modifier = Modifier.size(10.dp)
+                        )
+                    }
+                }
+            }
         }
+        Text("GIFs", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
     }
 }

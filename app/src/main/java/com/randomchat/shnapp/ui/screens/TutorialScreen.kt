@@ -47,6 +47,7 @@ import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Gif
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Icon
@@ -271,14 +272,25 @@ private fun WelcomePage() {
         Spacer(Modifier.height(28.dp))
 
         StaggeredFadeIn(delayMs = 80) {
-            Text(
-                "Talk to anyone,\nanonymously",
-                color = TextPrimary,
-                fontWeight = FontWeight.Black,
-                fontSize = 28.sp,
-                lineHeight = 34.sp,
-                textAlign = TextAlign.Center
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    "Talk to anyone,",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 26.sp,
+                    lineHeight = 30.sp,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    "anonymously",
+                    color = com.randomchat.shnapp.theme.PinkSoft,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+                    fontSize = 32.sp,
+                    lineHeight = 36.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
 
         Spacer(Modifier.height(10.dp))
@@ -366,13 +378,23 @@ private fun PremiumPage() {
         Spacer(Modifier.height(16.dp))
 
         StaggeredFadeIn(delayMs = 60) {
-            Text(
-                "Go further with Premium",
-                color = PremiumGold,
-                fontWeight = FontWeight.Black,
-                fontSize = 24.sp,
-                letterSpacing = 0.3.sp
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    "Go further with",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp,
+                    letterSpacing = (-0.2).sp
+                )
+                Text(
+                    "Premium",
+                    color = PremiumGold,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+                    fontSize = 30.sp,
+                    letterSpacing = (-0.2).sp
+                )
+            }
         }
 
         Spacer(Modifier.height(20.dp))
@@ -381,8 +403,8 @@ private fun PremiumPage() {
         val features = listOf(
             Triple(Icons.Default.PhotoCamera, "Photos", "Send images"),
             Triple(Icons.Default.Mic,         "Voice", "Record audio notes"),
+            Triple(Icons.Default.Gif,         "GIFs", "Send animated GIFs"),
             Triple(Icons.Default.AddReaction, "Reactions", "React with emojis"),
-            Triple(Icons.Default.Visibility,  "Live Preview", "See typing in real-time"),
             Triple(Icons.Default.Save,        "Save Chats", "Keep best moments"),
             Triple(Icons.Default.Block,       "No Ads", "Ad-free experience"),
         )
@@ -482,13 +504,23 @@ private fun SafetyPage() {
         Spacer(Modifier.height(24.dp))
 
         StaggeredFadeIn(delayMs = 60) {
-            Text(
-                "Built for your safety",
-                color = TextPrimary,
-                fontWeight = FontWeight.Black,
-                fontSize = 26.sp,
-                textAlign = TextAlign.Center
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    "Built for your",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    "safety",
+                    color = com.randomchat.shnapp.theme.PinkSoft,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+                    fontSize = 32.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
 
         Spacer(Modifier.height(8.dp))

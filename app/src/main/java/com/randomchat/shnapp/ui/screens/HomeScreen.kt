@@ -28,6 +28,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ChatBubble
+import androidx.compose.material.icons.filled.Gif
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PlayArrow
@@ -84,6 +85,7 @@ fun HomeScreen(
     val isBanned         by viewModel.isBanned.collectAsState()
     val photoCredits     by viewModel.rewardedPhotoCredits.collectAsState()
     val audioCredits     by viewModel.rewardedAudioCredits.collectAsState()
+    val gifCredits       by viewModel.rewardedGifCredits.collectAsState()
     val onlineCount      by viewModel.onlineCount.collectAsState()
     // Stable random offset per session — doesn't re-roll on recompose
     val onlineOffset     = remember { (11..23).random() }
@@ -101,23 +103,25 @@ fun HomeScreen(
                     )
                 )
         )
+        // Pink ambient — top-right
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.radialGradient(
-                        colors = listOf(AccentCyan.copy(0.05f), Color.Transparent),
+                        colors = listOf(AccentCyan.copy(0.08f), Color.Transparent),
                         radius = 600f,
                         center = androidx.compose.ui.geometry.Offset(800f, 200f)
                     )
                 )
         )
+        // Violet ambient — bottom-left
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.radialGradient(
-                        colors = listOf(Color(0xFF0050AA).copy(0.06f), Color.Transparent),
+                        colors = listOf(com.randomchat.shnapp.theme.BrandViolet.copy(0.10f), Color.Transparent),
                         radius = 500f,
                         center = androidx.compose.ui.geometry.Offset(100f, 1600f)
                     )
@@ -182,18 +186,28 @@ fun HomeScreen(
 
                 Spacer(Modifier.height(10.dp))
 
+                // Editorial greeting — Inter for first line, serif italic for second.
+                // "Good evening, stranger" pattern (20-40 audience, premium tone)
                 Text(
-                    "StrangerChat",
+                    "Welcome back,",
                     color = TextPrimary,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 28.sp,
-                    letterSpacing = (-0.5).sp  // negative kerning — premium-app trick
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 26.sp,
+                    letterSpacing = (-0.5).sp
+                )
+                Text(
+                    "stranger",
+                    color = com.randomchat.shnapp.theme.PinkSoft,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+                    fontSize = 34.sp,
+                    letterSpacing = (-0.5).sp
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    "Anonymous · Private · Free",
+                    "Someone interesting is online tonight",
                     color = TextSecondary,
-                    fontSize = 12.sp,
+                    fontSize = 13.sp,
                     textAlign = TextAlign.Center
                 )
 
@@ -213,7 +227,7 @@ fun HomeScreen(
                             .background(com.randomchat.shnapp.theme.OnlineGreen, CircleShape)
                     )
                     Text(
-                        "$displayedOnline strangers online",
+                        "$displayedOnline active right now",
                         color = com.randomchat.shnapp.theme.OnlineGreen,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
@@ -232,7 +246,7 @@ fun HomeScreen(
                     )
                 } else {
                     CyanButton(
-                        text = "⚡  Start Anonymous Chat",
+                        text = "⚡  Connect Now",
                         onClick = { haptics.heavy(); onStartChat() },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -251,6 +265,7 @@ fun HomeScreen(
                     RewardsCard(
                         photoCredits = photoCredits,
                         audioCredits = audioCredits,
+                        gifCredits = gifCredits,
                         onEarnCredits = {
                             haptics.tick()
                             if (AdMobManager.getInstance(context).isRewardedReady()) {
@@ -304,6 +319,7 @@ fun HomeScreen(
 private fun RewardsCard(
     photoCredits : Int,
     audioCredits : Int,
+    gifCredits   : Int,
     onEarnCredits: () -> Unit
 ) {
     Row(
@@ -332,6 +348,7 @@ private fun RewardsCard(
             ) {
                 CreditInline(Icons.Default.PhotoCamera, photoCredits)
                 CreditInline(Icons.Default.Mic, audioCredits)
+                CreditInline(Icons.Default.Gif, gifCredits)
             }
         }
 

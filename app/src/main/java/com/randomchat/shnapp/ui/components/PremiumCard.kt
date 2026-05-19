@@ -136,38 +136,32 @@ fun GoldButton(
     )
 }
 
+/**
+ * Primary CTA button — Midnight Subdued brand gradient.
+ * Pink → violet diagonal. White text. Static (no infinite glow — premium aesthetic).
+ */
 @Composable
 fun CyanButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "btn_glow")
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.6f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ), label = "btn_alpha"
-    )
-
-    Text(
-        text = text,
-        color = Color(0xFF001A22),
-        fontWeight = FontWeight.Black,
-        fontSize = 16.sp,
-        letterSpacing = 0.5.sp,
+    androidx.compose.foundation.layout.Box(
+        contentAlignment = androidx.compose.ui.Alignment.Center,
         modifier = modifier
             .background(
-                Brush.horizontalGradient(
-                    listOf(
-                        com.randomchat.shnapp.theme.AccentCyan.copy(glowAlpha),
-                        com.randomchat.shnapp.theme.AccentCyanDim.copy(glowAlpha)
-                    )
-                ),
+                com.randomchat.shnapp.theme.BrandGradients.primary,
                 RoundedCornerShape(28.dp)
             )
             .clickable(onClick = onClick)
             .padding(horizontal = 36.dp, vertical = 16.dp)
-    )
+    ) {
+        Text(
+            text = text,
+            color = androidx.compose.ui.graphics.Color.White,
+            fontWeight = FontWeight.Bold,
+            fontSize = 15.sp,
+            letterSpacing = 0.3.sp
+        )
+    }
 }

@@ -3,49 +3,64 @@ package com.randomchat.shnapp.theme
 import androidx.compose.ui.graphics.Color
 
 /*
- * ── DESIGN TOKEN: color ──
- * Palette intentionally desaturated vs pure web colors — premium apps
- * (Linear, Notion, Telegram) tone down brand colors 10-20%.
+ * ── MIDNIGHT SUBDUED palette ──
+ * Pink-violet brand desaturated ~20% from neon (premium 20-40 audience).
+ * Aurora blue + Ember amber as functional accents.
  *
- * Names preserved for backwards compatibility with existing call sites.
- * Values refreshed for premium feel.
+ * Names preserved for back-compat. Values now Midnight Subdued.
  */
 
 // ── Deep background palette ───────────────────────────────────────────────
-val DeepSpace        = Color(0xFF0A0E18)  // was 0xFF080B14 — slight lift
-val SpaceNavy        = Color(0xFF0D1120)
-val CardSurface      = Color(0xFF111827)
-val ElevatedCard     = Color(0xFF1A2236)
-val SubtleBorder     = Color(0x1AFFFFFF)  // was solid #1E2D45 — now hairline 10% alpha
+val DeepSpace        = Color(0xFF0C0814)  // purple-tinted black (deepest)
+val SpaceNavy        = Color(0xFF120E1C)  // gradient mid
+val CardSurface      = Color(0xFF1A1426)  // cards
+val ElevatedCard     = Color(0xFF221A30)  // sheets, modals
+val SubtleBorder     = Color(0x14F0E8F5)  // ~8% warm white — hairline
 
-// ── Accent — toned-down cyan ──────────────────────────────────────────────
-val AccentCyan       = Color(0xFF00C7E6)  // was 0xFF00D4FF — less neon
-val AccentCyanDim    = Color(0xFF0098B8)
-val AccentCyanGlow   = Color(0x4000C7E6)
+// ── Brand: Midnight Subdued (pink → violet) ───────────────────────────────
+// AccentCyan name kept for back-compat; semantics now = brand pink.
+val AccentCyan       = Color(0xFFE04A8C)  // pink — primary brand (desaturated from neon)
+val AccentCyanDim    = Color(0xFFC03A7C)  // pink pressed/dim
+val AccentCyanGlow   = Color(0x40E04A8C)  // 25% pink glow
 
-// ── Premium gold — desaturated from eye-burn yellow ───────────────────────
-val PremiumGold      = Color(0xFFE6B800)  // was 0xFFFFD700 — pro feel
-val PremiumGoldDim   = Color(0xFFB8960C)
-val PremiumGoldGlow  = Color(0x40E6B800)
+// ── Violet (brand secondary) ──────────────────────────────────────────────
+val BrandViolet      = Color(0xFF6E4FE0)
+val BrandVioletDim   = Color(0xFF5A3FC2)
+val BrandVioletGlow  = Color(0x406E4FE0)
+
+// ── Aurora (accent blue) — replaces tech-cyan for live/typing/online ─────
+val AuroraBlue       = Color(0xFF66D7FF)
+val AuroraBlueDim    = Color(0xFF4AB8E6)
+
+// ── Ember (amber) — premium tier, streaks, badges ────────────────────────
+val PremiumGold      = Color(0xFFFFD062)
+val PremiumGoldDim   = Color(0xFFFFA040)
+val PremiumGoldGlow  = Color(0x40FFD062)
 
 // ── Status colors ─────────────────────────────────────────────────────────
-val OnlineGreen      = Color(0xFF00C779)  // was 0xFF00E676 — toned
+val OnlineGreen      = Color(0xFF00C779)
 val WarningAmber     = Color(0xFFFFB938)
 val ErrorRed         = Color(0xFFFF5252)
 
-// ── Text — 4 levels ───────────────────────────────────────────────────────
-val TextPrimary      = Color(0xFFF0F4FF)
-val TextSecondary    = Color(0xFFA0AABF)  // was 0xFF8899BB — slightly warmer
-val TextMuted        = Color(0xFF6B7790)  // was 0xFF4A5568 — better contrast on dark
+// ── Text — warm cream hierarchy (4 levels) ────────────────────────────────
+val TextPrimary      = Color(0xFFF0E8F5)  // warm cream, not pure white
+val TextSecondary    = Color(0xFFB4A6C2)  // muted lavender-gray
+val TextMuted        = Color(0xFF7A6F87)  // tertiary
+val TextDisabled     = Color(0xFF4A4254)
+val PinkSoft         = Color(0xFFF08AB5)  // italic display accent
 
 // ── Bubble colors ─────────────────────────────────────────────────────────
-val BubbleOutgoing   = Color(0xFF134568)  // was 0xFF1A4A6E — slightly toned
-val BubbleOutgoingAlt= Color(0xFF0E3A56)
-val BubbleIncoming   = Color(0xFF1A2236)
-val SystemChipBg     = Color(0xFF0D1928)
-val SystemChipBorder = Color(0xFF1E4060)
+// Outgoing uses brand gradient (not a solid) — these are fallbacks.
+val BubbleOutgoing   = Color(0xFFB23A7A)  // mid-tone pink/violet for fallback
+val BubbleOutgoingAlt= Color(0xFF7B4FB0)
+val BubbleIncoming   = Color(0x12F0E8F5)  // ~7% warm white — glassmorphism feel
+val BubbleIncomingBorder = Color(0x14F0E8F5)
+
+// ── System chip ───────────────────────────────────────────────────────────
+val SystemChipBg     = Color(0x1466D7FF)  // ~8% aurora blue
+val SystemChipBorder = Color(0x3366D7FF)
 
 // ── Gradient stops ────────────────────────────────────────────────────────
-val GradientStart    = Color(0xFF0A0E18)
-val GradientMid      = Color(0xFF0A0F1E)
-val GradientEnd      = Color(0xFF060912)
+val GradientStart    = Color(0xFF0C0814)
+val GradientMid      = Color(0xFF120E1C)
+val GradientEnd      = Color(0xFF080610)

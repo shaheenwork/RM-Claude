@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.AddReaction
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Gif
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.RadioButtonChecked
@@ -89,6 +90,7 @@ private data class PremiumFeature(
 private val FEATURES = listOf(
     PremiumFeature(Icons.Default.PhotoCamera, "Send Photos", "Share images directly in chat", AccentCyan),
     PremiumFeature(Icons.Default.Mic, "Send Voice Notes", "Record and send audio clips", Color(0xFF9C6FFF)),
+    PremiumFeature(Icons.Default.Gif, "Send GIFs", "React with animated GIFs from Klipy", Color(0xFF66D7FF)),
     PremiumFeature(Icons.Default.AddReaction, "Message Reactions", "React to messages with emojis", Color(0xFFFF9800)),
     PremiumFeature(Icons.Default.Visibility, "Live Typing Preview", "See what stranger types in real time", Color(0xFF00E5FF)),
     PremiumFeature(Icons.Default.Save, "Save Conversations", "Keep your best chats forever", PremiumGold),

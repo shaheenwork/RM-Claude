@@ -27,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -45,6 +46,7 @@ import com.randomchat.shnapp.ui.screens.SavedChatsScreen
 import com.randomchat.shnapp.ui.screens.OnboardingScreen
 import com.randomchat.shnapp.ui.screens.SettingsScreen
 import com.randomchat.shnapp.ui.screens.SplashScreen
+import com.randomchat.shnapp.ui.screens.TutorialScreen
 import com.randomchat.shnapp.utils.Constants
 import com.randomchat.shnapp.utils.SessionManager
 import com.randomchat.shnapp.viewmodel.ChatViewModel
@@ -53,10 +55,12 @@ import kotlinx.coroutines.flow.first
 import com.randomchat.shnapp.viewmodel.PremiumViewModel
 import com.randomchat.shnapp.viewmodel.SavedChatsViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 object Routes {
     const val SPLASH = "splash"
     const val ONBOARDING = "onboarding"
+    const val TUTORIAL = "tutorial"
     const val HOME = "home"
     const val CHAT = "chat"
     const val PREMIUM = "premium"
@@ -214,15 +218,24 @@ fun AppNavHost(
             LaunchedEffect(splashDone) {
                 if (!splashDone) return@LaunchedEffect
                 onSplashReady()
-                val accepted = SessionManager.getInstance(context).termsAcceptedFlow.first()
+                val sm = SessionManager.getInstance(context)
+                val accepted = sm.termsAcceptedFlow.first()
                 if (accepted) {
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.SPLASH) { inclusive = true }
-                    }
-                    // Launched from notification → show matchmaking dialog.
-                    if (launchedFromPush) {
-                        chatViewModel.startSearch()
-                        showMatchmakingDialog = true
+                    val tutorialSeen = sm.tutorialSeenFlow.first()
+                    if (!tutorialSeen && !launchedFromPush) {
+                        // Returning user who never saw the tutorial — show it once.
+                        navController.navigate(Routes.TUTORIAL) {
+                            popUpTo(Routes.SPLASH) { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.SPLASH) { inclusive = true }
+                        }
+                        // Launched from notification → show matchmaking dialog.
+                        if (launchedFromPush) {
+                            chatViewModel.startSearch()
+                            showMatchmakingDialog = true
+                        }
                     }
                 } else {
                     // First launch — must accept policies before entering the app.
@@ -242,13 +255,36 @@ fun AppNavHost(
         ) {
             OnboardingScreen(
                 onAccepted = {
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.ONBOARDING) { inclusive = true }
-                    }
-                    // Edge case: launched from push notification on first-ever open.
                     if (launchedFromPush) {
+                        // Edge case: launched from push notification on first-ever open.
+                        // Skip tutorial — user wants to chat now.
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.ONBOARDING) { inclusive = true }
+                        }
                         chatViewModel.startSearch()
                         showMatchmakingDialog = true
+                    } else {
+                        navController.navigate(Routes.TUTORIAL) {
+                            popUpTo(Routes.ONBOARDING) { inclusive = true }
+                        }
+                    }
+                }
+            )
+        }
+
+        composable(
+            Routes.TUTORIAL,
+            enterTransition = { fadeIn(tween(400)) },
+            exitTransition = { fadeOut(tween(250)) }
+        ) {
+            val scope = rememberCoroutineScope()
+            TutorialScreen(
+                onComplete = {
+                    scope.launch {
+                        SessionManager.getInstance(context).markTutorialSeen()
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.TUTORIAL) { inclusive = true }
+                        }
                     }
                 }
             )

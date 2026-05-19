@@ -36,6 +36,10 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     val rewardedAudioCredits: StateFlow<Int> = sessionManager.rewardedAudioCreditsFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    /** Remaining rewarded GIF sends earned via ads. */
+    val rewardedGifCredits: StateFlow<Int> = sessionManager.rewardedGifCreditsFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     private val _isBanned = MutableStateFlow(false)
     val isBanned: StateFlow<Boolean> = _isBanned
 
