@@ -221,9 +221,9 @@ fun AppNavHost(
                 val sm = SessionManager.getInstance(context)
                 val accepted = sm.termsAcceptedFlow.first()
                 if (accepted) {
-                    val tutorialSeen = sm.tutorialSeenFlow.first()
-                    if (!tutorialSeen && !launchedFromPush) {
-                        // Returning user who never saw the tutorial — show it once.
+                    // TUTORIAL DISABLED — skip regardless of tutorialSeen flag.
+                    // Re-enable: restore tutorialSeen check and navigate to Routes.TUTORIAL.
+                    if (false) {
                         navController.navigate(Routes.TUTORIAL) {
                             popUpTo(Routes.SPLASH) { inclusive = true }
                         }
@@ -264,7 +264,9 @@ fun AppNavHost(
                         chatViewModel.startSearch()
                         showMatchmakingDialog = true
                     } else {
-                        navController.navigate(Routes.TUTORIAL) {
+                        // TUTORIAL DISABLED — go straight to HOME.
+                        // Re-enable: navigate to Routes.TUTORIAL instead.
+                        navController.navigate(Routes.HOME) {
                             popUpTo(Routes.ONBOARDING) { inclusive = true }
                         }
                     }

@@ -4,16 +4,23 @@ package com.randomchat.shnapp.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,29 +34,21 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AddReaction
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.ChatBubble
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Gif
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.Gif
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -62,151 +61,139 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.randomchat.shnapp.theme.AccentCyan
 import com.randomchat.shnapp.theme.AccentCyanGlow
+import com.randomchat.shnapp.theme.AuroraBlue
+import com.randomchat.shnapp.theme.BrandGradients
+import com.randomchat.shnapp.theme.BrandViolet
+import com.randomchat.shnapp.theme.BrandVioletGlow
 import com.randomchat.shnapp.theme.CardSurface
-import com.randomchat.shnapp.theme.DeepSpace
-import com.randomchat.shnapp.theme.GradientEnd
 import com.randomchat.shnapp.theme.OnlineGreen
+import com.randomchat.shnapp.theme.PinkSoft
 import com.randomchat.shnapp.theme.PremiumGold
-import com.randomchat.shnapp.theme.PremiumGoldDim
 import com.randomchat.shnapp.theme.SubtleBorder
 import com.randomchat.shnapp.theme.TextMuted
 import com.randomchat.shnapp.theme.TextPrimary
 import com.randomchat.shnapp.theme.TextSecondary
-import com.randomchat.shnapp.ui.components.CyanButton
+import com.randomchat.shnapp.ui.components.tutorial.AnimatedCheckRow
+import com.randomchat.shnapp.ui.components.tutorial.AuroraBackground
+import com.randomchat.shnapp.ui.components.tutorial.GlassCard
+import com.randomchat.shnapp.ui.components.tutorial.GlowCTAButton
+import com.randomchat.shnapp.ui.components.tutorial.GlowChip
+import com.randomchat.shnapp.ui.components.tutorial.TutorialPageIndicator
+import com.randomchat.shnapp.ui.components.tutorial.VoiceEqualizer
 import com.randomchat.shnapp.utils.LocalHaptics
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
+
+// ── Orchestrator ──────────────────────────────────────────────────────────────
 
 @Composable
-fun TutorialScreen(
-    onComplete: () -> Unit
-) {
+fun TutorialScreen(onComplete: () -> Unit) {
     val haptics    = LocalHaptics.current
-    val pagerState = rememberPagerState(pageCount = { 3 })
+    val pagerState = rememberPagerState(pageCount = { 4 })
     val scope      = rememberCoroutineScope()
 
-    // Settled-page haptic
     LaunchedEffect(pagerState.settledPage) { haptics.tick() }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // ── Ambient background ──────────────────────────────────────────────
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Brush.verticalGradient(listOf(DeepSpace, GradientEnd)))
-        )
-        // Decorative blur blobs — color shifts per page
-        val blobColor = when (pagerState.currentPage) {
-            0    -> AccentCyan
-            1    -> PremiumGold
-            else -> AccentCyan
-        }
-        Box(
-            modifier = Modifier
-                .size(320.dp)
-                .align(Alignment.TopEnd)
-                .blur(130.dp)
-                .background(blobColor.copy(0.08f), CircleShape)
-        )
-        Box(
-            modifier = Modifier
-                .size(220.dp)
-                .align(Alignment.BottomStart)
-                .blur(110.dp)
-                .background(blobColor.copy(0.06f), CircleShape)
-        )
+    // Accent color follows page — drives AuroraBackground mood glow
+    val pageAccent = when (pagerState.currentPage) {
+        0    -> AccentCyan
+        1    -> OnlineGreen
+        2    -> PinkSoft
+        else -> BrandViolet
+    }
 
+    AuroraBackground(accentColor = pageAccent) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding()
         ) {
-            // Top bar: Skip (hidden on last page)
+            // Top bar — Skip fades out on last page
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.End
             ) {
-                AnimatedVisibility(visible = pagerState.currentPage < 2) {
+                AnimatedVisibility(
+                    visible = pagerState.currentPage < 3,
+                    enter = fadeIn(tween(200)),
+                    exit  = fadeOut(tween(200))
+                ) {
                     TextButton(onClick = { haptics.tick(); onComplete() }) {
-                        Text("Skip", color = TextMuted, fontSize = 13.sp)
+                        Text("Skip", color = TextMuted, fontSize = 13.sp, letterSpacing = 0.3.sp)
                     }
                 }
             }
 
-            // Pager
+            // Pager — parallax fade between pages
             HorizontalPager(
                 state = pagerState,
                 contentPadding = PaddingValues(horizontal = 24.dp),
                 pageSpacing = 0.dp,
                 modifier = Modifier.weight(1f)
             ) { page ->
-                // Parallax fade based on distance from current
-                val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).coerceIn(-1f, 1f)
+                val pageOffset = ((pagerState.currentPage - page) +
+                        pagerState.currentPageOffsetFraction).coerceIn(-1f, 1f)
                 val alpha by animateFloatAsState(
-                    targetValue = 1f - pageOffset * pageOffset * 0.6f,
+                    targetValue = 1f - pageOffset * pageOffset * 0.65f,
                     animationSpec = tween(0),
                     label = "page_alpha"
+                )
+                val translateY by animateFloatAsState(
+                    targetValue = pageOffset * 18f,
+                    animationSpec = tween(0),
+                    label = "page_ty"
                 )
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .graphicsLayer { this.alpha = alpha }
+                        .graphicsLayer {
+                            this.alpha      = alpha
+                            translationY    = translateY.dp.toPx()
+                        }
                 ) {
                     when (page) {
-                        0    -> WelcomePage()
-                        1    -> PremiumPage()
-                        else -> SafetyPage()
+                        0    -> HookPage()
+                        1    -> FrictionlessPage()
+                        2    -> ExpressPage()
+                        else -> ControlPage()
                     }
                 }
             }
 
-            // ── Page indicators ──────────────────────────────────────────────
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                repeat(3) { i ->
-                    val active = i == pagerState.currentPage
-                    val width by animateFloatAsState(
-                        targetValue = if (active) 24f else 8f,
-                        animationSpec = tween(300, easing = FastOutSlowInEasing),
-                        label = "dot_$i"
-                    )
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .width(width.dp)
-                            .height(8.dp)
-                            .background(
-                                if (active) AccentCyan else SubtleBorder,
-                                RoundedCornerShape(4.dp)
-                            )
-                    )
-                }
-            }
+            // Page indicator
+            TutorialPageIndicator(
+                currentPage = pagerState.currentPage,
+                pageCount   = 4,
+                modifier    = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(vertical = 14.dp)
+            )
 
-            // ── Primary CTA ──────────────────────────────────────────────────
-            Box(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
-                CyanButton(
-                    text = if (pagerState.currentPage == 2) "⚡  Start Chatting" else "Next  →",
+            // CTA
+            Box(modifier = Modifier.padding(horizontal = 24.dp, vertical = 6.dp)) {
+                GlowCTAButton(
+                    text = if (pagerState.currentPage == 3) "⚡  Start Chatting" else "Next  →",
                     onClick = {
-                        if (pagerState.currentPage == 2) {
+                        if (pagerState.currentPage == 3) {
                             haptics.heavy()
                             com.randomchat.shnapp.utils.Telemetry.tutorialCompleted()
                             onComplete()
@@ -215,7 +202,7 @@ fun TutorialScreen(
                             scope.launch {
                                 pagerState.animateScrollToPage(
                                     pagerState.currentPage + 1,
-                                    animationSpec = tween(420, easing = FastOutSlowInEasing)
+                                    animationSpec = tween(400, easing = FastOutSlowInEasing)
                                 )
                             }
                         }
@@ -224,80 +211,120 @@ fun TutorialScreen(
                 )
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
         }
     }
 }
 
-// ─── Page 1: Welcome ─────────────────────────────────────────────────────────
+// ── Page 1: Hook — Identity ───────────────────────────────────────────────────
+//
+// Goal: instant emotional hook. Mysterious, exciting, modern.
+// Hero: floating message orb with two orbiting particles.
+// Supporting: "online now" chip with pulsing dot.
+
 @Composable
-private fun WelcomePage() {
-    // Pulsing logo glow
-    val infiniteTransition = rememberInfiniteTransition(label = "welcome_pulse")
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 0.95f, targetValue = 1.08f,
-        animationSpec = infiniteRepeatable(tween(1600, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "logo_scale"
-    )
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f, targetValue = 0.7f,
-        animationSpec = infiniteRepeatable(tween(1600, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "glow_a"
-    )
+private fun HookPage() {
+    val inf = rememberInfiniteTransition(label = "hook")
+
+    // Hero float — slow vertical oscillation
+    val floatY by inf.animateFloat(-7f, 7f,
+        infiniteRepeatable(tween(2800, easing = FastOutSlowInEasing), RepeatMode.Reverse), "float_y")
+
+    // Glow pulse behind orb
+    val glowAlpha by inf.animateFloat(0.25f, 0.60f,
+        infiniteRepeatable(tween(1800, easing = FastOutSlowInEasing), RepeatMode.Reverse), "glow_a")
+    val glowScale by inf.animateFloat(0.92f, 1.08f,
+        infiniteRepeatable(tween(1800, easing = FastOutSlowInEasing), RepeatMode.Reverse), "glow_s")
+
+    // Orbit angles — two particles at different speeds + radii
+    val orbit1 by inf.animateFloat(0f, 360f,
+        infiniteRepeatable(tween(4200, easing = LinearEasing), RepeatMode.Restart), "orb1")
+    val orbit2 by inf.animateFloat(180f, 540f,
+        infiniteRepeatable(tween(6400, easing = LinearEasing), RepeatMode.Restart), "orb2")
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(top = 40.dp),
+        modifier = Modifier.fillMaxSize().padding(top = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Logo
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(140.dp)) {
+        // ── Hero ──────────────────────────────────────────────────────────────
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(180.dp)
+                .graphicsLayer { translationY = floatY.dp.toPx() }
+        ) {
+            // Pulse glow ring
             Box(
                 modifier = Modifier
-                    .size(140.dp)
-                    .scale(pulseScale)
-                    .background(AccentCyanGlow.copy(alpha = glowAlpha), CircleShape)
-                    .blur(40.dp)
+                    .size(180.dp)
+                    .graphicsLayer { scaleX = glowScale; scaleY = glowScale; alpha = glowAlpha }
+                    .background(AccentCyanGlow, CircleShape)
+                    .run { this } // no-op — blur via outer
             )
+            // Orb core
             Box(
                 modifier = Modifier
                     .size(96.dp)
                     .background(AccentCyan.copy(0.10f), CircleShape)
-                    .border(1.dp, AccentCyan.copy(0.30f), CircleShape),
+                    .border(1.dp, AccentCyan.copy(0.32f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.ChatBubble, null, tint = AccentCyan, modifier = Modifier.size(48.dp))
+                Icon(Icons.Default.ChatBubble, null, tint = AccentCyan, modifier = Modifier.size(46.dp))
             }
+            // Orbiting particle 1 — aurora blue
+            Box(
+                modifier = Modifier
+                    .size(14.dp)
+                    .graphicsLayer {
+                        translationX = cos(orbit1 * PI / 180.0).toFloat() * 76.dp.toPx()
+                        translationY = sin(orbit1 * PI / 180.0).toFloat() * 76.dp.toPx()
+                    }
+                    .background(AuroraBlue, CircleShape)
+            )
+            // Orbiting particle 2 — gold, inner orbit, opposite direction feel
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .graphicsLayer {
+                        translationX = cos(orbit2 * PI / 180.0).toFloat() * 58.dp.toPx()
+                        translationY = sin(orbit2 * PI / 180.0).toFloat() * 58.dp.toPx()
+                    }
+                    .background(PremiumGold, CircleShape)
+            )
         }
 
         Spacer(Modifier.height(28.dp))
 
-        StaggeredFadeIn(delayMs = 80) {
+        // ── Headlines ─────────────────────────────────────────────────────────
+        Reveal(delayMs = 80) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     "Talk to anyone,",
                     color = TextPrimary,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 26.sp,
-                    lineHeight = 30.sp,
+                    fontSize = 28.sp,
+                    lineHeight = 32.sp,
+                    letterSpacing = (-0.5).sp,
                     textAlign = TextAlign.Center
                 )
                 Text(
                     "anonymously",
-                    color = com.randomchat.shnapp.theme.PinkSoft,
-                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
-                    fontSize = 32.sp,
-                    lineHeight = 36.sp,
+                    color = PinkSoft,
+                    fontStyle = FontStyle.Italic,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 34.sp,
+                    lineHeight = 38.sp,
+                    letterSpacing = (-0.4).sp,
                     textAlign = TextAlign.Center
                 )
             }
         }
 
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
 
-        StaggeredFadeIn(delayMs = 200) {
+        Reveal(delayMs = 180) {
             Text(
-                "Match with random strangers worldwide.\nNo signup. No trace left.",
+                "Real strangers worldwide. No name, no trace.",
                 color = TextSecondary,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -307,260 +334,390 @@ private fun WelcomePage() {
 
         Spacer(Modifier.height(28.dp))
 
-        StaggeredFadeIn(delayMs = 340) { BulletRow(Icons.Default.Lock, "100% anonymous — no phone, no email", AccentCyan) }
-        Spacer(Modifier.height(10.dp))
-        StaggeredFadeIn(delayMs = 460) { BulletRow(Icons.Default.Bolt, "Instant matching", PremiumGold) }
-        Spacer(Modifier.height(10.dp))
-        StaggeredFadeIn(delayMs = 580) {
-            // Online chip with pulsing green dot
-            val dotAlpha by infiniteTransition.animateFloat(
-                initialValue = 0.5f, targetValue = 1f,
-                animationSpec = infiniteRepeatable(tween(900, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-                label = "dot_a"
-            )
-            Row(
-                modifier = Modifier
-                    .background(OnlineGreen.copy(0.10f), RoundedCornerShape(20.dp))
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .background(OnlineGreen.copy(dotAlpha), CircleShape)
-                )
-                Text(
-                    "1,240+ strangers online right now",
-                    color = OnlineGreen,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
+        Reveal(delayMs = 280) {
+            TutorialBulletRow(Icons.Default.Lock, "100% anonymous — no phone, no email", AccentCyan)
         }
-    }
-}
-
-// ─── Page 2: Premium showcase ────────────────────────────────────────────────
-@Composable
-private fun PremiumPage() {
-    // Subtle scale pulse instead of full 360° rotation — less visual noise.
-    val infiniteTransition = rememberInfiniteTransition(label = "gold_pulse")
-    val sparkleScale by infiniteTransition.animateFloat(
-        initialValue = 0.96f, targetValue = 1.04f,
-        animationSpec = infiniteRepeatable(tween(1800, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "sparkle_scale"
-    )
-    val sparkleRot = 0f // kept for compat with graphicsLayer block below
-
-    Column(
-        modifier = Modifier.fillMaxSize().padding(top = 40.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Animated gold sparkle
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(80.dp)) {
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .background(PremiumGold.copy(0.15f), CircleShape)
-                    .blur(20.dp)
-            )
-            Icon(
-                Icons.Default.AutoAwesome,
-                null,
-                tint = PremiumGold,
-                modifier = Modifier
-                    .size(44.dp)
-                    .graphicsLayer { scaleX = sparkleScale; scaleY = sparkleScale }
-            )
+        Spacer(Modifier.height(9.dp))
+        Reveal(delayMs = 380) {
+            TutorialBulletRow(Icons.Default.Bolt, "Instant matching with a tap", PremiumGold)
         }
+        Spacer(Modifier.height(14.dp))
 
-        Spacer(Modifier.height(16.dp))
-
-        StaggeredFadeIn(delayMs = 60) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    "Go further with",
-                    color = TextPrimary,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp,
-                    letterSpacing = (-0.2).sp
-                )
-                Text(
-                    "Premium",
-                    color = PremiumGold,
-                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
-                    fontSize = 30.sp,
-                    letterSpacing = (-0.2).sp
-                )
-            }
-        }
-
-        Spacer(Modifier.height(20.dp))
-
-        // 2x3 feature grid
-        val features = listOf(
-            Triple(Icons.Default.PhotoCamera, "Photos", "Send images"),
-            Triple(Icons.Default.Mic,         "Voice", "Record audio notes"),
-            Triple(Icons.Default.Gif,         "GIFs", "Send animated GIFs"),
-            Triple(Icons.Default.AddReaction, "Reactions", "React with emojis"),
-            Triple(Icons.Default.Save,        "Save Chats", "Keep best moments"),
-            Triple(Icons.Default.Block,       "No Ads", "Ad-free experience"),
-        )
-        features.chunked(2).forEachIndexed { rowIdx, pair ->
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                pair.forEachIndexed { colIdx, (icon, title, sub) ->
-                    val totalIdx = rowIdx * 2 + colIdx
-                    StaggeredFadeIn(
-                        delayMs = 180 + totalIdx * 90,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        FeatureTile(icon, title, sub)
-                    }
-                }
-            }
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        StaggeredFadeIn(delayMs = 800) {
-            Text(
-                "Or earn free credits by watching short ads",
-                color = TextMuted,
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center
+        Reveal(delayMs = 500) {
+            GlowChip(
+                text      = "1,240+ strangers online right now",
+                dotColor  = OnlineGreen,
+                chipBg    = OnlineGreen.copy(0.10f)
             )
         }
     }
 }
 
+// ── Page 2: Frictionless ──────────────────────────────────────────────────────
+//
+// Goal: remove signup friction psychologically before it's even mentioned.
+// Hero: sequential spring-pop checklist — each row hits like a satisfying tick.
+
 @Composable
-private fun FeatureTile(icon: ImageVector, title: String, sub: String) {
+private fun FrictionlessPage() {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                Brush.linearGradient(listOf(CardSurface, Color(0xFF1A1505))),
-                RoundedCornerShape(14.dp)
-            )
-            .border(
-                1.dp,
-                Brush.linearGradient(listOf(PremiumGold.copy(0.35f), PremiumGoldDim.copy(0.15f))),
-                RoundedCornerShape(14.dp)
-            )
-            .padding(horizontal = 12.dp, vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+            .fillMaxSize()
+            .padding(top = 36.dp),
+        horizontalAlignment = Alignment.Start
     ) {
-        Icon(icon, null, tint = PremiumGold, modifier = Modifier.size(22.dp))
-        Spacer(Modifier.height(2.dp))
-        Text(title, color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-        Text(sub, color = TextSecondary, fontSize = 10.sp, textAlign = TextAlign.Center, lineHeight = 13.sp)
+        // Overline
+        Reveal(delayMs = 40) {
+            Text(
+                "ZERO SETUP",
+                color = TextMuted,
+                fontSize = 11.sp,
+                letterSpacing = 2.8.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+
+        Spacer(Modifier.height(14.dp))
+
+        // Headlines (left-aligned — intentional editorial break from centered pages)
+        Reveal(delayMs = 100) {
+            Column {
+                Text(
+                    "Start chatting in",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 28.sp,
+                    lineHeight = 32.sp,
+                    letterSpacing = (-0.5).sp
+                )
+                Text(
+                    "seconds.",
+                    color = PinkSoft,
+                    fontStyle = FontStyle.Italic,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 34.sp,
+                    lineHeight = 38.sp,
+                    letterSpacing = (-0.4).sp
+                )
+            }
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        Reveal(delayMs = 180) {
+            Text(
+                "No account. No waiting. Just open and go.",
+                color = TextSecondary,
+                fontSize = 14.sp,
+                lineHeight = 22.sp
+            )
+        }
+
+        Spacer(Modifier.height(30.dp))
+
+        // Staggered spring-pop check rows
+        AnimatedCheckRow(text = "No email",         delayMs = 320)
+        Spacer(Modifier.height(10.dp))
+        AnimatedCheckRow(text = "No phone number",  delayMs = 480)
+        Spacer(Modifier.height(10.dp))
+        AnimatedCheckRow(text = "No signup, ever",  delayMs = 640)
     }
 }
 
-// ─── Page 3: Safety ──────────────────────────────────────────────────────────
-@Composable
-private fun SafetyPage() {
-    val infiniteTransition = rememberInfiniteTransition(label = "shield_pulse")
-    val shieldScale by infiniteTransition.animateFloat(
-        initialValue = 0.95f, targetValue = 1.05f,
-        animationSpec = infiniteRepeatable(tween(1800, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "shield_s"
-    )
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.25f, targetValue = 0.6f,
-        animationSpec = infiniteRepeatable(tween(1800, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "shield_g"
-    )
+// ── Page 3: Express — Features ────────────────────────────────────────────────
+//
+// Goal: reframe expectations — this isn't just text chat.
+// Hero: 2×2 glass feature grid. Voice tile has live equalizer. Tiles have tap feedback.
 
+@Composable
+private fun ExpressPage() {
     Column(
-        modifier = Modifier.fillMaxSize().padding(top = 40.dp),
+        modifier = Modifier.fillMaxSize().padding(top = 36.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(120.dp)) {
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .scale(shieldScale)
-                    .background(AccentCyan.copy(glowAlpha), CircleShape)
-                    .blur(36.dp)
-            )
-            Box(
-                modifier = Modifier
-                    .size(88.dp)
-                    .background(AccentCyan.copy(0.12f), CircleShape)
-                    .border(1.dp, AccentCyan.copy(0.35f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.Shield, null, tint = AccentCyan, modifier = Modifier.size(44.dp))
-            }
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        StaggeredFadeIn(delayMs = 60) {
+        Reveal(delayMs = 60) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    "Built for your",
+                    "Say it",
                     color = TextPrimary,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    textAlign = TextAlign.Center
+                    fontSize = 28.sp,
+                    letterSpacing = (-0.5).sp
                 )
                 Text(
-                    "safety",
-                    color = com.randomchat.shnapp.theme.PinkSoft,
-                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
-                    fontSize = 32.sp,
-                    textAlign = TextAlign.Center
+                    "your way.",
+                    color = PinkSoft,
+                    fontStyle = FontStyle.Italic,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 34.sp,
+                    letterSpacing = (-0.4).sp
                 )
             }
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(10.dp))
 
-        StaggeredFadeIn(delayMs = 180) {
+        Reveal(delayMs = 140) {
             Text(
-                "Stay private. Stay in control.",
+                "Photos, voice, GIFs, reactions —\ngo beyond plain text.",
                 color = TextSecondary,
-                fontSize = 14.sp
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 22.sp
             )
         }
 
         Spacer(Modifier.height(28.dp))
 
-        StaggeredFadeIn(delayMs = 320) { BulletRow(Icons.Default.Flag, "Report anyone in one tap", Color(0xFFFF6B6B)) }
-        Spacer(Modifier.height(10.dp))
-        StaggeredFadeIn(delayMs = 440) { BulletRow(Icons.Default.Lock, "App Lock with device PIN (Premium)", PremiumGold) }
-        Spacer(Modifier.height(10.dp))
-        StaggeredFadeIn(delayMs = 560) { BulletRow(Icons.Default.Timer, "Chats auto-expire — nothing stored", AccentCyan) }
-        Spacer(Modifier.height(10.dp))
-        StaggeredFadeIn(delayMs = 680) { BulletRow(Icons.Default.VerifiedUser, "AI-moderated content", OnlineGreen) }
+        // Row 1
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Reveal(delayMs = 220, modifier = Modifier.weight(1f)) {
+                ExpressTile(
+                    icon    = Icons.Default.PhotoCamera,
+                    label   = "Photos",
+                    accent  = AccentCyan
+                )
+            }
+            Reveal(delayMs = 310, modifier = Modifier.weight(1f)) {
+                // Voice tile — equalizer instead of static icon
+                ExpressTile(
+                    icon   = null,
+                    label  = "Voice",
+                    accent = BrandViolet
+                ) {
+                    VoiceEqualizer(barColor = BrandViolet, modifier = Modifier.height(32.dp))
+                }
+            }
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        // Row 2
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Reveal(delayMs = 400, modifier = Modifier.weight(1f)) {
+                ExpressTile(
+                    icon   = Icons.Default.Gif,
+                    label  = "GIFs",
+                    accent = PinkSoft
+                )
+            }
+            Reveal(delayMs = 490, modifier = Modifier.weight(1f)) {
+                ExpressTile(
+                    icon   = Icons.Default.AddReaction,
+                    label  = "React",
+                    accent = OnlineGreen
+                )
+            }
+        }
     }
 }
 
-// ─── Shared building blocks ──────────────────────────────────────────────────
+// ── Page 4: Control + Final CTA ───────────────────────────────────────────────
+//
+// Goal: trust + conversion. User feels safe. Ending is decisive.
+// Hero: lock icon surrounded by two concentric pulsing rings (different speeds = phase offset).
+
 @Composable
-private fun BulletRow(icon: ImageVector, text: String, tint: Color) {
-    Row(
+private fun ControlPage() {
+    val inf = rememberInfiniteTransition(label = "control")
+
+    // Ring 1 — inner, faster
+    val r1Scale by inf.animateFloat(0.92f, 1.08f,
+        infiniteRepeatable(tween(1900, easing = FastOutSlowInEasing), RepeatMode.Reverse), "r1s")
+    val r1Alpha by inf.animateFloat(0.55f, 0.18f,
+        infiniteRepeatable(tween(1900, easing = FastOutSlowInEasing), RepeatMode.Reverse), "r1a")
+
+    // Ring 2 — outer, slower (different duration = natural phase drift)
+    val r2Scale by inf.animateFloat(0.88f, 1.12f,
+        infiniteRepeatable(tween(2500, easing = FastOutSlowInEasing), RepeatMode.Reverse), "r2s")
+    val r2Alpha by inf.animateFloat(0.35f, 0.10f,
+        infiniteRepeatable(tween(2500, easing = FastOutSlowInEasing), RepeatMode.Reverse), "r2a")
+
+    // Lock float
+    val floatY by inf.animateFloat(-5f, 5f,
+        infiniteRepeatable(tween(3200, easing = FastOutSlowInEasing), RepeatMode.Reverse), "lock_float")
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(top = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // ── Hero ──────────────────────────────────────────────────────────────
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(170.dp)
+                .graphicsLayer { translationY = floatY.dp.toPx() }
+        ) {
+            // Outer ring
+            Box(
+                modifier = Modifier
+                    .size(160.dp)
+                    .graphicsLayer { scaleX = r2Scale; scaleY = r2Scale; alpha = r2Alpha }
+                    .border(1.dp, BrandViolet.copy(r2Alpha), CircleShape)
+            )
+            // Inner ring
+            Box(
+                modifier = Modifier
+                    .size(122.dp)
+                    .graphicsLayer { scaleX = r1Scale; scaleY = r1Scale; alpha = r1Alpha }
+                    .border(1.5.dp, BrandViolet.copy(r1Alpha), CircleShape)
+            )
+            // Violet glow
+            Box(
+                modifier = Modifier
+                    .size(130.dp)
+                    .background(BrandVioletGlow.copy(0.25f), CircleShape)
+            )
+            // Core
+            Box(
+                modifier = Modifier
+                    .size(90.dp)
+                    .background(BrandViolet.copy(0.12f), CircleShape)
+                    .border(2.dp, BrandViolet.copy(0.52f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.Lock, null, tint = BrandViolet, modifier = Modifier.size(44.dp))
+            }
+        }
+
+        Spacer(Modifier.height(26.dp))
+
+        // ── Headlines ─────────────────────────────────────────────────────────
+        Reveal(delayMs = 60) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    "You stay",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 28.sp,
+                    letterSpacing = (-0.5).sp,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    "in control.",
+                    color = PinkSoft,
+                    fontStyle = FontStyle.Italic,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 34.sp,
+                    letterSpacing = (-0.4).sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        Reveal(delayMs = 160) {
+            Text(
+                "Lock the app, save chats worth keeping,\nreport anyone in one tap.",
+                color = TextSecondary,
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 22.sp
+            )
+        }
+
+        Spacer(Modifier.height(26.dp))
+
+        Reveal(delayMs = 280) {
+            TutorialBulletRow(Icons.Default.Lock, "App Lock with device PIN", BrandViolet)
+        }
+        Spacer(Modifier.height(9.dp))
+        Reveal(delayMs = 380) {
+            TutorialBulletRow(Icons.Default.Save, "Save chats worth keeping", AccentCyan)
+        }
+        Spacer(Modifier.height(9.dp))
+        Reveal(delayMs = 480) {
+            TutorialBulletRow(Icons.Default.Flag, "Report anyone in one tap", Color(0xFFFF6B6B))
+        }
+    }
+}
+
+// ── Private building blocks ───────────────────────────────────────────────────
+
+/**
+ * Feature tile for the Express page.
+ * Tap → spring-scale press feedback.
+ * [heroContent] overrides the default icon box (used by Voice tile for equalizer).
+ */
+@Composable
+private fun ExpressTile(
+    icon: ImageVector?,
+    label: String,
+    accent: Color,
+    heroContent: (@Composable () -> Unit)? = null
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val tileScale by animateFloatAsState(
+        targetValue = if (isPressed) 0.94f else 1f,
+        animationSpec = spring(dampingRatio = 0.58f, stiffness = Spring.StiffnessMedium),
+        label = "tile_scale_$label"
+    )
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(CardSurface.copy(0.6f), RoundedCornerShape(12.dp))
-            .border(1.dp, SubtleBorder.copy(0.5f), RoundedCornerShape(12.dp))
-            .padding(horizontal = 14.dp, vertical = 11.dp),
+            .graphicsLayer { scaleX = tileScale; scaleY = tileScale }
+            .background(CardSurface.copy(0.48f), RoundedCornerShape(18.dp))
+            .border(1.dp, SubtleBorder, RoundedCornerShape(18.dp))
+            .clickable(interactionSource = interactionSource, indication = null) { }
+            .padding(vertical = 18.dp, horizontal = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        if (heroContent != null) {
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .background(accent.copy(0.12f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                heroContent()
+            }
+        } else if (icon != null) {
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .background(accent.copy(0.12f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, null, tint = accent, modifier = Modifier.size(22.dp))
+            }
+        }
+        Text(label, color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+/**
+ * Icon + label bullet row — shared across Hook and Control pages.
+ */
+@Composable
+private fun TutorialBulletRow(
+    icon: ImageVector,
+    text: String,
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(CardSurface.copy(0.55f), RoundedCornerShape(13.dp))
+            .border(1.dp, SubtleBorder.copy(0.45f), RoundedCornerShape(13.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Box(
             modifier = Modifier
                 .size(30.dp)
-                .background(tint.copy(0.12f), CircleShape),
+                .background(tint.copy(0.13f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(icon, null, tint = tint, modifier = Modifier.size(16.dp))
@@ -569,23 +726,25 @@ private fun BulletRow(icon: ImageVector, text: String, tint: Color) {
     }
 }
 
-/** Staggered slide+fade entrance — perceived smoothness via delay. */
+/**
+ * Staggered fade + rise entrance with a slightly longer duration than the
+ * global StaggeredFadeIn — chosen for the editorial pacing of onboarding.
+ */
 @Composable
-private fun StaggeredFadeIn(
+private fun Reveal(
     delayMs: Int = 0,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(delayMs.toLong())
+        if (delayMs > 0) delay(delayMs.toLong())
         visible = true
     }
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(tween(420)) + slideInVertically(tween(420)) { it / 4 },
+        enter   = fadeIn(tween(380, easing = FastOutSlowInEasing)) +
+                  slideInVertically(tween(380, easing = FastOutSlowInEasing)) { it / 5 },
         modifier = modifier
-    ) {
-        content()
-    }
+    ) { content() }
 }
