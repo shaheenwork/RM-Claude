@@ -83,7 +83,7 @@ fun HomePremiumCard(
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                "StrangerChat Premium",
+                "Random Malayali Premium",
                 color = PremiumGold,
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp,
@@ -92,7 +92,7 @@ fun HomePremiumCard(
         }
         Spacer(Modifier.height(10.dp))
         Text(
-            "Send photos & videos • Voice notes • React • Live typing preview • Save chats • No ads",
+            "Unlock it all — photos, voice notes, live typing preview, saved chats & zero ads.",
             color = TextSecondary,
             fontSize = 13.sp,
             lineHeight = 19.sp
@@ -144,7 +144,8 @@ fun GoldButton(
 fun CyanButton(
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector? = null
 ) {
     androidx.compose.foundation.layout.Box(
         contentAlignment = androidx.compose.ui.Alignment.Center,
@@ -156,12 +157,25 @@ fun CyanButton(
             .clickable(onClick = onClick)
             .padding(horizontal = 36.dp, vertical = 16.dp)
     ) {
-        Text(
-            text = text,
-            color = androidx.compose.ui.graphics.Color.White,
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
-            letterSpacing = 0.3.sp
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            if (leadingIcon != null) {
+                Icon(
+                    imageVector = leadingIcon,
+                    contentDescription = null,
+                    tint = androidx.compose.ui.graphics.Color.White,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Text(
+                text = text,
+                color = androidx.compose.ui.graphics.Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                letterSpacing = 0.3.sp
+            )
+        }
     }
 }

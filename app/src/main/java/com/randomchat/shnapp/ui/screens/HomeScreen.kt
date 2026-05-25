@@ -65,6 +65,7 @@ import com.randomchat.shnapp.theme.SubtleBorder
 import com.randomchat.shnapp.theme.TextMuted
 import com.randomchat.shnapp.theme.TextPrimary
 import com.randomchat.shnapp.theme.TextSecondary
+import com.randomchat.shnapp.ui.components.BrandMark
 import com.randomchat.shnapp.ui.components.CyanButton
 import com.randomchat.shnapp.ui.components.HomePremiumCard
 import com.randomchat.shnapp.utils.Constants
@@ -87,9 +88,14 @@ fun HomeScreen(
     val audioCredits     by viewModel.rewardedAudioCredits.collectAsState()
     val gifCredits       by viewModel.rewardedGifCredits.collectAsState()
     val onlineCount      by viewModel.onlineCount.collectAsState()
-    // Stable random offset per session — doesn't re-roll on recompose
-    val onlineOffset     = remember { (11..23).random() }
-    val displayedOnline  = onlineCount + onlineOffset
+    // Believable presence: time-seeded so it's stable within a minute and drifts
+    // gently across minutes (slow tide ±60 + gentle wobble ±12) — no drastic jumps.
+    val displayedOnline  = remember(onlineCount) {
+        val minute = System.currentTimeMillis() / 60_000L
+        val tide   = (kotlin.math.sin(minute / 60.0) * 60).toInt()
+        val wobble = (kotlin.math.sin(minute / 7.0)  * 12).toInt()
+        onlineCount + 150 + tide + wobble
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Static background — radial gradients replace animated blur blobs
@@ -99,7 +105,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        listOf(DeepSpace, Color(0xFF080E1C), GradientEnd)
+                        listOf(DeepSpace, Color(0xFF0C1A14), GradientEnd)
                     )
                 )
         )
@@ -172,31 +178,26 @@ fun HomeScreen(
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.size(56.dp)) {
                     Box(
                         modifier = Modifier
-                            .size(56.dp)
+                            .size(44.dp)
                             .background(AccentCyanGlow, CircleShape)
-                            .blur(14.dp)
+                            .blur(22.dp)
                     )
-                    Icon(
-                        imageVector = Icons.Default.ChatBubble,
-                        contentDescription = null,
-                        tint = AccentCyan,
-                        modifier = Modifier.size(30.dp)
-                    )
+                    BrandMark(size = 52.dp)
                 }
 
                 Spacer(Modifier.height(10.dp))
 
                 // Editorial greeting — Inter for first line, serif italic for second.
-                // "Good evening, stranger" pattern (20-40 audience, premium tone)
+                // "Talk to a random Malayali" — time-neutral, on-brand
                 Text(
-                    "Welcome back,",
+                    "Talk to a",
                     color = TextPrimary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 26.sp,
                     letterSpacing = (-0.5).sp
                 )
                 Text(
-                    "stranger",
+                    "Random Malayali",
                     color = com.randomchat.shnapp.theme.PinkSoft,
                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                     fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
@@ -205,7 +206,7 @@ fun HomeScreen(
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    "Someone interesting is online tonight",
+                    "Someone interesting is online right now",
                     color = TextSecondary,
                     fontSize = 13.sp,
                     textAlign = TextAlign.Center
@@ -227,12 +228,23 @@ fun HomeScreen(
                             .background(com.randomchat.shnapp.theme.OnlineGreen, CircleShape)
                     )
                     Text(
-                        "$displayedOnline active right now",
+                        "%,d Malayalis online".format(displayedOnline),
                         color = com.randomchat.shnapp.theme.OnlineGreen,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
+
+                Spacer(Modifier.height(8.dp))
+
+                // Diaspora reach — worldwide cue
+                Text(
+                    "KERALA · GULF · US · UK · 40+ COUNTRIES",
+                    color = TextMuted,
+                    fontSize = 9.sp,
+                    letterSpacing = 1.5.sp,
+                    textAlign = TextAlign.Center
+                )
 
                 Spacer(Modifier.height(16.dp))
 
@@ -246,7 +258,8 @@ fun HomeScreen(
                     )
                 } else {
                     CyanButton(
-                        text = "⚡  Connect Now",
+                        text = "Start chatting",
+                        leadingIcon = Icons.Default.ChatBubble,
                         onClick = { haptics.heavy(); onStartChat() },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -325,7 +338,7 @@ private fun RewardsCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF060D1A), RoundedCornerShape(12.dp))
+            .background(Color(0xFF07140E), RoundedCornerShape(12.dp))
             .border(1.dp, SubtleBorder, RoundedCornerShape(12.dp))
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -342,13 +355,21 @@ private fun RewardsCard(
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                CreditInline(Icons.Default.PhotoCamera, photoCredits)
-                CreditInline(Icons.Default.Mic, audioCredits)
-                CreditInline(Icons.Default.Gif, gifCredits)
+            if (photoCredits + audioCredits + gifCredits > 0) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    CreditInline(Icons.Default.PhotoCamera, photoCredits)
+                    CreditInline(Icons.Default.Mic, audioCredits)
+                    CreditInline(Icons.Default.Gif, gifCredits)
+                }
+            } else {
+                Text(
+                    "Unlock photos, voice notes & GIFs",
+                    color = TextMuted,
+                    fontSize = 11.sp
+                )
             }
         }
 

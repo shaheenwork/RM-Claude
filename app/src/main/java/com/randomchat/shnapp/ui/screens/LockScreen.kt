@@ -57,7 +57,7 @@ fun LockScreen(onUnlock: () -> Unit) {
         Spacer(Modifier.height(24.dp))
 
         Text(
-            "StrangerChat Locked",
+            "Random Malayali Locked",
             color = TextPrimary,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold

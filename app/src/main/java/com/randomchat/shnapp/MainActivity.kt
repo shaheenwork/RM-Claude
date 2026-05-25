@@ -113,7 +113,7 @@ class MainActivity : ComponentActivity() {
         }
         @Suppress("DEPRECATION")
         val intent = km.createConfirmDeviceCredentialIntent(
-            "StrangerChat",
+            "Random Malayali",
             "Verify your identity to continue"
         )
         if (intent != null) unlockLauncher.launch(intent)
@@ -215,9 +215,11 @@ fun AppNavHost(
             // before deciding which destination to open.
             var splashDone by remember { mutableStateOf(false) }
 
+            // Lift the OS splash on first frame so the branded Compose splash is visible.
+            LaunchedEffect(Unit) { onSplashReady() }
+
             LaunchedEffect(splashDone) {
                 if (!splashDone) return@LaunchedEffect
-                onSplashReady()
                 val sm = SessionManager.getInstance(context)
                 val accepted = sm.termsAcceptedFlow.first()
                 if (accepted) {

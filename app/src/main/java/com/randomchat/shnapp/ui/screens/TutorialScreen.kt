@@ -269,7 +269,7 @@ private fun HookPage() {
                     .border(1.dp, AccentCyan.copy(0.32f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.ChatBubble, null, tint = AccentCyan, modifier = Modifier.size(46.dp))
+                com.randomchat.shnapp.ui.components.BrandMark(size = 52.dp)
             }
             // Orbiting particle 1 — aurora blue
             Box(

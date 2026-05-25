@@ -64,7 +64,7 @@ import kotlinx.coroutines.delay
 private val ORBIT_EMOJIS = listOf("🌊", "🔥", "🌙", "✨", "🎮", "🎵", "🌸", "🦋", "☕", "🎬")
 
 private val STATUS_TEXTS = listOf(
-    "Scanning the night",
+    "Finding a Malayali for you",
     "Looking for someone interesting",
     "Preparing a private room",
     "Almost there"
@@ -229,19 +229,20 @@ fun MatchmakingDialog(
 
                 // Headline — Inter + serif italic accent
                 Text(
-                    "Searching for someone",
+                    "Finding a Malayali",
                     color = TextPrimary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     letterSpacing = (-0.3).sp
                 )
                 Text(
-                    "interesting…",
+                    "near you, or across the world",
                     color = PinkSoft,
                     fontStyle = FontStyle.Italic,
                     fontFamily = FontFamily.Serif,
-                    fontSize = 24.sp,
-                    letterSpacing = (-0.3).sp
+                    fontSize = 22.sp,
+                    letterSpacing = (-0.3).sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
 
                 Spacer(Modifier.height(10.dp))
@@ -261,7 +262,16 @@ fun MatchmakingDialog(
                     )
                 }
 
-                Spacer(Modifier.height(52.dp))
+                Spacer(Modifier.height(16.dp))
+
+                // Trust line — surfaces the real anonymity (no data is collected)
+                Text(
+                    "🔒 No name, no number — fully anonymous",
+                    color = AccentCyan,
+                    fontSize = 11.sp
+                )
+
+                Spacer(Modifier.height(36.dp))
 
                 TextButton(onClick = onCancel) {
                     Box(

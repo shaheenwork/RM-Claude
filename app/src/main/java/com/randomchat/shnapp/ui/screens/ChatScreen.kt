@@ -352,7 +352,7 @@ fun ChatScreen(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            "Anonymous Stranger",
+                            "A Random Malayali",
                             color = TextPrimary,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 15.sp
@@ -488,7 +488,7 @@ fun ChatScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     androidx.compose.material3.Text(
-                        "👋  You're connected to a random stranger — say Hi!",
+                        "👋  Connected to a fellow Malayali — say hi!",
                         color = AccentCyan,
                         fontSize = 12.sp,
                         textAlign = TextAlign.Center,
@@ -663,7 +663,7 @@ fun ChatScreen(
                     }
 
                     com.randomchat.shnapp.ui.components.CyanButton(
-                        text = "New Stranger",
+                        text = "Meet another Malayali",
                         onClick = { haptics.click(); viewModel.newChat(); onNavigateBack() },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -720,7 +720,7 @@ fun ChatScreen(
                         Spacer(Modifier.width(10.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                "Replying to ${if (target.senderId == viewModel.sessionId) "yourself" else "Stranger"}",
+                                "Replying to ${if (target.senderId == viewModel.sessionId) "yourself" else "Malayali"}",
                                 color = AccentCyan,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold

@@ -32,6 +32,7 @@ import com.randomchat.shnapp.theme.DeepSpace
 import com.randomchat.shnapp.theme.GradientEnd
 import com.randomchat.shnapp.theme.GradientMid
 import com.randomchat.shnapp.theme.TextSecondary
+import com.randomchat.shnapp.ui.components.BrandMark
 import com.randomchat.shnapp.ui.components.PulseLoader
 import kotlinx.coroutines.delay
 
@@ -73,18 +74,13 @@ fun SplashScreen(onReady: () -> Unit) {
                     .scale(iconScale)
             ) {
                 PulseLoader(color = AccentCyan, size = 50f)
-                Icon(
-                    imageVector = Icons.Default.ChatBubble,
-                    contentDescription = null,
-                    tint = AccentCyan,
-                    modifier = Modifier.size(40.dp)
-                )
+                BrandMark(size = 58.dp)
             }
 
             Spacer(Modifier.height(24.dp))
 
             Text(
-                "StrangerChat",
+                "Random Malayali",
                 color = AccentCyan.copy(textAlpha),
                 fontWeight = FontWeight.Black,
                 fontSize = 28.sp,
@@ -92,10 +88,10 @@ fun SplashScreen(onReady: () -> Unit) {
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                "Anonymous. Private. Instant.",
+                "Talk to Malayalis worldwide, anytime.",
                 color = TextSecondary.copy(textAlpha),
                 fontSize = 13.sp,
-                letterSpacing = 2.sp
+                letterSpacing = 0.5.sp
             )
         }
     }

@@ -89,12 +89,12 @@ private data class PremiumFeature(
 
 private val FEATURES = listOf(
     PremiumFeature(Icons.Default.PhotoCamera, "Send Photos", "Share images directly in chat", AccentCyan),
-    PremiumFeature(Icons.Default.Mic, "Send Voice Notes", "Record and send audio clips", Color(0xFF9C6FFF)),
-    PremiumFeature(Icons.Default.Gif, "Send GIFs", "React with animated GIFs from Klipy", Color(0xFF66D7FF)),
-    PremiumFeature(Icons.Default.AddReaction, "Message Reactions", "React to messages with emojis", Color(0xFFFF9800)),
-    PremiumFeature(Icons.Default.Visibility, "Live Typing Preview", "See what stranger types in real time", Color(0xFF00E5FF)),
+    PremiumFeature(Icons.Default.Mic, "Send Voice Notes", "Record and send audio clips", com.randomchat.shnapp.theme.AuroraBlue),
+    PremiumFeature(Icons.Default.Gif, "Send GIFs", "React with animated GIFs from Klipy", PremiumGold),
+    PremiumFeature(Icons.Default.AddReaction, "Message Reactions", "React to messages with emojis", Color(0xFFE8765A)),
+    PremiumFeature(Icons.Default.Visibility, "Live Typing Preview", "See what they're typing in real time", com.randomchat.shnapp.theme.AuroraBlue),
     PremiumFeature(Icons.Default.Save, "Save Conversations", "Keep your best chats forever", PremiumGold),
-    PremiumFeature(Icons.Default.Block, "No Ads", "Completely ad-free experience", Color(0xFFFF6B6B)),
+    PremiumFeature(Icons.Default.Block, "No Ads", "Completely ad-free experience", AccentCyan),
 )
 
 private val PERIOD_LABELS = mapOf(
@@ -238,7 +238,7 @@ fun PremiumScreen(
             Spacer(Modifier.height(8.dp))
             Text(
                 if (isPremium) "Enjoy all premium features"
-                else "Unlock the full power of StrangerChat",
+                else "Unlock the full power of Random Malayali",
                 color = TextSecondary,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center

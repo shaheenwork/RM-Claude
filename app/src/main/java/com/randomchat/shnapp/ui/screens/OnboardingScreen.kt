@@ -55,6 +55,7 @@ import com.randomchat.shnapp.theme.SubtleBorder
 import com.randomchat.shnapp.theme.TextMuted
 import com.randomchat.shnapp.theme.TextPrimary
 import com.randomchat.shnapp.theme.TextSecondary
+import com.randomchat.shnapp.ui.components.BrandMark
 import com.randomchat.shnapp.utils.Constants
 import com.randomchat.shnapp.utils.SessionManager
 import kotlinx.coroutines.launch
@@ -92,24 +93,12 @@ fun OnboardingScreen(onAccepted: () -> Unit) {
             Spacer(Modifier.height(52.dp))
 
             // ── Brand header ──────────────────────────────────────────────────
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(80.dp)
-                    .background(AccentCyanGlow, CircleShape)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ChatBubble,
-                    contentDescription = null,
-                    tint = AccentCyan,
-                    modifier = Modifier.size(36.dp)
-                )
-            }
+            BrandMark(size = 72.dp)
 
             Spacer(Modifier.height(20.dp))
 
             Text(
-                "StrangerChat",
+                "Random Malayali",
                 color = TextPrimary,
                 fontWeight = FontWeight.Black,
                 fontSize = 28.sp,
@@ -117,10 +106,10 @@ fun OnboardingScreen(onAccepted: () -> Unit) {
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                "Anonymous. Private. Instant.",
+                "No email · No phone · No signup — just talk",
                 color = TextSecondary,
                 fontSize = 12.sp,
-                letterSpacing = 1.8.sp
+                letterSpacing = 0.4.sp
             )
 
             Spacer(Modifier.height(52.dp))

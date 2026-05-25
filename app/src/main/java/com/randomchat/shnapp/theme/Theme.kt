@@ -8,11 +8,11 @@ import androidx.compose.ui.graphics.Color
 private val DarkColorScheme = darkColorScheme(
     primary = AccentCyan,
     onPrimary = DeepSpace,
-    primaryContainer = Color(0xFF003344),
+    primaryContainer = Color(0xFF0F3D2E),
     onPrimaryContainer = AccentCyan,
     secondary = PremiumGold,
     onSecondary = DeepSpace,
-    secondaryContainer = Color(0xFF332B00),
+    secondaryContainer = Color(0xFF3A2E12),
     onSecondaryContainer = PremiumGold,
     tertiary = OnlineGreen,
     onTertiary = DeepSpace,

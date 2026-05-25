@@ -445,7 +445,7 @@ private fun ReplyContextChip(
     originalType: MessageType,
     onOutgoing: Boolean
 ) {
-    val accentColor = if (onOutgoing) Color(0xFF9FE6FF) else AccentCyan
+    val accentColor = if (onOutgoing) Color(0xFFCDEFE2) else AccentCyan
     Row(
         modifier = Modifier
             .background(
@@ -466,7 +466,7 @@ private fun ReplyContextChip(
         Spacer(Modifier.width(8.dp))
         Column(modifier = Modifier.widthIn(max = 220.dp)) {
             Text(
-                text = if (isFromMe) "You" else "Stranger",
+                text = if (isFromMe) "You" else "Malayali",
                 color = accentColor,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold

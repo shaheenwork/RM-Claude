@@ -62,7 +62,7 @@ fun ReportDialog(
                 .padding(24.dp)
         ) {
             Text(
-                "Report Stranger",
+                "Report this Malayali",
                 color = TextPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
