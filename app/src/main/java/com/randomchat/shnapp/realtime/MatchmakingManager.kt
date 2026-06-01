@@ -3,6 +3,7 @@ package com.randomchat.shnapp.realtime
 import android.util.Log
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ServerValue
+import com.randomchat.shnapp.model.Gender
 import com.randomchat.shnapp.utils.Constants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,14 +39,14 @@ class MatchmakingManager(
 
     // ── Public API ────────────────────────────────────────────────────────────
 
-    fun startSearch() {
+    fun startSearch(gender: Gender) {
         if (_state.value is MatchmakingState.Searching) return
         _state.value = MatchmakingState.Searching
         scope.launch {
             try {
                 rtdb.clearAssignment(sessionId) // wipe any stale assignment before listening
                 rtdb.setOnline(sessionId)
-                writeQueueEntry()
+                writeQueueEntry(gender)
                 listenForAssignment()
                 startHeartbeat()
             } catch (e: Exception) {
@@ -56,12 +57,15 @@ class MatchmakingManager(
     }
 
     // ── Write queue entry with all required fields ────────────────────────────
+    // Gender is written so the server matcher can apply a soft F-F bias.
+    // Never read by the chat client → never shown to either user in-chat.
 
-    private suspend fun writeQueueEntry() {
+    private suspend fun writeQueueEntry(gender: Gender) {
         val entry = mapOf(
             "sessionId" to sessionId,
             "joinedAt" to ServerValue.TIMESTAMP,
-            "platform" to "android"
+            "platform" to "android",
+            "gender" to gender.name        // "MALE" | "FEMALE"
         )
         val ref = FirebaseDatabase.getInstance().reference
             .child(Constants.PATH_WAITING_QUEUE)

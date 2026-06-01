@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.randomchat.shnapp.firebase.FcmManager
 import com.randomchat.shnapp.firebase.FirestoreManager
+import com.randomchat.shnapp.model.Gender
 import com.randomchat.shnapp.realtime.RealtimeDbManager
 import com.randomchat.shnapp.utils.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,6 +53,14 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     val appLockEnabled: StateFlow<Boolean> = sessionManager.appLockEnabledFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    /** Persisted gender selection. null = never picked; user changes via Home pills. */
+    val selectedGender: StateFlow<Gender?> = sessionManager.genderFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    fun setGender(gender: Gender) {
+        viewModelScope.launch { sessionManager.setGender(gender) }
+    }
 
     private val _isLocked = MutableStateFlow(false)
     val isLocked: StateFlow<Boolean> = _isLocked

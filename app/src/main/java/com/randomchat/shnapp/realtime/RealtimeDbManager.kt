@@ -136,6 +136,33 @@ class RealtimeDbManager {
         }
     }
 
+    // ─── Block list ───────────────────────────────────────────────────────────
+
+    /**
+     * Persists a block from reporter → reported in both directions so the
+     * server matcher can filter the pair out from future matches:
+     *   blocks/<reporter>/<reported>   = timestamp
+     *   blockedBy/<reported>/<reporter> = timestamp
+     *
+     * Failures are logged, not thrown — the user's report flow should never
+     * fail because of a block write.
+     *
+     * Rules requirement (database.rules.json):
+     *   "blocks":    { "$uid": { ".write": "auth.uid === $uid" } }
+     *   "blockedBy": { "$uid": { "$other": { ".write": "auth.uid === $other" } } }
+     */
+    suspend fun writeBlock(reporterId: String, reportedId: String) {
+        try {
+            val now = ServerValue.TIMESTAMP
+            root.updateChildren(mapOf(
+                "blocks/$reporterId/$reportedId"   to now,
+                "blockedBy/$reportedId/$reporterId" to now,
+            )).await()
+        } catch (e: Exception) {
+            android.util.Log.w("RTDB", "writeBlock failed: ${e.message}")
+        }
+    }
+
     // ─── Rooms ────────────────────────────────────────────────────────────────
 
     suspend fun endRoom(roomId: String) {

@@ -114,53 +114,165 @@ exports.matchOnQueue = onValueCreated(
     { ref: "waitingQueue/{uid}", region: "us-central1" },
     async (event) => {
         const db = getDatabase();
+        const fs = getFirestore();
         const newUid = event.params.uid;
         const queueRef = db.ref("waitingQueue");
 
-        let partnerId = null;
+        // ── Pre-fetch newcomer's recent partners + block sets (outside tx) ───
+        const [recentSnap, blocksOutSnap, blocksInSnap] = await Promise.all([
+            db.ref(`recentPairs/${newUid}`).once("value"),
+            db.ref(`blocks/${newUid}`).once("value"),
+            db.ref(`blockedBy/${newUid}`).once("value"),
+        ]);
+        const recentSet = new Set(recentSnap.exists()    ? Object.keys(recentSnap.val())    : []);
+        const blockSet  = new Set([
+            ...(blocksOutSnap.exists() ? Object.keys(blocksOutSnap.val()) : []),
+            ...(blocksInSnap.exists()  ? Object.keys(blocksInSnap.val())  : []),
+        ]);
 
-        // Atomic transaction: claim a partner or bail if none available.
-        // The function may retry — capturedPartnerId reflects the final committed run.
+        let partnerId      = null;
+        let partnerGender  = "UNSPECIFIED";
+        let newcomerGender = "UNSPECIFIED";
+        let waitTimeMs     = 0;
+        let pickTier       = "none";
+
+        // ── Atomic transaction: tiered pick with last-resort FIFO fallback ───
         const result = await queueRef.transaction((currentData) => {
             if (!currentData) return currentData;
-            if (!currentData[newUid]) return currentData; // already removed (cancel/disconnect)
+            if (!currentData[newUid]) return currentData; // already removed
 
             const others = Object.keys(currentData).filter((k) => k !== newUid);
-            if (others.length === 0) return currentData; // no partner yet — device waits
+            if (others.length === 0) return currentData; // empty — wait
 
-            // Pick the waiter who joined earliest
-            let oldest = others[0];
-            for (const uid of others) {
-                if ((currentData[uid]?.joinedAt || 0) < (currentData[oldest]?.joinedAt || 0)) {
-                    oldest = uid;
-                }
+            // Oldest (earliest joinedAt) with deterministic uid tie-break.
+            const oldestOf = (uids) => uids.reduce((acc, uid) => {
+                const a = currentData[uid]?.joinedAt || 0;
+                const b = currentData[acc]?.joinedAt || 0;
+                if (a < b) return uid;
+                if (a > b) return acc;
+                return uid < acc ? uid : acc; // tie-break: lexicographic uid
+            }, uids[0]);
+
+            const isClean  = (uid) => !recentSet.has(uid) && !blockSet.has(uid);
+            const isFemale = (uid) => currentData[uid]?.gender === "FEMALE";
+
+            const newcomerIsFemale = isFemale(newUid);
+            const ffRoll = newcomerIsFemale && Math.random() < 0.6;
+
+            let pick = null;
+
+            // Tier 1a — 60% bias: clean F-F
+            if (ffRoll) {
+                const cleanF = others.filter((u) => isFemale(u) && isClean(u));
+                if (cleanF.length > 0) { pick = oldestOf(cleanF); pickTier = "ff_clean"; }
+            }
+            // Tier 1b — 60% bias: any F-F (honor bias even if dirty)
+            if (!pick && ffRoll) {
+                const anyF = others.filter(isFemale);
+                if (anyF.length > 0) { pick = oldestOf(anyF); pickTier = "ff_dirty"; }
+            }
+            // Tier 2 — clean FIFO (any gender, no recent/block)
+            if (!pick) {
+                const clean = others.filter(isClean);
+                if (clean.length > 0) { pick = oldestOf(clean); pickTier = "clean"; }
+            }
+            // Tier 3 — LAST RESORT: oldest of all (allows recent/blocked).
+            // Guarantees: if any other user is in the queue, they get matched.
+            // No one ever waits indefinitely just because of rules.
+            if (!pick) {
+                pick = oldestOf(others);
+                pickTier = "last_resort";
             }
 
-            partnerId = oldest; // captured for use after commit
+            partnerId      = pick;
+            partnerGender  = currentData[pick]?.gender   || "UNSPECIFIED";
+            newcomerGender = currentData[newUid]?.gender || "UNSPECIFIED";
+            waitTimeMs     = Date.now() - (currentData[pick]?.joinedAt || Date.now());
             delete currentData[newUid];
-            delete currentData[oldest];
+            delete currentData[pick];
             return currentData;
         });
 
-        if (!result.committed || !partnerId) return; // no match this invocation
+        if (!result.committed || !partnerId) return;
 
-        // Deterministic, collision-free room ID
+        // ── Single multi-path write: room + assignments + recentPairs both ways
         const roomId = [...[newUid, partnerId].sort(), Date.now()].join("_");
-        const now = Date.now();
-
-        // Single multi-path write: room + both assignments atomically
+        const now    = Date.now();
         await db.ref().update({
             [`rooms/${roomId}`]: {
                 id: roomId,
-                participants: [newUid, partnerId], // stored as {0: uid, 1: uid} in RTDB
+                participants: [newUid, partnerId],
                 status: "ACTIVE",
                 createdAt: now,
             },
-            [`sessionAssignments/${newUid}`]:     { roomId, assignedAt: now },
-            [`sessionAssignments/${partnerId}`]:  { roomId, assignedAt: now },
+            [`sessionAssignments/${newUid}`]:    { roomId, assignedAt: now },
+            [`sessionAssignments/${partnerId}`]: { roomId, assignedAt: now },
+            [`recentPairs/${newUid}/${partnerId}`]: now,
+            [`recentPairs/${partnerId}/${newUid}`]: now,
         });
 
-        console.log(`Matched ${newUid} <-> ${partnerId} → ${roomId}`);
+        // ── Cap recentPairs to last 5 per uid (best-effort, non-blocking) ────
+        Promise.all([
+            evictOldRecentPairs(db, newUid, 5),
+            evictOldRecentPairs(db, partnerId, 5),
+        ]).catch((e) => console.warn("evictOldRecentPairs:", e.message));
+
+        // ── Telemetry: pair type + wait time + which tier picked ─────────────
+        const pairType = `${(newcomerGender[0] || "?")}${(partnerGender[0] || "?")}`;
+        fs.collection("matchStats").add({
+            pairType,
+            waitTimeMs,
+            pickTier,
+            matchedAt: FieldValue.serverTimestamp(),
+        }).catch((e) => console.warn("matchStats write:", e.message));
+
+        console.log(`Matched ${newUid} <-> ${partnerId} → ${roomId} (tier=${pickTier}, type=${pairType}, wait=${waitTimeMs}ms)`);
+    }
+);
+
+/**
+ * Caps recentPairs/<uid> to N most-recent partner entries; drops the oldest.
+ * Best-effort — failures are logged, not thrown.
+ */
+async function evictOldRecentPairs(db, uid, max) {
+    const snap = await db.ref(`recentPairs/${uid}`).once("value");
+    if (!snap.exists()) return;
+    const entries = Object.entries(snap.val()); // [[partnerUid, timestamp], ...]
+    if (entries.length <= max) return;
+    entries.sort((a, b) => a[1] - b[1]); // oldest first
+    const toRemove = entries.slice(0, entries.length - max);
+    const updates = {};
+    for (const [partner] of toRemove) {
+        updates[`recentPairs/${uid}/${partner}`] = null;
+    }
+    await db.ref().update(updates);
+}
+
+/**
+ * Runs every minute. Removes waitingQueue/* entries whose heartbeat (or
+ * joinedAt if no heartbeat) is older than 180s — handles client crashes /
+ * network drops that bypass the onDisconnect cleanup. Prevents ghost matches.
+ */
+exports.cleanupStaleQueue = onSchedule(
+    { schedule: "every 1 minutes", timeZone: "UTC" },
+    async () => {
+        const db = getDatabase();
+        const cutoff = Date.now() - 180_000; // 180 seconds
+        const snap = await db.ref("waitingQueue").once("value");
+        if (!snap.exists()) return;
+
+        const updates = {};
+        let removed = 0;
+        snap.forEach((child) => {
+            const data = child.val() || {};
+            const lastSeen = data.heartbeat || data.joinedAt || 0;
+            if (lastSeen < cutoff) {
+                updates[`waitingQueue/${child.key}`] = null;
+                removed++;
+            }
+        });
+        if (removed > 0) await db.ref().update(updates);
+        console.log(`cleanupStaleQueue: removed ${removed} stale entries`);
     }
 );
 

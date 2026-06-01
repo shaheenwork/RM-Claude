@@ -182,7 +182,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     // ── Public actions ────────────────────────────────────────────────────────
 
-    fun startSearch() {
+    fun startSearch(gender: com.randomchat.shnapp.model.Gender) {
         chatManager.clearMessages()
         _isStrangerConnected.value = false
         _chatEnded.value = false
@@ -192,7 +192,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         adFiredForCurrentChat = false
         _chatSaved.value = false
         _replyingTo.value = null  // clear any pending reply from previous chat
-        matchmakingManager.startSearch()
+        matchmakingManager.startSearch(gender)
     }
 
     /**
@@ -294,14 +294,17 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         }
         viewModelScope.launch {
             try {
-                // Fetch both IPs and archive room concurrently
+                // Fetch both IPs, archive room, and write the block — all concurrently.
+                // writeBlock failures don't break the report — RTDB best-effort.
                 val reporterIpDeferred = async { rtdb.readIp(sessionId) }
                 val reportedIpDeferred = async { rtdb.readIp(strangerId) }
                 val archiveJob = launch { rtdb.archiveReportedRoom(roomId) }
+                val blockJob   = launch { rtdb.writeBlock(sessionId, strangerId) }
 
                 val reporterIp = reporterIpDeferred.await()
                 val reportedIp = reportedIpDeferred.await()
                 archiveJob.join()
+                blockJob.join()
 
                 firestore.reportSession(sessionId, strangerId, roomId, reason, reporterIp, reportedIp)
                 Log.d("ChatViewModel", "reportStranger: success reporterIp=$reporterIp reportedIp=$reportedIp")

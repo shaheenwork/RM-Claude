@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.firebase.auth.FirebaseAuth
+import com.randomchat.shnapp.model.Gender
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -38,6 +39,7 @@ class SessionManager(private val context: Context) {
     private val rewardedGifKey        = intPreferencesKey("rewarded_gif_credits")
     private val appLockEnabledKey     = booleanPreferencesKey("app_lock_enabled")
     private val tutorialSeenKey       = booleanPreferencesKey("tutorial_seen")
+    private val genderKey             = stringPreferencesKey("user_gender")
 
     /**
      * Stable per-install identity = FirebaseAuth anonymous UID.
@@ -158,6 +160,16 @@ class SessionManager(private val context: Context) {
 
     suspend fun markTutorialSeen() {
         context.dataStore.edit { it[tutorialSeenKey] = true }
+    }
+
+    // ── Gender (per-user, persisted; user can change anytime from Home) ──────
+    /** null = never set (first launch). MALE / FEMALE = persisted choice. */
+    val genderFlow: Flow<Gender?> = context.dataStore.data.map { prefs ->
+        prefs[genderKey]?.let { name -> runCatching { Gender.valueOf(name) }.getOrNull() }
+    }
+
+    suspend fun setGender(gender: Gender) {
+        context.dataStore.edit { it[genderKey] = gender.name }
     }
 
     // ── Premium Badge ──────────────────────────────────────────────────────────

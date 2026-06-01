@@ -45,6 +45,7 @@ import com.randomchat.shnapp.ui.screens.PremiumScreen
 import com.randomchat.shnapp.ui.screens.SavedChatsScreen
 import com.randomchat.shnapp.ui.screens.OnboardingScreen
 import com.randomchat.shnapp.ui.screens.SettingsScreen
+import com.randomchat.shnapp.ui.components.GenderPickSheet
 import com.randomchat.shnapp.ui.screens.SplashScreen
 import com.randomchat.shnapp.ui.screens.TutorialScreen
 import com.randomchat.shnapp.utils.Constants
@@ -174,6 +175,8 @@ fun AppNavHost(
 
     // Matchmaking overlay state
     var showMatchmakingDialog by remember { mutableStateOf(false) }
+    // Gender prompt — shown before every matchmaking start (per-chat selection)
+    var pendingGenderPrompt by remember { mutableStateOf(false) }
 
     // Interstitial ad trigger
     val triggerInterstitial by chatViewModel.triggerInterstitial.collectAsState()
@@ -233,10 +236,15 @@ fun AppNavHost(
                         navController.navigate(Routes.HOME) {
                             popUpTo(Routes.SPLASH) { inclusive = true }
                         }
-                        // Launched from notification → show matchmaking dialog.
+                        // Launched from notification → use saved gender if any, else prompt.
                         if (launchedFromPush) {
-                            chatViewModel.startSearch()
-                            showMatchmakingDialog = true
+                            val savedGender = sm.genderFlow.first()
+                            if (savedGender != null) {
+                                chatViewModel.startSearch(savedGender)
+                                showMatchmakingDialog = true
+                            } else {
+                                pendingGenderPrompt = true
+                            }
                         }
                     }
                 } else {
@@ -263,8 +271,7 @@ fun AppNavHost(
                         navController.navigate(Routes.HOME) {
                             popUpTo(Routes.ONBOARDING) { inclusive = true }
                         }
-                        chatViewModel.startSearch()
-                        showMatchmakingDialog = true
+                        pendingGenderPrompt = true
                     } else {
                         // TUTORIAL DISABLED — go straight to HOME.
                         // Re-enable: navigate to Routes.TUTORIAL instead.
@@ -301,8 +308,8 @@ fun AppNavHost(
         ) {
             HomeScreen(
                 viewModel = homeViewModel,
-                onStartChat = {
-                    chatViewModel.startSearch()
+                onStartChat = { gender ->
+                    chatViewModel.startSearch(gender)
                     showMatchmakingDialog = true
                 },
                 onOpenPremium = { navController.navigate(Routes.PREMIUM) },
@@ -367,6 +374,20 @@ fun AppNavHost(
             showMatchmakingDialog = false
             chatViewModel.newChat()
         }
+    )
+
+    // Gender pick — gates every startSearch entry (home tap + push auto-start).
+    // Selection is sent to the matchmaker (soft F-F bias). Never shown in chat.
+    GenderPickSheet(
+        visible = pendingGenderPrompt,
+        onSelect = { gender ->
+            pendingGenderPrompt = false
+            // Persist so Home's inline selector reflects this choice next time.
+            homeViewModel.setGender(gender)
+            chatViewModel.startSearch(gender)
+            showMatchmakingDialog = true
+        },
+        onDismiss = { pendingGenderPrompt = false }
     )
 
     // 2-4 s random delay for believability, then navigate to chat.
