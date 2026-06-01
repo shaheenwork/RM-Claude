@@ -981,25 +981,97 @@ fun ChatScreen(
     )
 
     if (showEndChatDialog) {
-        AlertDialog(
-            onDismissRequest = { showEndChatDialog = false },
-            containerColor = CardSurface,
-            title = { Text("End Chat?", color = TextPrimary) },
-            text = { Text("Are you sure you want to end this conversation?", color = TextSecondary) },
-            confirmButton = {
-                TextButton(onClick = {
-                    showEndChatDialog = false
-                    viewModel.endChat()
-                }) {
-                    Text("End Chat", color = com.randomchat.shnapp.theme.ErrorRed)
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { showEndChatDialog = false }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(CardSurface, RoundedCornerShape(24.dp))
+                    .border(1.dp, SubtleBorder, RoundedCornerShape(24.dp))
+                    .padding(22.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // ── Icon badge ───────────────────────────────────────────────
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .background(
+                            com.randomchat.shnapp.theme.ErrorRed.copy(alpha = 0.12f),
+                            CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = null,
+                        tint = com.randomchat.shnapp.theme.ErrorRed,
+                        modifier = Modifier.size(28.dp)
+                    )
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showEndChatDialog = false }) {
-                    Text("Cancel", color = TextMuted)
+                Spacer(Modifier.height(14.dp))
+                Text(
+                    "End this chat?",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 19.sp,
+                    letterSpacing = (-0.3).sp
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "You'll be disconnected. Start a fresh chat anytime.",
+                    color = TextSecondary,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(20.dp))
+
+                // ── Action buttons — Cancel (outlined) + End chat (filled) ──
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    // Cancel — secondary outlined
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(14.dp))
+                            .border(1.dp, SubtleBorder, RoundedCornerShape(14.dp))
+                            .clickable { showEndChatDialog = false }
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "Cancel",
+                            color = TextSecondary,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    // End chat — primary destructive filled
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(com.randomchat.shnapp.theme.ErrorRed)
+                            .clickable {
+                                showEndChatDialog = false
+                                viewModel.endChat()
+                            }
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "End chat",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
-        )
+        }
     }
 
     // ── Photo source bottom sheet (Telegram / WhatsApp style) ────────────────
