@@ -51,6 +51,15 @@ class BillingManager(
 
     private val purchasesUpdatedListener = PurchasesUpdatedListener { result, purchases ->
         if (result.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
+            // Fire telemetry for genuinely new purchases (this listener only fires for
+            // the active billing flow, not restore — restore goes through restorePurchases()).
+            purchases
+                .filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
+                .forEach { p ->
+                    p.products.firstOrNull { it in Constants.ALL_PREMIUM_PRODUCTS }?.let { id ->
+                        com.randomchat.shnapp.utils.Telemetry.premiumPurchased(id)
+                    }
+                }
             scope.launch { handlePurchases(purchases) }
         }
     }

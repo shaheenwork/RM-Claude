@@ -30,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -76,7 +75,6 @@ class MainActivity : ComponentActivity() {
     private val premiumViewModel: PremiumViewModel by viewModels()
     private val savedChatsViewModel: SavedChatsViewModel by viewModels()
 
-    private var splashScreenReady = false
     private var isFirstStart = true   // skip lock check on cold start
 
     // Handles result from system credential screen
@@ -122,8 +120,9 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val splashScreen = installSplashScreen()
-        splashScreen.setKeepOnScreenCondition { !splashScreenReady }
+        // No system splash — go straight to the branded Compose SplashScreen.
+        // Activity theme windowBackground is splash_bg (dark green) so the
+        // ~50ms window before first Compose frame matches the brand bg seamlessly.
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -142,7 +141,6 @@ class MainActivity : ComponentActivity() {
                             chatViewModel = chatViewModel,
                             premiumViewModel = premiumViewModel,
                             savedChatsViewModel = savedChatsViewModel,
-                            onSplashReady = { splashScreenReady = true },
                             launchedFromPush = launchedFromPush,
                             onTryUnlock = { showLockPrompt() }
                         )
@@ -159,7 +157,6 @@ fun AppNavHost(
     chatViewModel: ChatViewModel,
     premiumViewModel: PremiumViewModel,
     savedChatsViewModel: SavedChatsViewModel,
-    onSplashReady: () -> Unit,
     launchedFromPush: Boolean = false,
     onTryUnlock: () -> Unit = {}
 ) {
@@ -217,9 +214,6 @@ fun AppNavHost(
             // State flip triggers an async LaunchedEffect that reads DataStore
             // before deciding which destination to open.
             var splashDone by remember { mutableStateOf(false) }
-
-            // Lift the OS splash on first frame so the branded Compose splash is visible.
-            LaunchedEffect(Unit) { onSplashReady() }
 
             LaunchedEffect(splashDone) {
                 if (!splashDone) return@LaunchedEffect
@@ -367,9 +361,13 @@ fun AppNavHost(
         }
     }
 
-    // Matchmaking dialog — full-screen overlay on HomeScreen
+    // Matchmaking dialog — full-screen overlay on HomeScreen.
+    // Observes matchmakingState so it can flip to an error UI on network failure.
+    val mmState by chatViewModel.matchmakingState.collectAsState()
+    val mmError = (mmState as? com.randomchat.shnapp.realtime.MatchmakingState.Error)?.msg
     MatchmakingDialog(
         visible = showMatchmakingDialog,
+        errorMessage = mmError,
         onCancel = {
             showMatchmakingDialog = false
             chatViewModel.newChat()

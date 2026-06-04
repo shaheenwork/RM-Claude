@@ -40,6 +40,10 @@ class SessionManager(private val context: Context) {
     private val appLockEnabledKey     = booleanPreferencesKey("app_lock_enabled")
     private val tutorialSeenKey       = booleanPreferencesKey("tutorial_seen")
     private val genderKey             = stringPreferencesKey("user_gender")
+    // One-shot analytics gates — fire each funnel event once per install
+    private val analyticsOnboardingLoggedKey   = booleanPreferencesKey("an_onboarding_logged")
+    private val analyticsFirstMatchLoggedKey   = booleanPreferencesKey("an_first_match_logged")
+    private val analyticsFirstChatMsgLoggedKey = booleanPreferencesKey("an_first_chat_msg_logged")
 
     /**
      * Stable per-install identity = FirebaseAuth anonymous UID.
@@ -170,6 +174,10 @@ class SessionManager(private val context: Context) {
 
     suspend fun setGender(gender: Gender) {
         context.dataStore.edit { it[genderKey] = gender.name }
+        // Analytics: per-pick event + persistent user property so every other
+        // event (retention, premium conv, etc.) can be sliced by gender.
+        Telemetry.genderSelected(gender.name)
+        Telemetry.setUserGender(gender.name)
     }
 
     // ── Premium Badge ──────────────────────────────────────────────────────────
@@ -225,6 +233,24 @@ class SessionManager(private val context: Context) {
             val c = prefs[rewardedGifKey] ?: 0
             if (c > 0) prefs[rewardedGifKey] = c - 1
         }
+    }
+
+    // ── One-shot analytics gates ──────────────────────────────────────────────
+    val analyticsOnboardingLoggedFlow: Flow<Boolean> = context.dataStore.data
+        .map { it[analyticsOnboardingLoggedKey] ?: false }
+    val analyticsFirstMatchLoggedFlow: Flow<Boolean> = context.dataStore.data
+        .map { it[analyticsFirstMatchLoggedKey] ?: false }
+    val analyticsFirstChatMsgLoggedFlow: Flow<Boolean> = context.dataStore.data
+        .map { it[analyticsFirstChatMsgLoggedKey] ?: false }
+
+    suspend fun markAnalyticsOnboardingLogged() {
+        context.dataStore.edit { it[analyticsOnboardingLoggedKey] = true }
+    }
+    suspend fun markAnalyticsFirstMatchLogged() {
+        context.dataStore.edit { it[analyticsFirstMatchLoggedKey] = true }
+    }
+    suspend fun markAnalyticsFirstChatMsgLogged() {
+        context.dataStore.edit { it[analyticsFirstChatMsgLoggedKey] = true }
     }
 
     companion object {

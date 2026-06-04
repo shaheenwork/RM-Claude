@@ -84,6 +84,41 @@ object Telemetry {
     fun rewardedAdEarned(reason: String) =
         logEvent(EVENT_REWARDED_EARNED) { putString("reason", reason) }
 
+    /** User tapped a "Watch Ad" CTA (intent — before fill check). */
+    fun rewardedAdTap(source: String) =
+        logEvent(EVENT_REWARDED_TAP) { putString("source", source) }
+
+    /** Ad inventory not ready — AdMob waterfall / fill miss. */
+    fun rewardedAdUnavailable(source: String) =
+        logEvent(EVENT_REWARDED_UNAVAILABLE) { putString("source", source) }
+
+    /** Ad shown but user dismissed before earning reward (abandoned mid-ad). */
+    fun rewardedAdDismissed(source: String) =
+        logEvent(EVENT_REWARDED_DISMISSED) { putString("source", source) }
+
+    // ── Gender — user property (slice-by) + per-selection event ───────────────
+    /** Persistent user property — re-apply each session so EVERY event can be sliced by gender. */
+    fun setUserGender(gender: String) {
+        analytics?.setUserProperty(PROP_USER_GENDER, gender)
+    }
+
+    /** Fired each time the user picks/changes gender. Counts selections. */
+    fun genderSelected(gender: String) =
+        logEvent(EVENT_GENDER_SELECTED) { putString("gender", gender) }
+
+    // ── Launch-funnel priority events (one-shot or per-chat) ─────────────────
+    /** Fired ONCE per install — user finished the consent gate. */
+    fun onboardingComplete() = logEvent(EVENT_ONBOARDING_COMPLETE)
+
+    /** Fired ONCE per install — user tapped Start chatting for the first time. */
+    fun firstMatchStarted() = logEvent(EVENT_FIRST_MATCH_STARTED)
+
+    /** Fired ONCE per install — user sent their first outgoing text. */
+    fun firstChatMsgSent() = logEvent(EVENT_FIRST_CHAT_MSG_SENT)
+
+    /** Fired ONCE per chat — total messages (both sides) reached 5+. Engagement signal. */
+    fun chatFiveMessages() = logEvent(EVENT_CHAT_5PLUS_MSGS)
+
     private inline fun logEvent(name: String, builder: Bundle.() -> Unit = {}) {
         val bundle = Bundle().apply(builder)
         analytics?.logEvent(name, bundle)
@@ -109,4 +144,19 @@ object Telemetry {
     private const val EVENT_TUTORIAL_COMPLETED = "tutorial_completed"
     private const val EVENT_ACCOUNT_DELETED    = "account_deleted"
     private const val EVENT_REWARDED_EARNED    = "rewarded_earned"
+
+    // Funnel events
+    private const val EVENT_ONBOARDING_COMPLETE  = "onboarding_complete"
+    private const val EVENT_FIRST_MATCH_STARTED  = "first_match_started"
+    private const val EVENT_FIRST_CHAT_MSG_SENT  = "first_chat_msg_sent"
+    private const val EVENT_CHAT_5PLUS_MSGS      = "chat_5plus_msgs"
+
+    // Rewarded-ad funnel
+    private const val EVENT_REWARDED_TAP         = "rewarded_tap"
+    private const val EVENT_REWARDED_UNAVAILABLE = "rewarded_unavailable"
+    private const val EVENT_REWARDED_DISMISSED   = "rewarded_dismissed"
+
+    // Gender
+    private const val EVENT_GENDER_SELECTED      = "gender_selected"
+    private const val PROP_USER_GENDER           = "user_gender"
 }

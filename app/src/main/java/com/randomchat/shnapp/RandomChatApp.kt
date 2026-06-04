@@ -78,6 +78,9 @@ class RandomChatApp : Application() {
             // Crashlytics/Analytics — attach session + premium to every report/event
             Telemetry.setSession(sessionManager.sessionId)
             Telemetry.setPremium(sessionManager.isPremiumFlow.first())
+            // Re-apply gender user property each session so slicing keeps working
+            // for users who picked once and never re-pick.
+            sessionManager.genderFlow.first()?.let { Telemetry.setUserGender(it.name) }
 
             // FCM init depends on sessionId — run after auth is ready
             val enabled = sessionManager.notifsEnabledFlow.first()
@@ -93,7 +96,8 @@ class RandomChatApp : Application() {
                 // Grant locally for instant UX — Play SDK already verified the purchase state.
                 sessionManager.setPremium(true, expiry)
                 Telemetry.setPremium(true)
-                Telemetry.premiumPurchased(productId)
+                // NB: `premium_purchased` event is fired from BillingManager's purchasesUpdatedListener
+                // (genuine new purchases only). Not fired here — onPremiumGranted also runs on restore.
                 // Server-side verification: CF calls Play Developer API and writes Firestore.
                 // Firestore rules block direct client writes to subscriptions/.
                 CoroutineScope(Dispatchers.IO).launch {

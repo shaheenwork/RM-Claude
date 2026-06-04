@@ -58,6 +58,8 @@ import com.randomchat.shnapp.theme.TextSecondary
 import com.randomchat.shnapp.ui.components.BrandMark
 import com.randomchat.shnapp.utils.Constants
 import com.randomchat.shnapp.utils.SessionManager
+import com.randomchat.shnapp.utils.Telemetry
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -169,7 +171,13 @@ fun OnboardingScreen(onAccepted: () -> Unit) {
                     .background(btnGradient)
                     .clickable(enabled = canContinue) {
                         scope.launch {
-                            SessionManager.getInstance(context).markTermsAccepted()
+                            val sm = SessionManager.getInstance(context)
+                            sm.markTermsAccepted()
+                            // Funnel event — fire once per install
+                            if (!sm.analyticsOnboardingLoggedFlow.first()) {
+                                Telemetry.onboardingComplete()
+                                sm.markAnalyticsOnboardingLogged()
+                            }
                             onAccepted()
                         }
                     },

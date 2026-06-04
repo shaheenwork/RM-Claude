@@ -73,9 +73,76 @@ private val STATUS_TEXTS = listOf(
 @Composable
 fun MatchmakingDialog(
     visible: Boolean,
+    errorMessage: String? = null,
     onCancel: () -> Unit
 ) {
     if (!visible) return
+
+    // ── Error overlay — shown when matchmaking returns Error state ───────────
+    if (errorMessage != null) {
+        Dialog(
+            onDismissRequest = onCancel,
+            properties = DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = false,
+                usePlatformDefaultWidth = false
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Brush.verticalGradient(listOf(DeepSpace, GradientMid, GradientEnd))),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(32.dp)
+                ) {
+                    // Warning badge
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(80.dp)
+                            .background(
+                                com.randomchat.shnapp.theme.ErrorRed.copy(alpha = 0.14f),
+                                androidx.compose.foundation.shape.CircleShape
+                            )
+                    ) {
+                        Text("⚠", fontSize = 38.sp)
+                    }
+                    Spacer(Modifier.height(22.dp))
+                    Text(
+                        "Couldn't connect",
+                        color = TextPrimary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp,
+                        letterSpacing = (-0.3).sp
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "Check your connection and try again in a moment.",
+                        color = TextSecondary,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                    Spacer(Modifier.height(36.dp))
+                    TextButton(onClick = onCancel) {
+                        Box(
+                            modifier = Modifier
+                                .border(1.dp, SubtleBorder, androidx.compose.foundation.shape.CircleShape)
+                                .padding(horizontal = 32.dp, vertical = 10.dp)
+                        ) {
+                            Text("Back to home", color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                }
+            }
+        }
+        return
+    }
 
     val haptics = LocalHaptics.current
     var statusIndex by remember { mutableIntStateOf(0) }

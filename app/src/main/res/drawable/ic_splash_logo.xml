@@ -1,16 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Splash icon: green chat bubble (the brand mark, simplified to a single flat shape
+    for the system splash). Foreground content stays inside the inner 2/3 to survive
+    Android 12+ trim. Solid colors only — no gradients (cleanest at the small size
+    the system splash renders at). Three cream dots inside echo the typing/chat hint.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+    <!-- Chat bubble body — rounded square with bottom-left tail (matches BrandMark) -->
     <path
-        android:fillColor="#00D4FF"
-        android:pathData="M54,20 C45,20 38,27 38,36 C38,45 45,52 54,52 C63,52 70,45 70,36 C70,27 63,20 54,20Z" />
+        android:fillColor="#2FB68C"
+        android:pathData="M30,24 L78,24 A6,6 0 0 1 84,30 L84,72 A6,6 0 0 1 78,78 L38,78 L28,88 L30,78 A6,6 0 0 1 24,72 L24,30 A6,6 0 0 1 30,24 Z" />
+
+    <!-- Three cream message dots inside the bubble -->
     <path
-        android:fillColor="#00D4FF"
-        android:pathData="M30,58 C26,58 22,62 22,66 L22,80 C22,82 24,84 26,84 L82,84 C84,84 86,82 86,80 L86,66 C86,62 82,58 78,58 L30,58Z" />
+        android:fillColor="#F1EDDD"
+        android:pathData="M42,51 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0 Z" />
     <path
-        android:fillColor="#080B14"
-        android:pathData="M46,68 L46,78 L56,73 Z" />
+        android:fillColor="#F1EDDD"
+        android:pathData="M54,51 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0 Z" />
+    <path
+        android:fillColor="#F1EDDD"
+        android:pathData="M66,51 m-3.5,0 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0 Z" />
 </vector>

@@ -19,12 +19,15 @@ import com.randomchat.shnapp.realtime.MatchmakingState
 import com.randomchat.shnapp.utils.Constants
 import com.randomchat.shnapp.utils.ImageCompressor
 import com.randomchat.shnapp.utils.SessionManager
+import com.randomchat.shnapp.utils.Telemetry
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
@@ -38,6 +41,9 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     val sessionId: String get() = sessionManager.sessionId
 
     private val matchmakingManager = MatchmakingManager.getInstance(sessionId)
+    /** Public matchmaking state — observed by UI to show searching / error / matched. */
+    val matchmakingState: kotlinx.coroutines.flow.StateFlow<com.randomchat.shnapp.realtime.MatchmakingState> =
+        matchmakingManager.state
     private val chatManager = ChatManager.getInstance(sessionId)
     private val firestore = FirestoreManager.getInstance()
     private val moderation = ModerationManager.getInstance()
@@ -180,7 +186,22 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    init {
+        // Engagement signal — fire chat_5plus_msgs once per chat when total msgs ≥ 5.
+        viewModelScope.launch {
+            messages.collect { msgs ->
+                if (!chatFiveFired && !chatEnded.value && msgs.size >= 5) {
+                    chatFiveFired = true
+                    Telemetry.chatFiveMessages()
+                }
+            }
+        }
+    }
+
     // ── Public actions ────────────────────────────────────────────────────────
+
+    /** Per-chat one-shot — fires `chat_5plus_msgs` only once per chat session. */
+    private var chatFiveFired = false
 
     fun startSearch(gender: com.randomchat.shnapp.model.Gender) {
         chatManager.clearMessages()
@@ -192,7 +213,16 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         adFiredForCurrentChat = false
         _chatSaved.value = false
         _replyingTo.value = null  // clear any pending reply from previous chat
+        chatFiveFired = false     // reset 5-msg gate for new chat
         matchmakingManager.startSearch(gender)
+
+        // Funnel event — fire once per install
+        viewModelScope.launch {
+            if (!sessionManager.analyticsFirstMatchLoggedFlow.first()) {
+                Telemetry.firstMatchStarted()
+                sessionManager.markAnalyticsFirstMatchLogged()
+            }
+        }
     }
 
     /**
@@ -233,6 +263,14 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         val replyContext = _replyingTo.value
         chatManager.sendMessage(filtered, MessageType.TEXT, replyTo = replyContext)
         _replyingTo.value = null  // clear after send
+
+        // Funnel event — fire once per install
+        viewModelScope.launch {
+            if (!sessionManager.analyticsFirstChatMsgLoggedFlow.first()) {
+                Telemetry.firstChatMsgSent()
+                sessionManager.markAnalyticsFirstChatMsgLogged()
+            }
+        }
     }
 
     fun sendMediaMessage(mediaUrl: String, type: MessageType) {

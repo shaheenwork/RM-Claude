@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
@@ -120,7 +121,38 @@ fun SavedChatsScreen(
         if (selectedChatId != null) {
             if (messages.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No messages", color = TextMuted, fontSize = 14.sp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(horizontal = 40.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(60.dp)
+                                .background(AccentCyan.copy(0.10f), RoundedCornerShape(50)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.ChatBubbleOutline,
+                                null,
+                                tint = AccentCyan,
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
+                        Spacer(Modifier.height(14.dp))
+                        Text(
+                            "No messages in this chat",
+                            color = TextPrimary,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "The conversation looks empty.",
+                            color = TextSecondary,
+                            fontSize = 12.sp,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
                 }
             } else {
                 LazyColumn(
@@ -196,31 +228,95 @@ fun SavedChatsScreen(
         }
     }
 
-    // Delete confirmation
+    // Delete confirmation — custom branded dialog (matches End Chat style)
     deleteTarget?.let { target ->
-        AlertDialog(
-            onDismissRequest = { deleteTarget = null },
-            containerColor = CardSurface,
-            title = { Text("Delete chat?", color = TextPrimary) },
-            text = { Text("This will permanently delete the conversation and all saved media.", color = TextSecondary) },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.deleteChat(target.id)
-                    if (selectedChatId == target.id) {
-                        selectedChatId = null
-                        viewModel.clearMessages()
-                    }
-                    deleteTarget = null
-                }) {
-                    Text("Delete", color = ErrorRed)
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { deleteTarget = null }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(CardSurface, RoundedCornerShape(24.dp))
+                    .border(1.dp, SubtleBorder, RoundedCornerShape(24.dp))
+                    .padding(22.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .background(ErrorRed.copy(alpha = 0.12f), RoundedCornerShape(50))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        tint = ErrorRed,
+                        modifier = Modifier.size(28.dp)
+                    )
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { deleteTarget = null }) {
-                    Text("Cancel", color = TextMuted)
+                Spacer(Modifier.height(14.dp))
+                Text(
+                    "Delete this chat?",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 19.sp,
+                    letterSpacing = (-0.3).sp
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "This permanently removes the conversation and any saved photos or voice notes.",
+                    color = TextSecondary,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Spacer(Modifier.height(20.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(14.dp))
+                            .border(1.dp, SubtleBorder, RoundedCornerShape(14.dp))
+                            .clickable { deleteTarget = null }
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "Cancel",
+                            color = TextSecondary,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(ErrorRed)
+                            .clickable {
+                                viewModel.deleteChat(target.id)
+                                if (selectedChatId == target.id) {
+                                    selectedChatId = null
+                                    viewModel.clearMessages()
+                                }
+                                deleteTarget = null
+                            }
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "Delete",
+                            color = androidx.compose.ui.graphics.Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
-        )
+        }
     }
 }
 

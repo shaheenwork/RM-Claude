@@ -325,6 +325,7 @@ fun HomeScreen(
                         gifCredits   = gifCredits,
                         onEarnCredits = {
                             haptics.tick()
+                            com.randomchat.shnapp.utils.Telemetry.rewardedAdTap("home_credits")
                             if (AdMobManager.getInstance(context).isRewardedReady()) {
                                 AdMobManager.getInstance(context).showRewardedIfReady(
                                     activity       = activity,
@@ -334,6 +335,7 @@ fun HomeScreen(
                                         com.randomchat.shnapp.utils.Telemetry.rewardedAdEarned("home_credits")
                                     },
                                     onNotAvailable = {
+                                        com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("home_credits")
                                         Toast.makeText(
                                             context,
                                             "Ad not ready yet — try again in a moment.",
@@ -342,6 +344,7 @@ fun HomeScreen(
                                     }
                                 )
                             } else {
+                                com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("home_credits")
                                 Toast.makeText(
                                     context,
                                     "Ad not ready yet — try again in a moment.",

@@ -576,11 +576,13 @@ fun ChatScreen(
                                     androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
                                 )
                                 .clickable {
+                                    com.randomchat.shnapp.utils.Telemetry.rewardedAdTap("save_chat")
                                     if (AdMobManager.getInstance(context).isRewardedReady()) {
                                         AdMobManager.getInstance(context).showRewardedIfReady(
                                             activity       = activity,
                                             onRewarded     = { viewModel.saveChat() },
                                             onNotAvailable = {
+                                                com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("save_chat")
                                                 scope.launch {
                                                     snackbarHostState.showSnackbar(
                                                         "Ad not ready — try again in a moment."
@@ -594,10 +596,13 @@ fun ChatScreen(
                                                     scope.launch {
                                                         snackbarHostState.showSnackbar("Chat saved ✓")
                                                     }
+                                                } else {
+                                                    com.randomchat.shnapp.utils.Telemetry.rewardedAdDismissed("save_chat")
                                                 }
                                             }
                                         )
                                     } else {
+                                        com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("save_chat")
                                         scope.launch {
                                             snackbarHostState.showSnackbar(
                                                 "Ad not ready — try again in a moment."
@@ -1250,6 +1255,7 @@ fun ChatScreen(
             onWatchAd = {
                 // Inline rewarded ad flow — earn +1 photo, +1 voice, +1 GIF credit
                 haptics.tick()
+                com.randomchat.shnapp.utils.Telemetry.rewardedAdTap("attach_sheet")
                 if (AdMobManager.getInstance(context).isRewardedReady()) {
                     AdMobManager.getInstance(context).showRewardedIfReady(
                         activity = activity,
@@ -1264,12 +1270,14 @@ fun ChatScreen(
                             // Keep sheet open so user sees the credit update + can attach
                         },
                         onNotAvailable = {
+                            com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("attach_sheet")
                             scope.launch {
                                 snackbarHostState.showSnackbar("Ad not ready — try again in a moment.")
                             }
                         }
                     )
                 } else {
+                    com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("attach_sheet")
                     scope.launch {
                         snackbarHostState.showSnackbar("Ad not ready — try again in a moment.")
                     }
