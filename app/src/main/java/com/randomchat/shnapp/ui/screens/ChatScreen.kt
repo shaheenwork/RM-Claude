@@ -548,6 +548,7 @@ fun ChatScreen(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                         .background(CardSurface)
+                        .navigationBarsPadding()  // 3-button nav was overlapping the CTA
                         .padding(top = 22.dp, start = 18.dp, end = 18.dp, bottom = 18.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {

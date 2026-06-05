@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -97,7 +98,9 @@ fun MatchmakingDialog(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.padding(32.dp)
+                    modifier = Modifier
+                        .systemBarsPadding()
+                        .padding(32.dp)
                 ) {
                     // Warning badge
                     Box(
@@ -215,7 +218,9 @@ fun MatchmakingDialog(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(32.dp)
+                modifier = Modifier
+                    .systemBarsPadding()
+                    .padding(32.dp)
             ) {
                 // ── Pulsing core + rings + orbit avatars ──────────────────────
                 Box(
