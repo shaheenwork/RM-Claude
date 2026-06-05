@@ -46,6 +46,10 @@ class SessionManager(private val context: Context) {
     private val appLockEnabledKey     = booleanPreferencesKey("app_lock_enabled")
     private val tutorialSeenKey       = booleanPreferencesKey("tutorial_seen")
     private val genderKey             = stringPreferencesKey("user_gender")
+    // Deferred notification-permission ask — set true when a qualifying chat
+    // ends; consumed when the user next lands on Home (calmer moment than
+    // interrupting them on the chat-ended panel).
+    private val pendingNotifAskKey             = booleanPreferencesKey("pending_notif_ask")
     // One-shot analytics gates — fire each funnel event once per install
     private val analyticsOnboardingLoggedKey   = booleanPreferencesKey("an_onboarding_logged")
     private val analyticsFirstMatchLoggedKey   = booleanPreferencesKey("an_first_match_logged")
@@ -243,6 +247,14 @@ class SessionManager(private val context: Context) {
             val c = prefs[rewardedGifKey] ?: 0
             if (c > 0) prefs[rewardedGifKey] = c - 1
         }
+    }
+
+    // ── Deferred notif-permission ask ─────────────────────────────────────────
+    val pendingNotifAskFlow: Flow<Boolean> = context.dataStore.data
+        .map { it[pendingNotifAskKey] ?: false }
+
+    suspend fun setPendingNotifAsk(pending: Boolean) {
+        context.dataStore.edit { it[pendingNotifAskKey] = pending }
     }
 
     // ── One-shot analytics gates ──────────────────────────────────────────────

@@ -35,8 +35,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.randomchat.shnapp.ads.AdMobManager
 import com.randomchat.shnapp.theme.DeepSpace
@@ -191,23 +193,25 @@ fun AppNavHost(
     }
 
     // ── Notification permission ask (Android 13+) ─────────────────────────────
-    // Ask ONLY after a real conversation (>4 non-system messages) — the user has
-    // felt the value, so a notification prompt now converts far better than on
-    // first launch. We show our own rationale first (system dialog text isn't
-    // customisable), then trigger the OS permission dialog.
+    // Two-stage ask for non-interruptive UX:
+    //   1. On chat-end (>4 real msgs, perm not granted) → set "pending" flag.
+    //      Do NOT show the dialog here — user is still reading the chat-ended
+    //      panel and the prompt would feel intrusive / hide that they ended.
+    //   2. Next time user lands on Home (after a small settle delay), surface
+    //      the rationale. Calm moment, no context to process.
     val scope = rememberCoroutineScope()
     var showNotifRationale by remember { mutableStateOf(false) }
     val notifPermLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { /* result ignored: user choice respected, no retry */ }
 
+    // Stage 1 — mark pending on qualifying chat-end.
     val chatEnded by chatViewModel.chatEnded.collectAsState()
     LaunchedEffect(chatEnded) {
         if (!chatEnded) return@LaunchedEffect
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return@LaunchedEffect
         val sm = SessionManager.getInstance(context)
         if (sm.notifPermAskedFlow.first()) return@LaunchedEffect
-        // Only after a successful chat — more than 4 real (non-system) messages.
         val realMsgs = chatViewModel.messages.value.count {
             it.type != com.randomchat.shnapp.model.MessageType.SYSTEM
         }
@@ -216,19 +220,46 @@ fun AppNavHost(
             context, Manifest.permission.POST_NOTIFICATIONS
         ) == PackageManager.PERMISSION_GRANTED
         if (granted) { sm.markNotifPermAsked(); return@LaunchedEffect }
-        showNotifRationale = true
+        sm.setPendingNotifAsk(true)
+    }
+
+    // Stage 2 — when user is back on Home with a pending ask, surface rationale.
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
+    LaunchedEffect(currentRoute) {
+        if (currentRoute != Routes.HOME) return@LaunchedEffect
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return@LaunchedEffect
+        val sm = SessionManager.getInstance(context)
+        if (!sm.pendingNotifAskFlow.first()) return@LaunchedEffect
+        if (sm.notifPermAskedFlow.first()) {
+            sm.setPendingNotifAsk(false); return@LaunchedEffect
+        }
+        // Settle delay — let Home finish entering, user orient themselves.
+        delay(900)
+        // Re-check we're still on Home (user could navigate fast).
+        if (navController.currentDestination?.route == Routes.HOME) {
+            showNotifRationale = true
+        }
     }
 
     if (showNotifRationale) {
         NotifRationaleDialog(
             onAllow = {
                 showNotifRationale = false
-                scope.launch { SessionManager.getInstance(context).markNotifPermAsked() }
+                scope.launch {
+                    val sm = SessionManager.getInstance(context)
+                    sm.markNotifPermAsked()
+                    sm.setPendingNotifAsk(false)
+                }
                 notifPermLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             },
             onDismiss = {
                 showNotifRationale = false
-                scope.launch { SessionManager.getInstance(context).markNotifPermAsked() }
+                scope.launch {
+                    val sm = SessionManager.getInstance(context)
+                    sm.markNotifPermAsked()
+                    sm.setPendingNotifAsk(false)
+                }
             }
         )
     }
@@ -428,6 +459,7 @@ private fun NotifRationaleDialog(
 ) {
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
+        properties = DialogProperties(dismissOnClickOutside = false),
         containerColor = com.randomchat.shnapp.theme.CardSurface,
         icon = {
             androidx.compose.material3.Icon(
