@@ -7,11 +7,16 @@ plugins {
 }
 
 android {
+    // namespace = internal code package (where R/BuildConfig generate). Kept as-is
+    // intentionally — changing it would force a 56-file package refactor with zero
+    // Play Store / functional benefit. Only applicationId matters for the listing.
     namespace = "com.randomchat.shnapp"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.randomchat.shnapp"
+        // Play Store identity — MUST match the originally-published app to recover
+        // the existing listing + 100k installs.
+        applicationId = "com.shaheen.randomchat"
         minSdk = 26
         targetSdk = 35
         versionCode = 6
@@ -30,7 +35,6 @@ android {
             )
         }
         debug {
-            applicationIdSuffix = ".debug"
             isDebuggable = true
         }
     }

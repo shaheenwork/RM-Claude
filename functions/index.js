@@ -25,7 +25,7 @@ initializeApp();
 // linked to the project.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const PACKAGE_NAME = "com.randomchat.shnapp";
+const PACKAGE_NAME = "com.shaheen.randomchat";
 const PLAY_ACTIVE_STATES = new Set([
     "SUBSCRIPTION_STATE_ACTIVE",
     "SUBSCRIPTION_STATE_IN_GRACE_PERIOD",

@@ -141,6 +141,25 @@
     },
     {
       "client_info": {
+        "mobilesdk_app_id": "1:795151142846:android:2e9ceab7e924d0c02073ef",
+        "android_client_info": {
+          "package_name": "com.shaheen.randomchat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhfsUBVCYsQ0qps63c7e_XBfqxVop5kvw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:795151142846:android:d7235bb3798024242073ef",
         "android_client_info": {
           "package_name": "com.shnapps.rc"
