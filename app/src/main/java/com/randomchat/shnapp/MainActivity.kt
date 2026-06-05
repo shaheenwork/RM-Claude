@@ -20,7 +20,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Surface
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -127,7 +132,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         // Detect launch-from-push so AppNavHost can auto-start matchmaking after splash.
-        val launchedFromPush = intent?.getStringExtra("from") == "push"
+        val launchedFromPush = intent?.getStringExtra("src") == "push"
 
         setContent {
             StrangerChatTheme {
@@ -186,7 +191,12 @@ fun AppNavHost(
     }
 
     // ── Notification permission ask (Android 13+) ─────────────────────────────
-    // Trigger once after first chat ends — never on first launch (avoids "pushy" feel).
+    // Ask ONLY after a real conversation (>4 non-system messages) — the user has
+    // felt the value, so a notification prompt now converts far better than on
+    // first launch. We show our own rationale first (system dialog text isn't
+    // customisable), then trigger the OS permission dialog.
+    val scope = rememberCoroutineScope()
+    var showNotifRationale by remember { mutableStateOf(false) }
     val notifPermLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { /* result ignored: user choice respected, no retry */ }
@@ -197,11 +207,30 @@ fun AppNavHost(
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return@LaunchedEffect
         val sm = SessionManager.getInstance(context)
         if (sm.notifPermAskedFlow.first()) return@LaunchedEffect
+        // Only after a successful chat — more than 4 real (non-system) messages.
+        val realMsgs = chatViewModel.messages.value.count {
+            it.type != com.randomchat.shnapp.model.MessageType.SYSTEM
+        }
+        if (realMsgs <= 4) return@LaunchedEffect
         val granted = ContextCompat.checkSelfPermission(
             context, Manifest.permission.POST_NOTIFICATIONS
         ) == PackageManager.PERMISSION_GRANTED
-        sm.markNotifPermAsked()
-        if (!granted) notifPermLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        if (granted) { sm.markNotifPermAsked(); return@LaunchedEffect }
+        showNotifRationale = true
+    }
+
+    if (showNotifRationale) {
+        NotifRationaleDialog(
+            onAllow = {
+                showNotifRationale = false
+                scope.launch { SessionManager.getInstance(context).markNotifPermAsked() }
+                notifPermLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            },
+            onDismiss = {
+                showNotifRationale = false
+                scope.launch { SessionManager.getInstance(context).markNotifPermAsked() }
+            }
+        )
     }
 
     NavHost(
@@ -227,18 +256,10 @@ fun AppNavHost(
                             popUpTo(Routes.SPLASH) { inclusive = true }
                         }
                     } else {
+                        // Notification tap (and normal launch) land on Home.
+                        // Matchmaking only starts when the user taps "Start chatting".
                         navController.navigate(Routes.HOME) {
                             popUpTo(Routes.SPLASH) { inclusive = true }
-                        }
-                        // Launched from notification → use saved gender if any, else prompt.
-                        if (launchedFromPush) {
-                            val savedGender = sm.genderFlow.first()
-                            if (savedGender != null) {
-                                chatViewModel.startSearch(savedGender)
-                                showMatchmakingDialog = true
-                            } else {
-                                pendingGenderPrompt = true
-                            }
                         }
                     }
                 } else {
@@ -259,19 +280,10 @@ fun AppNavHost(
         ) {
             OnboardingScreen(
                 onAccepted = {
-                    if (launchedFromPush) {
-                        // Edge case: launched from push notification on first-ever open.
-                        // Skip tutorial — user wants to chat now.
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.ONBOARDING) { inclusive = true }
-                        }
-                        pendingGenderPrompt = true
-                    } else {
-                        // TUTORIAL DISABLED — go straight to HOME.
-                        // Re-enable: navigate to Routes.TUTORIAL instead.
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.ONBOARDING) { inclusive = true }
-                        }
+                    // TUTORIAL DISABLED — go straight to HOME.
+                    // Re-enable: navigate to Routes.TUTORIAL instead.
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.ONBOARDING) { inclusive = true }
                     }
                 }
             )
@@ -343,6 +355,7 @@ fun AppNavHost(
         ) {
             SettingsScreen(
                 viewModel = homeViewModel,
+                premiumViewModel = premiumViewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onOpenPremium = { navController.navigate(Routes.PREMIUM) },
                 onOpenSavedChats = { navController.navigate(Routes.SAVED_CHATS) }
@@ -401,4 +414,61 @@ fun AppNavHost(
             navController.navigate(Routes.CHAT)
         }
     }
+}
+
+/**
+ * Pre-permission rationale shown after the user's first real chat, just before
+ * the OS notification-permission dialog. Explains the value so the system prompt
+ * converts better. (Android's own dialog text can't be customised.)
+ */
+@Composable
+private fun NotifRationaleDialog(
+    onAllow: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = com.randomchat.shnapp.theme.CardSurface,
+        icon = {
+            androidx.compose.material3.Icon(
+                androidx.compose.material.icons.Icons.Default.Notifications,
+                contentDescription = null,
+                tint = com.randomchat.shnapp.theme.AccentCyan,
+                modifier = Modifier.size(28.dp)
+            )
+        },
+        title = {
+            androidx.compose.material3.Text(
+                "Don't miss the good ones",
+                color = com.randomchat.shnapp.theme.TextPrimary,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                fontSize = 18.sp
+            )
+        },
+        text = {
+            androidx.compose.material3.Text(
+                "Get notified when interesting Malayalis are online and ready to chat.",
+                color = com.randomchat.shnapp.theme.TextSecondary,
+                fontSize = 14.sp,
+                lineHeight = 20.sp
+            )
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = onAllow) {
+                androidx.compose.material3.Text(
+                    "Turn on",
+                    color = com.randomchat.shnapp.theme.AccentCyan,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                )
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                androidx.compose.material3.Text(
+                    "Not now",
+                    color = com.randomchat.shnapp.theme.TextMuted
+                )
+            }
+        }
+    )
 }

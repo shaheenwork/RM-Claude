@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Policy
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -68,6 +69,7 @@ import com.randomchat.shnapp.viewmodel.HomeViewModel
 @Composable
 fun SettingsScreen(
     viewModel: HomeViewModel,
+    premiumViewModel: com.randomchat.shnapp.viewmodel.PremiumViewModel,
     onNavigateBack: () -> Unit,
     onOpenPremium: () -> Unit,
     onOpenSavedChats: () -> Unit = {}
@@ -77,9 +79,17 @@ fun SettingsScreen(
     val notifsEnabled   by viewModel.notifsEnabled.collectAsState()
     val appLockEnabled  by viewModel.appLockEnabled.collectAsState()
     val deleteState     by viewModel.deleteAccountState.collectAsState()
+    val restoreMessage  by premiumViewModel.uiMessage.collectAsState()
     val uriHandler      = LocalUriHandler.current
     val haptics         = com.randomchat.shnapp.utils.LocalHaptics.current
     val context         = androidx.compose.ui.platform.LocalContext.current
+
+    // Surface restore-purchase result (success / nothing-found) as a Toast.
+    androidx.compose.runtime.LaunchedEffect(restoreMessage) {
+        restoreMessage?.let {
+            android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
 
     var showDeleteDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
 
@@ -222,6 +232,20 @@ fun SettingsScreen(
                         onClick = onOpenPremium
                     )
                 }
+                // Restore — recover a subscription bought on this Google account
+                // (e.g. after reinstall or device change). Always available to
+                // non-premium users; premium users don't need it.
+                if (!isPremium) {
+                    SettingsRowDivider()
+                    SettingsRow(
+                        icon = Icons.Default.Restore,
+                        title = "Restore Purchases",
+                        subtitle = "Already subscribed? Restore it here",
+                        iconTint = PremiumGold,
+                        grouped = true,
+                        onClick = { haptics.tick(); premiumViewModel.restorePurchases() }
+                    )
+                }
             }
             Spacer(Modifier.height(4.dp))
 
@@ -230,7 +254,7 @@ fun SettingsScreen(
                 SettingsToggleRow(
                     icon     = Icons.Default.Notifications,
                     title    = "Daily activity ping",
-                    subtitle = "One reminder per day when strangers are around",
+                    subtitle = "Get notified when Malayalis are online",
                     checked  = notifsEnabled,
                     grouped  = true,
                     onChange = { haptics.tick(); viewModel.setNotifsEnabled(it) }

@@ -404,189 +404,58 @@ exports.cleanupStorage = onSchedule("every sunday 02:00", async () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Daily "people online" nudge
+// Daily "Malayalis are online" nudge
 //
-// Picks ONE random minute per day (at 00:00 UTC) — same minute applied per-TZ in
-// each user's local clock-time. So everyone in IST gets pinged at e.g. 20:47 IST,
-// everyone in PST at 20:47 PST, etc. Different real-world UTC moments, identical
-// local-time experience.
+// One broadcast per day to the `all_users` topic at a RANDOM minute between
+// 9:30 PM and 10:00 PM IST (= 16:00–16:29 UTC). Kerala night peak + Gulf evening.
 //
-// Window per day-of-week (user-local):
-//   • Mon–Sat: 20:00 – 23:00
-//   • Sunday : 11:00 – 21:00
+// Cron fires every minute across the window; the function only sends on ONE
+// minute per day, chosen deterministically from the date (so it fires exactly
+// once — no extra lock needed). The randomness keeps the ping from feeling
+// robotic and spreads server load.
 //
-// Cap: 1 push per local day. Tracked via Firestore lock doc per (tzOffset, localDate).
+// To shift the window, edit the cron ("0-29 16" = minutes 0-29 of hour 16 UTC).
 // ─────────────────────────────────────────────────────────────────────────────
-
-// Common IANA timezone offsets in MINUTES (covers ~all populated areas).
-// Topic naming: `tz_p330` for +330 (IST), `tz_n300` for -300 (EST).
-const TZ_OFFSETS_MIN = [
-    -720, -660, -600, -570, -540, -480, -420, -360, -300, -240, -210, -180, -150, -120, -60,
-    0,
-    60, 120, 180, 210, 240, 270, 300, 330, 345, 360, 390, 420, 480, 525, 540, 570, 600, 630, 660, 720, 765, 780, 825, 840,
-];
-
-function tzTopic(offsetMin) {
-    const sign = offsetMin >= 0 ? "p" : "n";
-    return `tz_${sign}${Math.abs(offsetMin)}`;
-}
-
-/** Random integer minute-of-day in [startHour:00, endHour:00). e.g. pickMinute(20, 23) → 20:00–22:59. */
-function pickMinute(startHour, endHour) {
-    const totalMin = (endHour - startHour) * 60;
-    const r = Math.floor(Math.random() * totalMin);
-    const h = startHour + Math.floor(r / 60);
-    const m = r % 60;
-    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
-/** Parse "HH:MM" → minute of day. */
-function hmToMin(hm) {
-    const [h, m] = hm.split(":").map(Number);
-    return h * 60 + m;
-}
-
-/** Returns YYYY-MM-DD for a given Date instance (interpreted as already shifted). */
-function dateKey(d) {
-    return d.toISOString().slice(0, 10);
-}
-
-/**
- * Runs daily at 00:00 UTC. Picks the random minute for both weekday and Sunday windows.
- * Stored at Firestore notifSchedule/{YYYY-MM-DD-UTC}.
- *
- * Note: we key by UTC date for simplicity. Each TZ bucket reads the schedule for its
- * current UTC-date when dispatching — works because the nudge windows (20:00 local
- * weekday, 11:00–21:00 local Sunday) are well inside any single UTC day for typical
- * offsets, and the schedule changes only once per UTC day.
- */
-exports.pickDailyNotifTime = onSchedule(
-    { schedule: "0 0 * * *", timeZone: "UTC" },
+exports.dailyNudge = onSchedule(
+    { schedule: "0-29 16 * * *", timeZone: "UTC" },
     async () => {
-        const fs = getFirestore();
-        // Write next 7 days. A positive-offset user (e.g. UTC+12) can hit their local
-        // Sunday-window before that UTC date "begins" — pre-writing prevents the lookup
-        // from missing. set() with merge:false writes idempotently within a single run;
-        // for repeated daily runs we use create-if-missing semantics by reading first.
-        const writes = [];
-        for (let i = 0; i < 7; i++) {
-            const d = new Date(Date.now() + i * 86_400_000);
-            const key = dateKey(d);
-            const ref = fs.doc(`notifSchedule/${key}`);
-            const snap = await ref.get();
-            if (snap.exists) continue;
-            const schedule = {
-                weekdayMinute: pickMinute(20, 23), // 20:00–22:59
-                sundayMinute:  pickMinute(11, 21), // 11:00–20:59
-                pickedAt:      FieldValue.serverTimestamp(),
-            };
-            writes.push(ref.set(schedule).then(() => console.log(`Scheduled ${key}:`, schedule)));
-        }
-        await Promise.all(writes);
-        console.log(`pickDailyNotifTime done: wrote ${writes.length} new days`);
-    }
-);
+        const now = new Date();
+        // Deterministic "random" target minute (0-29) seeded by the UTC date.
+        const dateStr = now.toISOString().slice(0, 10);
+        let hash = 0;
+        for (const ch of dateStr) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+        const targetMinute = hash % 30;
+        if (now.getUTCMinutes() !== targetMinute) return; // not this minute today
 
-/**
- * Runs every 5 minutes. For each TZ bucket: if the user-local clock currently sits
- * within the day's chosen send window AND no push has fired for that bucket today,
- * publishes one FCM message to the bucket's topic.
- */
-exports.dispatchDailyNudge = onSchedule(
-    { schedule: "*/5 * * * *", timeZone: "UTC" },
-    async () => {
-        const fs       = getFirestore();
-        const rtdb     = getDatabase();
         const messaging = getMessaging();
-        const nowMs    = Date.now();
-
-        // Cached online count (computed lazily — only if we end up sending).
-        let cachedOnline = null;
-        const onlineCount = async () => {
-            if (cachedOnline !== null) return cachedOnline;
-            const snap = await rtdb.ref("waitingQueue").once("value");
-            cachedOnline = snap.numChildren();
-            return cachedOnline;
-        };
-
-        let sentCount = 0;
-        // Tiny in-invocation cache: most TZ buckets share a localDate, only ~3 distinct
-        // dates are seen across all offsets (yesterday/today/tomorrow UTC).
-        const scheduleCache = new Map();
-        const getSchedule = async (localDate) => {
-            if (scheduleCache.has(localDate)) return scheduleCache.get(localDate);
-            const snap = await fs.doc(`notifSchedule/${localDate}`).get();
-            const data = snap.exists ? snap.data() : null;
-            scheduleCache.set(localDate, data);
-            return data;
-        };
-        for (const offsetMin of TZ_OFFSETS_MIN) {
-            const localMs   = nowMs + offsetMin * 60_000;
-            const localD    = new Date(localMs);
-            const localHour = localD.getUTCHours();
-            const localMin  = localD.getUTCMinutes();
-            const localDow  = localD.getUTCDay(); // 0 = Sun, 1 = Mon …
-            const localDate = dateKey(localD);
-
-            // Pull the schedule for the user's current LOCAL date — that's the day whose
-            // window applies. (Local date may differ from utcToday for far offsets.)
-            const dailySchedule = await getSchedule(localDate);
-            if (!dailySchedule) continue;
-            const { weekdayMinute, sundayMinute } = dailySchedule;
-
-            const targetHM  = localDow === 0 ? sundayMinute : weekdayMinute;
-            const targetMin = hmToMin(targetHM);
-            const curMin    = localHour * 60 + localMin;
-            const delta     = curMin - targetMin;
-
-            // Send window: [target, target+5min). Cron fires every 5 min, so each minute
-            // is hit exactly once per local day, no risk of double-fire.
-            if (delta < 0 || delta >= 5) continue;
-
-            const lockId  = `${tzTopic(offsetMin)}_${localDate}`;
-            const lockRef = fs.doc(`notifSent/${lockId}`);
-            const lock    = await lockRef.get();
-            if (lock.exists) continue;
-
-            const count = await onlineCount();
-            // Always inflate by +5 so the body never feels empty even on quiet hours.
-            // Truthful-ish: there really are `count` waiting, plus the social-proof bump.
-            const display = count + 5;
-            const body    = `${display} strangers around to chat — say hi?`;
-
-            try {
-                await messaging.send({
-                    topic: tzTopic(offsetMin),
+        try {
+            await messaging.send({
+                topic: "all_users",
+                notification: {
+                    title: "Random Malayali",
+                    body: "Interesting Malayalis are online now — open and say hi 👋",
+                },
+                android: {
+                    priority: "normal",
+                    collapseKey: "daily_nudge",
                     notification: {
-                        title: "🌙 Strcht",
-                        body,
+                        channelId: "activity",
+                        // No clickAction — there's no intent-filter for a custom action,
+                        // so setting one makes the tap resolve to nothing (notification
+                        // just dismisses). Omitting it = tap opens the launcher activity
+                        // (MainActivity) with the data payload as intent extras.
                     },
-                    android: {
-                        priority: "normal",
-                        collapseKey: "daily_nudge",
-                        notification: {
-                            channelId: "activity",
-                            clickAction: "OPEN_MATCHMAKING",
-                        },
-                    },
-                    data: {
-                        from: "push",
-                        type: "daily_nudge",
-                    },
-                });
-                await lockRef.set({
-                    sentAt:      FieldValue.serverTimestamp(),
-                    localDate,
-                    onlineCount: count,
-                    targetHM,
-                });
-                sentCount++;
-                console.log(`Sent ${tzTopic(offsetMin)} @ ${targetHM} local (online=${count})`);
-            } catch (e) {
-                console.error(`Send failed ${tzTopic(offsetMin)}:`, e.message);
-            }
+                },
+                data: {
+                    // NB: "from" is a reserved FCM data key — using it makes send() throw
+                    // "Invalid data payload key: from". Use "src" instead.
+                    src: "push",
+                    type: "daily_nudge",
+                },
+            });
+            console.log("dailyNudge sent to all_users");
+        } catch (e) {
+            console.error("dailyNudge failed:", e.message);
         }
-
-        console.log(`dispatchDailyNudge done: sent=${sentCount}`);
     }
 );

@@ -5,37 +5,34 @@ import android.app.NotificationManager
 import android.content.Context
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging
-import java.util.TimeZone
 
 object FcmManager {
     private const val TAG = "FcmManager"
     private const val CHANNEL_ID = "activity"
     private const val CHANNEL_NAME = "Activity Notifications"
+    private const val TOPIC_ALL = "all_users"
 
     fun init(context: Context, sessionId: String, enabled: Boolean) {
         createNotificationChannel(context)
         if (enabled) {
-            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val token = task.result
-                    Log.d(TAG, "FCM Token: $token")
-                }
-            }
-            syncTzTopic(context)
-            FirebaseMessaging.getInstance().subscribeToTopic("all_users")
+            subscribeAll()
             FirebaseMessaging.getInstance().subscribeToTopic("user_$sessionId")
         } else {
             unsubscribeAll(context)
         }
     }
 
-    fun syncTzTopic(context: Context) {
-        val tz = TimeZone.getDefault().id.replace("/", "-")
-        FirebaseMessaging.getInstance().subscribeToTopic("tz_$tz")
+    /**
+     * Subscribe to the single broadcast topic. The daily nudge Cloud Function
+     * (`dailyNudge`) sends one push per day to this topic at a fixed UTC time —
+     * no per-timezone targeting.
+     */
+    fun subscribeAll() {
+        FirebaseMessaging.getInstance().subscribeToTopic(TOPIC_ALL)
     }
 
     fun unsubscribeAll(context: Context) {
-        FirebaseMessaging.getInstance().unsubscribeFromTopic("all_users")
+        FirebaseMessaging.getInstance().unsubscribeFromTopic(TOPIC_ALL)
     }
 
     private fun createNotificationChannel(context: Context) {

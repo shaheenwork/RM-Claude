@@ -20,16 +20,21 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         Log.d(TAG, "From: ${remoteMessage.from}")
 
-        // Check if message contains a notification payload.
+        // Notification payload (set when app is foregrounded). If present, show it
+        // and stop — the data payload carries only routing keys (from/type), so
+        // building a second notification from it would overwrite this one with a
+        // blank "New Message".
         remoteMessage.notification?.let {
             sendNotification(it.title ?: "New Message", it.body ?: "")
+            return
         }
 
-        // Check if message contains a data payload.
-        if (remoteMessage.data.isNotEmpty()) {
-            val title = remoteMessage.data["title"] ?: "New Message"
-            val message = remoteMessage.data["message"] ?: ""
-            sendNotification(title, message)
+        // Data-only message — only build a notification if it actually carries
+        // display content (title/message), not just routing metadata.
+        val title = remoteMessage.data["title"]
+        val message = remoteMessage.data["message"]
+        if (!title.isNullOrBlank() || !message.isNullOrBlank()) {
+            sendNotification(title ?: "New Message", message ?: "")
         }
     }
 
@@ -48,6 +53,9 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
     private fun sendNotification(title: String, messageBody: String) {
         val intent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            // Tapping a foreground-shown nudge should auto-start matchmaking,
+            // matching the background notification-payload behaviour.
+            putExtra("src", "push")
         }
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent,

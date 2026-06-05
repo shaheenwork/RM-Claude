@@ -149,7 +149,12 @@ class BillingManager(
         billingClient.launchBillingFlow(activity, flowParams)
     }
 
-    suspend fun restorePurchases() {
+    /**
+     * Queries Play for owned subscriptions and re-applies premium state.
+     * @return true if an active (PURCHASED) premium subscription was found.
+     *         Lets the UI give "restored ✓" vs "nothing to restore" feedback.
+     */
+    suspend fun restorePurchases(): Boolean {
         val params = QueryPurchasesParams.newBuilder()
             .setProductType(BillingClient.ProductType.SUBS)
             .build()
@@ -158,6 +163,10 @@ class BillingManager(
             billingClient.queryPurchasesAsync(params) { _, list -> cont.resume(list) }
         }
         handlePurchases(purchases)
+        return purchases.any { p ->
+            p.products.any { it in Constants.ALL_PREMIUM_PRODUCTS } &&
+                p.purchaseState == Purchase.PurchaseState.PURCHASED
+        }
     }
 
     private suspend fun handlePurchases(purchases: List<Purchase>) {

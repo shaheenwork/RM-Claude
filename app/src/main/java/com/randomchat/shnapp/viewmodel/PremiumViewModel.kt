@@ -125,7 +125,12 @@ class PremiumViewModel(app: Application) : AndroidViewModel(app) {
             return
         }
         viewModelScope.launch {
-            billingManager.restorePurchases()
+            _uiMessage.value = "Checking your purchases…"
+            val restored = billingManager.restorePurchases()
+            showMessage(
+                if (restored) "✓ Premium restored"
+                else "No active subscription found for this account"
+            )
         }
     }
 

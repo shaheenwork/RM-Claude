@@ -12,12 +12,18 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.firebase.auth.FirebaseAuth
 import com.randomchat.shnapp.model.Gender
+import com.randomchat.shnapp.model.RewardGate
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeout
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.UUID
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "stranger_chat_prefs")
@@ -44,6 +50,10 @@ class SessionManager(private val context: Context) {
     private val analyticsOnboardingLoggedKey   = booleanPreferencesKey("an_onboarding_logged")
     private val analyticsFirstMatchLoggedKey   = booleanPreferencesKey("an_first_match_logged")
     private val analyticsFirstChatMsgLoggedKey = booleanPreferencesKey("an_first_chat_msg_logged")
+    // Rewarded-ad daily-cap tracking
+    private val rewardEarnsTodayKey     = intPreferencesKey("reward_earns_today")
+    private val lastRewardEarnMsKey     = longPreferencesKey("last_reward_earn_ms")
+    private val rewardEarnResetDateKey  = stringPreferencesKey("reward_earn_reset_date")
 
     /**
      * Stable per-install identity = FirebaseAuth anonymous UID.
@@ -253,9 +263,75 @@ class SessionManager(private val context: Context) {
         context.dataStore.edit { it[analyticsFirstChatMsgLoggedKey] = true }
     }
 
+    // ── Rewarded-ad daily cap ─────────────────────────────────────────────────
+    // Max free rewarded-ad earns per local day, and cooldown between earns.
+    // Cap protects premium conversion (grinders hit the wall → upsell), and
+    // cooldown protects AdMob eCPM (too-frequent fills tank quality).
+
+    private fun todayDateString(): String =
+        SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+
+    /**
+     * Current rewarded-ad state. Read-only — never mutates prefs.
+     * UI subscribes via [rewardGateFlow].
+     */
+    suspend fun getRewardGate(): RewardGate {
+        val prefs = context.dataStore.data.first()
+        val today = todayDateString()
+        val storedDate = prefs[rewardEarnResetDateKey]
+        val earnsToday = if (storedDate != today) 0 else (prefs[rewardEarnsTodayKey] ?: 0)
+        val left = DAILY_REWARD_CAP - earnsToday
+        if (left <= 0) return RewardGate.CapReached
+        val lastMs = prefs[lastRewardEarnMsKey] ?: 0L
+        val sinceLast = System.currentTimeMillis() - lastMs
+        if (lastMs > 0 && sinceLast < REWARD_COOLDOWN_MS) {
+            return RewardGate.Cooldown((REWARD_COOLDOWN_MS - sinceLast) / 1000L)
+        }
+        return RewardGate.Ready(left)
+    }
+
+    /**
+     * Atomic: bump today's earn counter, record timestamp, grant media credits.
+     * Handles the daily rollover (if stored date != today, counter resets to 0
+     * before bumping).
+     *
+     * Single entry point — callers must use this instead of [addRewardedMediaCredits]
+     * so the cap stays consistent.
+     */
+    suspend fun recordRewardEarn() {
+        context.dataStore.edit { prefs ->
+            val today = todayDateString()
+            val storedDate = prefs[rewardEarnResetDateKey]
+            val current = if (storedDate != today) 0 else (prefs[rewardEarnsTodayKey] ?: 0)
+            prefs[rewardEarnsTodayKey] = current + 1
+            prefs[lastRewardEarnMsKey] = System.currentTimeMillis()
+            prefs[rewardEarnResetDateKey] = today
+            // Bundled credit grant — same as legacy addRewardedMediaCredits
+            prefs[rewardedPhotoKey] = (prefs[rewardedPhotoKey] ?: 0) + 1
+            prefs[rewardedAudioKey] = (prefs[rewardedAudioKey] ?: 0) + 1
+            prefs[rewardedGifKey]   = (prefs[rewardedGifKey] ?: 0) + 1
+        }
+    }
+
+    /**
+     * Cold flow that emits the current [RewardGate] every 30 seconds so UIs
+     * can show a live-ticking cooldown countdown without recomposing manually.
+     */
+    fun rewardGateFlow(): Flow<RewardGate> = flow {
+        while (true) {
+            emit(getRewardGate())
+            delay(30_000L)
+        }
+    }
+
     companion object {
         @Volatile
         private var instance: SessionManager? = null
+
+        /** Max free rewarded-ad earns per local day. */
+        const val DAILY_REWARD_CAP = 3
+        /** Cooldown between rewarded-ad earns (ms). */
+        const val REWARD_COOLDOWN_MS = 30L * 60_000L  // 30 minutes
 
         fun getInstance(context: Context): SessionManager {
             return instance ?: synchronized(this) {

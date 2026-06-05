@@ -110,10 +110,12 @@ import com.randomchat.shnapp.theme.SubtleBorder
 import com.randomchat.shnapp.theme.TextMuted
 import com.randomchat.shnapp.theme.TextPrimary
 import com.randomchat.shnapp.theme.TextSecondary
+import com.randomchat.shnapp.model.RewardGate
 import com.randomchat.shnapp.ui.components.AudioButton
 import com.randomchat.shnapp.ui.components.ImageButton
 import com.randomchat.shnapp.ui.components.MessageBubble
 import com.randomchat.shnapp.ui.components.OnlineStatusChip
+import com.randomchat.shnapp.ui.components.RewardCapSheet
 import com.randomchat.shnapp.ui.components.SystemChip
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.togetherWith
@@ -160,6 +162,9 @@ fun ChatScreen(
     val replyingTo by viewModel.replyingTo.collectAsState()
     val rewardedAudioCredits by viewModel.rewardedAudioCredits.collectAsState()
     val rewardedGifCredits by viewModel.rewardedGifCredits.collectAsState()
+    val rewardGate by viewModel.rewardGate.collectAsState()
+    // Defensive upsell — shown if user taps Watch Ad right as cap flips
+    var showRewardCapSheet by remember { mutableStateOf(false) }
     val chatSaved            by viewModel.chatSaved.collectAsState()
     // Ghost bubble visible when premium + stranger is actively drafting
     val showGhostBubble = isPremium && strangerDraftText != null && !chatEnded
@@ -536,45 +541,93 @@ fun ChatScreen(
 
             }
 
-            // ── Chat ended state ─────────────────────────────────────────────
+            // ── Chat ended state — "closure card" (Option A) ──────────────────
             AnimatedVisibility(visible = chatEnded, enter = fadeIn(), exit = fadeOut()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                         .background(CardSurface)
-                        .padding(16.dp),
+                        .padding(top = 22.dp, start = 18.dp, end = 18.dp, bottom = 18.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    SystemChip("Chat has ended")
-                    Spacer(Modifier.height(12.dp))
+                    // ── Glyph + headline + warm sub ───────────────────────────
+                    Box(
+                        modifier = Modifier
+                            .size(54.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(AccentCyan.copy(alpha = 0.12f))
+                            .border(1.dp, AccentCyan.copy(alpha = 0.25f), RoundedCornerShape(16.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("👋", fontSize = 24.sp)
+                    }
+                    Spacer(Modifier.height(14.dp))
+                    Text(
+                        "Chat ended",
+                        color = TextPrimary,
+                        fontSize = 21.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-0.3).sp
+                    )
+                    Spacer(Modifier.height(5.dp))
+                    Text(
+                        "Hope you had a good one. Ready to meet someone new?",
+                        color = TextSecondary,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        textAlign = TextAlign.Center
+                    )
 
-                    // Banner ad — non-premium + ADS_ENABLED only
+                    // ── Ad slot — labeled & bordered so it never reads as broken UI ──
                     if (!isPremium && com.randomchat.shnapp.utils.Constants.ADS_ENABLED) {
-                        AndroidView(
-                            factory = { ctx ->
-                                AdView(ctx).apply {
-                                    setAdSize(AdSize.BANNER)
-                                    adUnitId = com.randomchat.shnapp.utils.Constants.ADMOB_BANNER_ID
-                                    loadAd(AdRequest.Builder().build())
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(16.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .border(1.dp, SubtleBorder, RoundedCornerShape(12.dp))
+                                .background(Color(0xFF0D1712))
+                        ) {
+                            AndroidView(
+                                factory = { ctx ->
+                                    AdView(ctx).apply {
+                                        setAdSize(AdSize.BANNER)
+                                        adUnitId = com.randomchat.shnapp.utils.Constants.ADMOB_BANNER_ID
+                                        loadAd(AdRequest.Builder().build())
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(4.dp)
+                            )
+                            Text(
+                                "AD",
+                                color = TextMuted,
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp,
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .background(
+                                        Color.Black.copy(alpha = 0.35f),
+                                        RoundedCornerShape(topStart = 12.dp, bottomEnd = 7.dp)
+                                    )
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
                     }
 
-                    // "Watch ad to save" strip — needs rewarded ads enabled
+                    Spacer(Modifier.height(18.dp))
+
+                    // ── Save strip (free, unsaved) — brass, full-width ────────
                     if (!isPremium && messages.isNotEmpty() && !chatSaved && com.randomchat.shnapp.utils.Constants.ADS_ENABLED) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
-                                .background(AccentCyan.copy(alpha = 0.07f))
-                                .border(
-                                    1.dp,
-                                    AccentCyan.copy(alpha = 0.25f),
-                                    androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
-                                )
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(PremiumGold.copy(alpha = 0.08f))
+                                .border(1.dp, PremiumGold.copy(alpha = 0.35f), RoundedCornerShape(24.dp))
                                 .clickable {
                                     com.randomchat.shnapp.utils.Telemetry.rewardedAdTap("save_chat")
                                     if (AdMobManager.getInstance(context).isRewardedReady()) {
@@ -610,42 +663,28 @@ fun ChatScreen(
                                         }
                                     }
                                 }
-                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                                .padding(vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .clip(CircleShape)
-                                    .background(AccentCyan.copy(alpha = 0.15f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    Icons.Default.PlayArrow,
-                                    contentDescription = null,
-                                    tint = AccentCyan,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                            Text(
-                                "Watch ad to save this chat",
-                                color = AccentCyan,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.weight(1f)
-                            )
                             Icon(
                                 Icons.Default.Bookmark,
                                 contentDescription = null,
-                                tint = AccentCyan.copy(alpha = 0.5f),
+                                tint = PremiumGold,
                                 modifier = Modifier.size(16.dp)
                             )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "Watch ad to save this chat",
+                                color = PremiumGold,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(9.dp))
                     }
 
-                    // First-time save hint for premium users
+                    // ── First-time save hint (premium) ───────────────────────
                     if (isPremium && !hasSavedFirstChat) {
                         Row(
                             modifier = Modifier
@@ -664,7 +703,7 @@ fun ChatScreen(
                                 modifier = Modifier.weight(1f)
                             )
                         }
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(9.dp))
                     }
 
                     com.randomchat.shnapp.ui.components.CyanButton(
@@ -1217,6 +1256,7 @@ fun ChatScreen(
             photoCredits = rewardedPhotoCredits,
             audioCredits = rewardedAudioCredits,
             gifCredits = rewardedGifCredits,
+            rewardGate = rewardGate,
             onDismiss = { showAttachSheet = false },
             onCamera = {
                 showAttachSheet = false
@@ -1253,33 +1293,51 @@ fun ChatScreen(
                 showGifPicker = true
             },
             onWatchAd = {
-                // Inline rewarded ad flow — earn +1 photo, +1 voice, +1 GIF credit
-                haptics.tick()
-                com.randomchat.shnapp.utils.Telemetry.rewardedAdTap("attach_sheet")
-                if (AdMobManager.getInstance(context).isRewardedReady()) {
-                    AdMobManager.getInstance(context).showRewardedIfReady(
-                        activity = activity,
-                        onRewarded = {
-                            haptics.success()
-                            // Same path home screen uses
-                            scope.launch {
-                                com.randomchat.shnapp.utils.SessionManager.getInstance(context)
-                                    .addRewardedMediaCredits()
-                            }
-                            com.randomchat.shnapp.utils.Telemetry.rewardedAdEarned("attach_sheet")
-                            // Keep sheet open so user sees the credit update + can attach
-                        },
-                        onNotAvailable = {
+                // Gate-driven: route between Ready / Cooldown / CapReached
+                when (val g = rewardGate) {
+                    is RewardGate.CapReached -> {
+                        // Cap hit — close attach sheet, surface upsell
+                        haptics.tick()
+                        showAttachSheet = false
+                        showRewardCapSheet = true
+                    }
+                    is RewardGate.Cooldown -> {
+                        // Recently earned — show cooldown snackbar, no ad
+                        haptics.tick()
+                        val secs = g.secondsLeft
+                        val msg = if (secs >= 60)
+                            "Next free credit in ${secs / 60}m ${secs % 60}s"
+                        else
+                            "Next free credit in ${secs}s"
+                        scope.launch { snackbarHostState.showSnackbar(msg) }
+                    }
+                    is RewardGate.Ready -> {
+                        // Inline rewarded ad flow — earn +1 photo, +1 voice, +1 GIF credit
+                        haptics.tick()
+                        com.randomchat.shnapp.utils.Telemetry.rewardedAdTap("attach_sheet")
+                        if (AdMobManager.getInstance(context).isRewardedReady()) {
+                            AdMobManager.getInstance(context).showRewardedIfReady(
+                                activity = activity,
+                                onRewarded = {
+                                    haptics.success()
+                                    // Single entry point — bumps cap counter + grants credits
+                                    viewModel.recordRewardEarn()
+                                    com.randomchat.shnapp.utils.Telemetry.rewardedAdEarned("attach_sheet")
+                                    // Keep sheet open so user sees the credit update + can attach
+                                },
+                                onNotAvailable = {
+                                    com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("attach_sheet")
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Ad not ready — try again in a moment.")
+                                    }
+                                }
+                            )
+                        } else {
                             com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("attach_sheet")
                             scope.launch {
                                 snackbarHostState.showSnackbar("Ad not ready — try again in a moment.")
                             }
                         }
-                    )
-                } else {
-                    com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("attach_sheet")
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Ad not ready — try again in a moment.")
                     }
                 }
             }
@@ -1300,6 +1358,18 @@ fun ChatScreen(
             onDismiss = { showGifPicker = false }
         )
     }
+
+    // ── Defensive reward-cap upsell sheet ────────────────────────────────────
+    // Triggered when user taps the Watch Ad row in AttachSheet at exactly the
+    // moment the daily cap flips.
+    RewardCapSheet(
+        visible = showRewardCapSheet,
+        onDismiss = { showRewardCapSheet = false },
+        onUpgrade = {
+            showRewardCapSheet = false
+            onNavigateToPremium()
+        }
+    )
 }
 
 @Composable
@@ -1609,6 +1679,7 @@ private fun AttachSheet(
     photoCredits: Int,
     audioCredits: Int,
     gifCredits: Int,
+    rewardGate: RewardGate,
     onDismiss: () -> Unit,
     onCamera: () -> Unit,
     onGallery: () -> Unit,
@@ -1616,7 +1687,8 @@ private fun AttachSheet(
     onWatchAd: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
-    // Show "Watch Ad" only when: non-premium, ads enabled, any credit type is 0
+    // Show the rewarded-ad row only when: non-premium, ads enabled, AND any
+    // credit type is depleted. The row itself morphs based on [rewardGate].
     val showWatchAd = !isPremium &&
         com.randomchat.shnapp.utils.Constants.ADS_ENABLED &&
         (photoCredits == 0 || audioCredits == 0 || gifCredits == 0)
@@ -1675,61 +1747,111 @@ private fun AttachSheet(
                 )
             }
 
-            // ── Watch ad row — only when ads enabled, non-premium, credits depleted ──
+            // ── Rewarded-ad row — morphs through Ready / Cooldown / CapReached ──
             if (showWatchAd) {
                 Spacer(Modifier.height(12.dp))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(AccentCyan.copy(alpha = 0.08f))
-                        .border(1.dp, AccentCyan.copy(alpha = 0.25f), RoundedCornerShape(14.dp))
-                        .clickable(onClick = onWatchAd)
-                        .padding(horizontal = 14.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(AccentCyan.copy(alpha = 0.15f), CircleShape)
-                    ) {
-                        Icon(
-                            Icons.Default.PlayArrow,
-                            null,
-                            tint = AccentCyan,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            "Watch a short ad",
-                            color = AccentCyan,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            "Earn 1 Photo + 1 Voice + 1 GIF",
-                            color = AccentCyan.copy(alpha = 0.7f),
-                            fontSize = 11.sp
-                        )
-                    }
-                    Text(
-                        "Free",
-                        color = AccentCyan,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .background(AccentCyan.copy(alpha = 0.18f), RoundedCornerShape(8.dp))
-                            .padding(horizontal = 8.dp, vertical = 3.dp)
-                    )
-                }
+                AttachSheetRewardRow(
+                    rewardGate = rewardGate,
+                    onClick = onWatchAd
+                )
             }
 
             Spacer(Modifier.height(12.dp))
         }
     }
+}
+
+/**
+ * Rewarded-ad row inside [AttachSheet]. State-driven render:
+ *  - Ready    → green "Watch a short ad" w/ "N LEFT" badge
+ *  - Cooldown → muted "Next free credit in Xm" badge
+ *  - Cap      → brass "Unlimited — Premium" upsell row → opens PremiumScreen
+ *
+ * Same row height & padding across states so the sheet layout stays stable.
+ */
+@Composable
+private fun AttachSheetRewardRow(
+    rewardGate: RewardGate,
+    onClick: () -> Unit
+) {
+    val isCap = rewardGate is RewardGate.CapReached
+    val accent = if (isCap) PremiumGold else AccentCyan
+    val bg = accent.copy(alpha = 0.08f)
+    val borderC = accent.copy(alpha = 0.30f)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(bg)
+            .border(1.dp, borderC, RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(36.dp)
+                .background(accent.copy(alpha = 0.15f), CircleShape)
+        ) {
+            Text(
+                when (rewardGate) {
+                    is RewardGate.Ready    -> "▶"
+                    is RewardGate.Cooldown -> "⏳"
+                    is RewardGate.CapReached -> "✦"
+                },
+                color = accent,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                when (rewardGate) {
+                    is RewardGate.Ready      -> "Watch a short ad"
+                    is RewardGate.Cooldown   -> "Refilling soon"
+                    is RewardGate.CapReached -> "Unlimited with Premium"
+                },
+                color = accent,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                when (rewardGate) {
+                    is RewardGate.Ready      -> "Earn 1 Photo + 1 Voice + 1 GIF"
+                    is RewardGate.Cooldown   -> "Next free credit in ${formatCooldownShort(rewardGate.secondsLeft)}"
+                    is RewardGate.CapReached -> "No daily limit · Tap to upgrade"
+                },
+                color = accent.copy(alpha = 0.72f),
+                fontSize = 11.sp
+            )
+        }
+
+        // Right-edge badge
+        Text(
+            when (rewardGate) {
+                is RewardGate.Ready      -> "${rewardGate.watchesLeft} LEFT"
+                is RewardGate.Cooldown   -> formatCooldownShort(rewardGate.secondsLeft)
+                is RewardGate.CapReached -> "UPGRADE"
+            },
+            color = accent,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 0.4.sp,
+            modifier = Modifier
+                .background(accent.copy(alpha = 0.18f), RoundedCornerShape(8.dp))
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+        )
+    }
+}
+
+private fun formatCooldownShort(secondsLeft: Long): String {
+    val m = secondsLeft / 60
+    val s = secondsLeft % 60
+    return if (m > 0) "${m}m ${s}s" else "${s}s"
 }
 
 @Composable

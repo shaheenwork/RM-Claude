@@ -89,6 +89,27 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     val showMyBadge: StateFlow<Boolean> = sessionManager.showPremiumBadgeFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    /**
+     * Daily rewarded-ad gate. Drives the AttachSheet "Watch Ad" tile render
+     * between Ready / Cooldown / CapReached states. Re-evaluates every 30s.
+     */
+    val rewardGate: StateFlow<com.randomchat.shnapp.model.RewardGate> =
+        sessionManager.rewardGateFlow()
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                com.randomchat.shnapp.model.RewardGate.Ready(SessionManager.DAILY_REWARD_CAP)
+            )
+
+    /**
+     * Called when the user completes a rewarded ad from the chat attach-sheet.
+     * Routes through [SessionManager.recordRewardEarn] so the daily cap +
+     * cooldown stay in sync with the credit grant.
+     */
+    fun recordRewardEarn() {
+        viewModelScope.launch { sessionManager.recordRewardEarn() }
+    }
+
     /** Whether the connected stranger is showing a premium badge. */
     private val _strangerHasBadge = MutableStateFlow(false)
     val strangerHasBadge: StateFlow<Boolean> = _strangerHasBadge

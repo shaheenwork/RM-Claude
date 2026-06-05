@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.randomchat.shnapp.firebase.FcmManager
 import com.randomchat.shnapp.firebase.FirestoreManager
 import com.randomchat.shnapp.model.Gender
+import com.randomchat.shnapp.model.RewardGate
 import com.randomchat.shnapp.realtime.RealtimeDbManager
 import com.randomchat.shnapp.utils.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,6 +41,17 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     /** Remaining rewarded GIF sends earned via ads. */
     val rewardedGifCredits: StateFlow<Int> = sessionManager.rewardedGifCreditsFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    /**
+     * Daily rewarded-ad gate. Drives the RewardsCard render between
+     * Ready / Cooldown / CapReached states. Re-evaluates every 30s.
+     */
+    val rewardGate: StateFlow<RewardGate> = sessionManager.rewardGateFlow()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            RewardGate.Ready(SessionManager.DAILY_REWARD_CAP)
+        )
 
     private val _isBanned = MutableStateFlow(false)
     val isBanned: StateFlow<Boolean> = _isBanned
@@ -76,7 +88,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             sessionManager.setNotifsEnabled(enabled)
             val ctx = getApplication<Application>()
-            if (enabled) FcmManager.syncTzTopic(ctx)
+            if (enabled) FcmManager.subscribeAll()
             else         FcmManager.unsubscribeAll(ctx)
         }
     }
@@ -87,9 +99,13 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    /** Called after user completes a rewarded ad on the home screen. */
+    /**
+     * Called after the user completes a rewarded ad on the home screen.
+     * Routes through [SessionManager.recordRewardEarn] so the daily cap +
+     * cooldown stay in sync with the credit grant.
+     */
     fun addRewardedCredits() {
-        viewModelScope.launch { sessionManager.addRewardedMediaCredits() }
+        viewModelScope.launch { sessionManager.recordRewardEarn() }
     }
 
     fun checkBanStatus() {

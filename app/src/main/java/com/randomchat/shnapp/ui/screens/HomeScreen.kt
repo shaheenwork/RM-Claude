@@ -83,9 +83,11 @@ import com.randomchat.shnapp.theme.SubtleBorder
 import com.randomchat.shnapp.theme.TextMuted
 import com.randomchat.shnapp.theme.TextPrimary
 import com.randomchat.shnapp.theme.TextSecondary
+import com.randomchat.shnapp.model.RewardGate
 import com.randomchat.shnapp.ui.components.BrandMark
 import com.randomchat.shnapp.ui.components.CyanButton
 import com.randomchat.shnapp.ui.components.HomePremiumCard
+import com.randomchat.shnapp.ui.components.RewardCapSheet
 import com.randomchat.shnapp.utils.Constants
 import com.randomchat.shnapp.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
@@ -108,6 +110,10 @@ fun HomeScreen(
     val gifCredits       by viewModel.rewardedGifCredits.collectAsState()
     val onlineCount      by viewModel.onlineCount.collectAsState()
     val selectedGender   by viewModel.selectedGender.collectAsState()
+    val rewardGate       by viewModel.rewardGate.collectAsState()
+
+    // Defensive: if user taps Watch Ad the instant the cap flips, show upsell sheet
+    var showCapSheet by remember { mutableStateOf(false) }
 
     // ── Shake-on-empty: CTA tapped w/o gender → pills shake + warning haptic ──
     var needsAttention by remember { mutableStateOf(false) }
@@ -320,21 +326,40 @@ fun HomeScreen(
                 if (!isPremium && Constants.ADS_ENABLED) {
                     Spacer(Modifier.height(10.dp))
                     RewardsCard(
-                        photoCredits = photoCredits,
-                        audioCredits = audioCredits,
-                        gifCredits   = gifCredits,
+                        rewardGate = rewardGate,
                         onEarnCredits = {
-                            haptics.tick()
-                            com.randomchat.shnapp.utils.Telemetry.rewardedAdTap("home_credits")
-                            if (AdMobManager.getInstance(context).isRewardedReady()) {
-                                AdMobManager.getInstance(context).showRewardedIfReady(
-                                    activity       = activity,
-                                    onRewarded     = {
-                                        haptics.success()
-                                        viewModel.addRewardedCredits()
-                                        com.randomchat.shnapp.utils.Telemetry.rewardedAdEarned("home_credits")
-                                    },
-                                    onNotAvailable = {
+                            // Gate may have just flipped between subscribe + tap.
+                            // Re-check current state before showing the ad.
+                            when (val g = rewardGate) {
+                                is RewardGate.CapReached -> {
+                                    haptics.tick()
+                                    showCapSheet = true
+                                }
+                                is RewardGate.Cooldown -> {
+                                    // No-op; UI already shows the countdown
+                                    haptics.tick()
+                                }
+                                is RewardGate.Ready -> {
+                                    haptics.tick()
+                                    com.randomchat.shnapp.utils.Telemetry.rewardedAdTap("home_credits")
+                                    if (AdMobManager.getInstance(context).isRewardedReady()) {
+                                        AdMobManager.getInstance(context).showRewardedIfReady(
+                                            activity       = activity,
+                                            onRewarded     = {
+                                                haptics.success()
+                                                viewModel.addRewardedCredits()
+                                                com.randomchat.shnapp.utils.Telemetry.rewardedAdEarned("home_credits")
+                                            },
+                                            onNotAvailable = {
+                                                com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("home_credits")
+                                                Toast.makeText(
+                                                    context,
+                                                    "Ad not ready yet — try again in a moment.",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        )
+                                    } else {
                                         com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("home_credits")
                                         Toast.makeText(
                                             context,
@@ -342,15 +367,12 @@ fun HomeScreen(
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
-                                )
-                            } else {
-                                com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("home_credits")
-                                Toast.makeText(
-                                    context,
-                                    "Ad not ready yet — try again in a moment.",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                }
                             }
+                        },
+                        onUpgrade = {
+                            haptics.tick()
+                            onOpenPremium()
                         }
                     )
                 }
@@ -370,82 +392,215 @@ fun HomeScreen(
                 )
             }
         }
+
+        // Defensive upsell — fires only if user taps a stale Watch-Ad CTA at cap.
+        RewardCapSheet(
+            visible = showCapSheet,
+            onDismiss = { showCapSheet = false },
+            onUpgrade = {
+                showCapSheet = false
+                onOpenPremium()
+            }
+        )
     }
 }
 
 // ── Rewards card ──────────────────────────────────────────────────────────────
 
+/**
+ * Free Media Credits card — morphs through 3 states driven by [RewardGate]:
+ *   - Ready    → green "Watch Ad" CTA + N-left pips
+ *   - Cooldown → muted countdown chip
+ *   - Cap      → brass border + "Upgrade" CTA → premium
+ *
+ * Card height is identical across states so layout doesn't shift.
+ */
 @Composable
 private fun RewardsCard(
-    photoCredits : Int,
-    audioCredits : Int,
-    gifCredits   : Int,
-    onEarnCredits: () -> Unit
+    rewardGate: RewardGate,
+    onEarnCredits: () -> Unit,
+    onUpgrade: () -> Unit
 ) {
+    val isCap = rewardGate is RewardGate.CapReached
+    val borderColor = if (isCap) PremiumGold.copy(alpha = 0.40f) else SubtleBorder
+    val bgColor = if (isCap) Color(0xFF14201A) else Color(0xFF07140E)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF07140E), RoundedCornerShape(12.dp))
-            .border(1.dp, SubtleBorder, RoundedCornerShape(12.dp))
+            .background(bgColor, RoundedCornerShape(12.dp))
+            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        // Left: title + inline credit counts
+        // ── Left: title + sub line driven by state ─────────────────────────
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Text(
-                "Free Media Credits",
-                color = TextPrimary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            if (photoCredits + audioCredits + gifCredits > 0) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    CreditInline(Icons.Default.PhotoCamera, photoCredits)
-                    CreditInline(Icons.Default.Mic, audioCredits)
-                    CreditInline(Icons.Default.Gif, gifCredits)
+            when (rewardGate) {
+                is RewardGate.Ready -> {
+                    Text(
+                        "Free Media Credits",
+                        color = TextPrimary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            "${rewardGate.watchesLeft} free watches left today",
+                            color = TextMuted,
+                            fontSize = 11.sp
+                        )
+                        EarnPips(
+                            total = com.randomchat.shnapp.utils.SessionManager.DAILY_REWARD_CAP,
+                            remaining = rewardGate.watchesLeft
+                        )
+                    }
                 }
-            } else {
-                Text(
-                    "Unlock photos, voice notes & GIFs",
-                    color = TextMuted,
-                    fontSize = 11.sp
-                )
+                is RewardGate.Cooldown -> {
+                    Text(
+                        "Free Media Credits",
+                        color = TextPrimary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        "Next free credit in ${formatCooldown(rewardGate.secondsLeft)}",
+                        color = TextMuted,
+                        fontSize = 11.sp
+                    )
+                }
+                is RewardGate.CapReached -> {
+                    Text(
+                        "Out of free credits today",
+                        color = PremiumGold,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        "Upgrade for unlimited photos, voice & GIFs",
+                        color = TextSecondary,
+                        fontSize = 11.sp
+                    )
+                }
             }
         }
 
-        // Right: watch-ad button
-        Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
-                .background(AccentCyan.copy(alpha = 0.12f))
-                .border(1.dp, AccentCyan.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
-                .clickable(onClick = onEarnCredits)
-                .padding(horizontal = 11.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(5.dp)
-        ) {
-            Icon(
-                Icons.Default.PlayArrow,
-                contentDescription = null,
-                tint = AccentCyan,
-                modifier = Modifier.size(14.dp)
-            )
-            Text(
-                "Watch Ad",
-                color = AccentCyan,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = 0.2.sp
+        // ── Right: state-driven action ─────────────────────────────────────
+        when (rewardGate) {
+            is RewardGate.Ready -> WatchAdButton(onClick = onEarnCredits)
+            is RewardGate.Cooldown -> CooldownChip(secondsLeft = rewardGate.secondsLeft)
+            is RewardGate.CapReached -> UpgradeButton(onClick = onUpgrade)
+        }
+    }
+}
+
+/** Small filled/empty dots showing how many earn-watches are left today. */
+@Composable
+private fun EarnPips(total: Int, remaining: Int) {
+    Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+        repeat(total) { idx ->
+            val filled = idx < remaining
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .background(
+                        if (filled) AccentCyan else AccentCyan.copy(alpha = 0.22f),
+                        CircleShape
+                    )
             )
         }
     }
+}
+
+@Composable
+private fun WatchAdButton(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(AccentCyan.copy(alpha = 0.12f))
+            .border(1.dp, AccentCyan.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 11.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        Icon(
+            Icons.Default.PlayArrow,
+            contentDescription = null,
+            tint = AccentCyan,
+            modifier = Modifier.size(14.dp)
+        )
+        Text(
+            "Watch Ad",
+            color = AccentCyan,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 0.2.sp
+        )
+    }
+}
+
+@Composable
+private fun CooldownChip(secondsLeft: Long) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(com.randomchat.shnapp.theme.ElevatedCard)
+            .border(1.dp, SubtleBorder, RoundedCornerShape(8.dp))
+            .padding(horizontal = 11.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        Text(
+            "⏳",
+            color = TextMuted,
+            fontSize = 12.sp
+        )
+        Text(
+            formatCooldown(secondsLeft),
+            color = TextMuted,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 0.2.sp
+        )
+    }
+}
+
+@Composable
+private fun UpgradeButton(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(
+                androidx.compose.ui.graphics.Brush.horizontalGradient(
+                    listOf(PremiumGold, com.randomchat.shnapp.theme.PremiumGoldDim)
+                )
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            "Upgrade",
+            color = Color(0xFF3A2A00),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 0.3.sp
+        )
+    }
+}
+
+/** "Xm Ys" or "Ys" if under a minute. Short form for tight UI. */
+private fun formatCooldown(secondsLeft: Long): String {
+    val m = secondsLeft / 60
+    val s = secondsLeft % 60
+    return if (m > 0) "${m}m ${s}s" else "${s}s"
 }
 
 @Composable
