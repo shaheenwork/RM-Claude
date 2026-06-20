@@ -115,6 +115,15 @@ fun HomeScreen(
     // Defensive: if user taps Watch Ad the instant the cap flips, show upsell sheet
     var showCapSheet by remember { mutableStateOf(false) }
 
+    // ── No Internet ──────────────────────────────────────────────────────────
+    var showNoInternetError by remember { mutableStateOf(false) }
+    LaunchedEffect(showNoInternetError) {
+        if (showNoInternetError) {
+            delay(3000)
+            showNoInternetError = false
+        }
+    }
+
     // ── Shake-on-empty: CTA tapped w/o gender → pills shake + warning haptic ──
     var needsAttention by remember { mutableStateOf(false) }
     val shakeOffsetX   = remember { Animatable(0f) }
@@ -301,8 +310,13 @@ fun HomeScreen(
                         onClick = {
                             val g = selectedGender
                             if (g != null) {
-                                haptics.heavy()
-                                onStartChat(g)
+                                if (com.randomchat.shnapp.utils.NetworkUtils.isInternetAvailable(context)) {
+                                    haptics.heavy()
+                                    onStartChat(g)
+                                } else {
+                                    haptics.warning()
+                                    showNoInternetError = true
+                                }
                             } else {
                                 // No gender → warning haptic + trigger shake on pills.
                                 haptics.warning()
@@ -312,6 +326,17 @@ fun HomeScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .alpha(if (ctaEnabled) 1f else 0.55f)
+                    )
+                }
+
+                if (showNoInternetError) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "No internet connection",
+                        color = com.randomchat.shnapp.theme.ErrorRed,
+                        textAlign = TextAlign.Center,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
 
