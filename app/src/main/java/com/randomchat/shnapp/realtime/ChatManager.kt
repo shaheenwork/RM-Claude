@@ -320,10 +320,12 @@ class ChatManager(
         // Clear draft immediately so stranger's ghost disappears before our message arrives
         clearDraftText()
 
-        // Show optimistically with a local ID
-        val localId = "local_${UUID.randomUUID()}"
+        // Show optimistically with a consistent ID. 
+        // We pre-generate the Firebase ID so the listener (onChildAdded) and
+        // this local call share the same key, preventing double-message glitches.
+        val pushId = rtdb.generateMessageId(roomId)
         val optimistic = ChatMessage(
-            id = localId,
+            id = pushId,
             roomId = roomId,
             senderId = sessionId,
             content = content,
@@ -342,25 +344,11 @@ class ChatManager(
             upsert(optimistic)
 
             try {
-                val firebaseId = rtdb.sendMessage(roomId, optimistic)
-                // Atomically swap local_ entry for the confirmed Firebase ID.
-                // If the listener already inserted firebaseId, just drop the local copy.
-                mapMutex.withLock {
-                    if (messageMap.containsKey(firebaseId)) {
-                        messageMap.remove(localId)
-                    } else {
-                        val confirmed = optimistic.copy(
-                            id = firebaseId,
-                            status = MessageStatus.SENT
-                        )
-                        messageMap.remove(localId)
-                        messageMap[firebaseId] = confirmed
-                    }
-                    _messages.value = messageMap.values.sortedBy { it.timestamp }
-                }
+                rtdb.sendMessage(roomId, optimistic)
+                // Success: entry already in map with the correct ID. 
+                // Listener will refresh it with the server timestamp shortly.
             } catch (e: Exception) {
                 Log.w("ChatManager", "sendMessage write failed: ${e.message}")
-                // Keep optimistic bubble — don't crash
             }
         }
         return optimistic

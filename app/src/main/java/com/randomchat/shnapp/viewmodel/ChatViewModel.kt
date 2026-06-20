@@ -471,6 +471,12 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                 setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS)
                 setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
                 setOutputFile(file.absolutePath)
+                setMaxDuration(Constants.MAX_AUDIO_DURATION_MS.toInt())
+                setOnInfoListener { _, what, _ ->
+                    if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
+                        stopAndSendAudio()
+                    }
+                }
                 prepare()
                 start()
             }

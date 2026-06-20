@@ -190,9 +190,19 @@ class RealtimeDbManager {
 
     // ─── Messages ─────────────────────────────────────────────────────────────
 
+    fun generateMessageId(roomId: String): String {
+        return root.child(Constants.PATH_ROOMS).child(roomId)
+            .child(Constants.PATH_MESSAGES).push().key ?: System.currentTimeMillis().toString()
+    }
+
     suspend fun sendMessage(roomId: String, message: ChatMessage): String {
-        val msgRef = root.child(Constants.PATH_ROOMS).child(roomId)
-            .child(Constants.PATH_MESSAGES).push()
+        val msgRef = if (message.id.startsWith("local_") || message.id.startsWith("pending_") || message.id.isBlank()) {
+            root.child(Constants.PATH_ROOMS).child(roomId)
+                .child(Constants.PATH_MESSAGES).push()
+        } else {
+            root.child(Constants.PATH_ROOMS).child(roomId)
+                .child(Constants.PATH_MESSAGES).child(message.id)
+        }
         val msgId = msgRef.key ?: System.currentTimeMillis().toString()
         // Build map; reply fields only included if this message IS a reply (saves bytes for normal messages)
         val data = mutableMapOf<String, Any>(
