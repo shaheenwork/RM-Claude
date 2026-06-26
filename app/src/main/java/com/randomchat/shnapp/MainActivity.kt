@@ -36,6 +36,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -130,6 +131,7 @@ class MainActivity : ComponentActivity() {
         // No system splash — go straight to the branded Compose SplashScreen.
         // Activity theme windowBackground is splash_bg (dark green) so the
         // ~50ms window before first Compose frame matches the brand bg seamlessly.
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 

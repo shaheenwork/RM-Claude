@@ -2,9 +2,11 @@ package com.randomchat.shnapp.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.randomchat.shnapp.R
 
 // Using system fonts as fallback; swap Font() for custom downloaded fonts if desired
 val AppTypography = Typography(
@@ -88,5 +90,9 @@ val AppTypography = Typography(
         lineHeight = 16.sp,
         letterSpacing = 0.8.sp,
         color = TextMuted
-    )
+    ),
+)
+
+val fugaz = FontFamily(
+    Font(R.font.fugaz, FontWeight.Normal)
 )

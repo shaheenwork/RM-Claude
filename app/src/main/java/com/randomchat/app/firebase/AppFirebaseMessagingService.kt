@@ -42,7 +42,7 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
         )
 
         val notif = NotificationCompat.Builder(this, "activity")
-            .setSmallIcon(R.drawable.ic_launcher)
+            .setSmallIcon(R.drawable.ic_notif_icon)
             .setContentTitle(title)
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))

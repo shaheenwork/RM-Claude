@@ -55,6 +55,7 @@ import com.randomchat.shnapp.theme.SubtleBorder
 import com.randomchat.shnapp.theme.TextMuted
 import com.randomchat.shnapp.theme.TextPrimary
 import com.randomchat.shnapp.theme.TextSecondary
+import com.randomchat.shnapp.theme.fugaz
 import com.randomchat.shnapp.ui.components.BrandMark
 import com.randomchat.shnapp.utils.Constants
 import com.randomchat.shnapp.utils.SessionManager
@@ -92,26 +93,30 @@ fun OnboardingScreen(onAccepted: () -> Unit) {
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(52.dp))
 
-            // ── Brand header ──────────────────────────────────────────────────
-            BrandMark(size = 72.dp)
+            Spacer(Modifier.height(40.dp))
 
-            Spacer(Modifier.height(20.dp))
+            BrandMark(size = 84.dp)
+
+            Spacer(Modifier.height(24.dp))
 
             Text(
-                "Random Malayali",
-                color = TextPrimary,
-                fontWeight = FontWeight.Black,
-                fontSize = 28.sp,
-                letterSpacing = 0.3.sp
+                text = "Random Malayali",
+                color = com.randomchat.shnapp.theme.PinkSoft,
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+                fontSize = 27.sp,
+                letterSpacing = (-0.5).sp
             )
-            Spacer(Modifier.height(6.dp))
+
+            Spacer(Modifier.height(8.dp))
+
             Text(
-                "No email · No phone · No signup — just talk",
-                color = TextSecondary,
-                fontSize = 12.sp,
-                letterSpacing = 0.4.sp
+                text = "No email · No phone · No signup — just talk",
+                color = TextSecondary.copy(alpha = 0.85f),
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                textAlign = TextAlign.Center
             )
 
             Spacer(Modifier.height(52.dp))
