@@ -75,8 +75,8 @@ object Constants {
     const val INTERSTITIAL_AFTER_N_CHATS = 3
 
     // Legal URLs — replace with your actual hosted pages
-    const val URL_PRIVACY_POLICY = "https://www.privacypolicygenerator.info/"
-    const val URL_TERMS_OF_SERVICE = "https://strcht.app/terms"
+    const val URL_PRIVACY_POLICY = "https://shaheenwork.github.io/RM-Privacy-Policy/"
+    const val URL_TERMS_OF_SERVICE = "https://shaheenwork.github.io/RM-Privacy-Policy/terms.html"
 
     // Session
     const val PREF_TERMS_ACCEPTED = "terms_accepted"
