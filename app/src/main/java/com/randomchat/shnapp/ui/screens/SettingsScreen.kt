@@ -1,7 +1,13 @@
 package com.randomchat.shnapp.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -83,6 +89,14 @@ fun SettingsScreen(
     val uriHandler      = LocalUriHandler.current
     val haptics         = com.randomchat.shnapp.utils.LocalHaptics.current
     val context         = androidx.compose.ui.platform.LocalContext.current
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            viewModel.setNotifsEnabled(true)
+        }
+    }
 
     // Surface restore-purchase result (success / nothing-found) as a Toast.
     androidx.compose.runtime.LaunchedEffect(restoreMessage) {
@@ -257,7 +271,26 @@ fun SettingsScreen(
                     subtitle = "Get notified when Malayalis are online",
                     checked  = notifsEnabled,
                     grouped  = true,
-                    onChange = { haptics.tick(); viewModel.setNotifsEnabled(it) }
+                    onChange = { enabled ->
+                        haptics.tick()
+                        if (enabled) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                val hasPerm = ContextCompat.checkSelfPermission(
+                                    context, Manifest.permission.POST_NOTIFICATIONS
+                                ) == PackageManager.PERMISSION_GRANTED
+
+                                if (hasPerm) {
+                                    viewModel.setNotifsEnabled(true)
+                                } else {
+                                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                }
+                            } else {
+                                viewModel.setNotifsEnabled(true)
+                            }
+                        } else {
+                            viewModel.setNotifsEnabled(false)
+                        }
+                    }
                 )
             }
             Spacer(Modifier.height(4.dp))

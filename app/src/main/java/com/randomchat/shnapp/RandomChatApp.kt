@@ -3,9 +3,6 @@ package com.randomchat.shnapp
 import android.app.Application
 import android.util.Log
 import com.google.firebase.FirebaseApp
-import com.google.firebase.appcheck.FirebaseAppCheck
-import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
-import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.functions.ktx.functions
@@ -52,16 +49,6 @@ class RandomChatApp : Application() {
                 .crossfade(150)
                 .build()
         )
-
-        // App Check — protects Firebase resources from unauthorized traffic.
-        // Debug provider allows emulators to work via debug tokens; 
-        // Play Integrity is used for production/physical devices.
-        val appCheckFactory = if (BuildConfig.DEBUG) {
-            DebugAppCheckProviderFactory.getInstance()
-        } else {
-            PlayIntegrityAppCheckProviderFactory.getInstance()
-        }
-        FirebaseAppCheck.getInstance().installAppCheckProviderFactory(appCheckFactory)
 
         // Init AdMob — gated by ADS_ENABLED feature flag.
         if (com.randomchat.shnapp.utils.Constants.ADS_ENABLED) {

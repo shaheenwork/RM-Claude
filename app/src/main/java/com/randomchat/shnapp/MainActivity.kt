@@ -205,7 +205,13 @@ fun AppNavHost(
     var showNotifRationale by remember { mutableStateOf(false) }
     val notifPermLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { /* result ignored: user choice respected, no retry */ }
+    ) { isGranted ->
+        if (isGranted) {
+            scope.launch {
+                SessionManager.getInstance(context).setNotifsEnabled(true)
+            }
+        }
+    }
 
     // Stage 1 — mark pending on qualifying chat-end.
     val chatEnded by chatViewModel.chatEnded.collectAsState()

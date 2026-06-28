@@ -374,6 +374,11 @@ fun HomeScreen(
                                                 haptics.success()
                                                 viewModel.addRewardedCredits()
                                                 com.randomchat.shnapp.utils.Telemetry.rewardedAdEarned("home_credits")
+                                                Toast.makeText(
+                                                    context,
+                                                    "+1 Photo & Voice credit added",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
                                             },
                                             onNotAvailable = {
                                                 com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("home_credits")
@@ -467,7 +472,7 @@ private fun RewardsCard(
             when (rewardGate) {
                 is RewardGate.Ready -> {
                     Text(
-                        "Free Media Credits",
+                        "Send Photos & Voice",
                         color = TextPrimary,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold
@@ -489,7 +494,7 @@ private fun RewardsCard(
                 }
                 is RewardGate.Cooldown -> {
                     Text(
-                        "Free Media Credits",
+                        "Free Voice & Photo Credits",
                         color = TextPrimary,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold
@@ -751,7 +756,7 @@ private fun PremiumStrip(onClick: () -> Unit) {
 private data class PremiumFeat(val emoji: String, val name: String, val desc: String)
 
 private val PREMIUM_FEATS = listOf(
-    PremiumFeat("🎙", "Voice notes",  "Record & send up to 60s"),
+    PremiumFeat("🎙", "Voice notes",  "Record & send voice notes"),
     PremiumFeat("📷", "Send photos",  "Share images directly in chat"),
     PremiumFeat("❤️", "Reactions",    "React to any message"),
     PremiumFeat("👀", "Live typing",  "See them type in real time"),

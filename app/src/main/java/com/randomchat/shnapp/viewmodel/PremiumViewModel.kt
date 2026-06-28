@@ -8,6 +8,7 @@ import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.randomchat.shnapp.BuildConfig
+import com.randomchat.shnapp.ads.AppOpenAdManager
 import com.randomchat.shnapp.billing.BillingManager
 import com.randomchat.shnapp.billing.PremiumPlan
 import com.randomchat.shnapp.utils.Constants
@@ -99,6 +100,7 @@ class PremiumViewModel(app: Application) : AndroidViewModel(app) {
             showMessage("Loading pricing… please try again in a moment.")
             return
         }
+        AppOpenAdManager.getInstance(getApplication()).setSuppressingAds(true)
         billingManager.launchPurchaseFlow(activity, _selectedPlanId.value)
     }
 
@@ -116,6 +118,7 @@ class PremiumViewModel(app: Application) : AndroidViewModel(app) {
             "https://play.google.com/store/account/subscriptions" +
                     "?sku=$productId&package=${context.packageName}"
         )
+        AppOpenAdManager.getInstance(getApplication()).setSuppressingAds(true)
         context.startActivity(Intent(Intent.ACTION_VIEW, uri))
     }
 

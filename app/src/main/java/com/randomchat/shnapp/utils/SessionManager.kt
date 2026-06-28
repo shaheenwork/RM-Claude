@@ -24,14 +24,12 @@ import kotlinx.coroutines.withTimeout
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.UUID
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "stranger_chat_prefs")
 
 class SessionManager(private val context: Context) {
 
     private val termsAcceptedKey = booleanPreferencesKey(Constants.PREF_TERMS_ACCEPTED)
-    private val sessionIdKey = stringPreferencesKey(Constants.PREF_SESSION_ID)
     private val isPremiumKey = booleanPreferencesKey(Constants.PREF_IS_PREMIUM)
     private val premiumExpiryKey = longPreferencesKey(Constants.PREF_PREMIUM_EXPIRY)
     private val chatsSinceAdKey = longPreferencesKey(Constants.PREF_CHATS_SINCE_AD)
@@ -62,30 +60,30 @@ class SessionManager(private val context: Context) {
     /**
      * Stable per-install identity = FirebaseAuth anonymous UID.
      *
-     * If signed in (typical after first launch), returns instantly.
-     * If not, performs a blocking anonymous sign-in. First launch only — UID then
-     * persists in FirebaseAuth's local cache for offline reuse.
+     * On first launch (or after clear data), this blocks for a short time to
+     * ensure we have a valid authenticated identity before any Firebase
+     * calls are made.
      *
-     * Fallback to a locally-generated UUID only if auth fails (offline first-launch).
-     * In that fallback case, RTDB writes will be rejected by rules — that's intentional;
-     * the app surfaces "no connection" rather than running on a forgeable identity.
+     * FirebaseAuth caches the UID locally for offline reuse, so subsequent
+     * accesses are instantaneous and non-blocking.
      */
-    val sessionId: String by lazy {
-        runBlocking {
-            val auth = FirebaseAuth.getInstance()
-            auth.currentUser?.uid ?: try {
-                withTimeout(10_000) {
+    val sessionId: String get() {
+        val auth = FirebaseAuth.getInstance()
+        val currentUser = auth.currentUser
+        if (currentUser != null) return currentUser.uid
+
+        // If not signed in yet (e.g. race during cold start), perform a 
+        // short-timeout blocking sign-in. 
+        return runBlocking {
+            try {
+                withTimeout(8000) {
                     auth.signInAnonymously().await().user!!.uid
                 }
             } catch (e: Exception) {
-                Log.e("SessionManager", "Anonymous sign-in failed: ${e.message}", e)
-                // Fallback to legacy/local UUID — RTDB writes will fail until auth recovers
-                val prefs = context.dataStore.data.first()
-                prefs[sessionIdKey] ?: run {
-                    val newId = UUID.randomUUID().toString().replace("-", "").take(20)
-                    context.dataStore.edit { it[sessionIdKey] = newId }
-                    newId
-                }
+                Log.e("SessionManager", "CRITICAL: Firebase Auth failed. App will likely fail to connect. ${e.message}")
+                // Returning a temporary ID so app doesn't crash, but Firebase 
+                // rules will likely reject this. 
+                "unauthenticated_${System.currentTimeMillis()}"
             }
         }
     }
@@ -134,7 +132,7 @@ class SessionManager(private val context: Context) {
 
     // ── Notifications ──────────────────────────────────────────────────────────
     val notifPermAskedFlow: Flow<Boolean> = context.dataStore.data.map { it[notifPermAskedKey] ?: false }
-    val notifsEnabledFlow:  Flow<Boolean> = context.dataStore.data.map { it[notifsEnabledKey] ?: true }
+    val notifsEnabledFlow:  Flow<Boolean> = context.dataStore.data.map { it[notifsEnabledKey] ?: false }
     val firstChatEndedFlow: Flow<Boolean> = context.dataStore.data.map { it[firstChatEndedKey] ?: false }
 
     suspend fun markNotifPermAsked() {
@@ -326,15 +324,20 @@ class SessionManager(private val context: Context) {
     }
 
     /**
-     * Cold flow that emits the current [RewardGate] every 30 seconds so UIs
-     * can show a live-ticking cooldown countdown without recomposing manually.
+     * Cold flow that emits the current [RewardGate] every second so UIs
+     * can show a live-ticking cooldown countdown smoothly.
+     * Combines the DataStore emission with a ticker to ensure immediate
+     * reaction to credit grants/resets.
      */
-    fun rewardGateFlow(): Flow<RewardGate> = flow {
-        while (true) {
-            emit(getRewardGate())
-            delay(30_000L)
+    fun rewardGateFlow(): Flow<RewardGate> = kotlinx.coroutines.flow.combine(
+        context.dataStore.data,
+        flow {
+            while (true) {
+                emit(Unit)
+                delay(1000L)
+            }
         }
-    }
+    ) { _, _ -> getRewardGate() }
 
     companion object {
         @Volatile

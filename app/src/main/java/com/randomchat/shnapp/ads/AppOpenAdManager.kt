@@ -45,6 +45,8 @@ class AppOpenAdManager private constructor(private val app: Application) :
     var isShowingAd                 = false
         private set
     private var isPremium           = false
+    private var isOnboardingComplete = false
+    private var isSuppressingAds      = false
     private var loadTime            = 0L
 
     /**
@@ -79,11 +81,23 @@ class AppOpenAdManager private constructor(private val app: Application) :
      */
     fun register() {
         app.registerActivityLifecycleCallbacks(this)
-        // Keep a cached, always-up-to-date premium flag so we can check it
+        // Keep a cached, always-up-to-date flags so we can check them
         // synchronously on the main thread inside lifecycle callbacks.
         scope.launch {
             sessionManager.isPremiumFlow.collect { isPremium = it }
         }
+        scope.launch {
+            sessionManager.termsAcceptedFlow.collect { isOnboardingComplete = it }
+        }
+    }
+
+    /**
+     * Temporarily suppress the next app-open ad. Use this when the user is
+     * navigating to an external flow (like Play Store billing) where an ad
+     * on return would be intrusive.
+     */
+    fun setSuppressingAds(suppress: Boolean) {
+        isSuppressingAds = suppress
     }
 
     /**
@@ -137,6 +151,15 @@ class AppOpenAdManager private constructor(private val app: Application) :
         if (isPremium) {
             Log.d(TAG, "Skip: premium user")
             loadAd()   // keep a fresh ad for if they downgrade / sub lapses
+            return
+        }
+        if (!isOnboardingComplete) {
+            Log.d(TAG, "Skip: onboarding not complete")
+            return
+        }
+        if (isSuppressingAds) {
+            Log.d(TAG, "Skip: ads suppressed")
+            isSuppressingAds = false
             return
         }
         if (AdMobManager.getInstance(app).isShowingFullScreenAd) {

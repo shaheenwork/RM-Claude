@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import java.io.File
 import androidx.activity.compose.BackHandler
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.animation.AnimatedVisibility
@@ -292,7 +293,9 @@ fun ChatScreen(
         }
     }
 
-    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+    val galleryLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
         uri ?: return@rememberLauncherForActivityResult
         val bytes = context.contentResolver.openInputStream(uri)?.readBytes() ?: return@rememberLauncherForActivityResult
         handleImageBytes(bytes)
@@ -1201,7 +1204,9 @@ fun ChatScreen(
                         .fillMaxWidth()
                         .clickable {
                             showPhotoSourceDialog = false
-                            galleryLauncher.launch("image/*")
+                            galleryLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
                         }
                         .padding(horizontal = 20.dp, vertical = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -1282,7 +1287,9 @@ fun ChatScreen(
                     onNavigateToPremium()
                     return@AttachSheet
                 }
-                galleryLauncher.launch("image/*")
+                galleryLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
             },
             onGif = {
                 showAttachSheet = false
