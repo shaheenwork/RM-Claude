@@ -33,11 +33,11 @@ object Constants {
     const val KLIPY_CUSTOMER_ID = "xGSGRUd6v2eIILTT7zKQsBiQNwo5GTlriuqX6WMeYTseftDByHcifG6BIcm2HG0y"
 
     // AdMob IDs (test IDs - replace with production)
-    const val ADMOB_BANNER_ID        = "ca-app-pub-3940256099942544/6300978111"
-    const val ADMOB_INTERSTITIAL_ID  = "ca-app-pub-3940256099942544/1033173712"
+    const val ADMOB_BANNER_ID        = "ca-app-pub-2416033626083993/6138707752"
+    const val ADMOB_INTERSTITIAL_ID  = "ca-app-pub-2416033626083993/1399074329"
     const val ADMOB_NATIVE_ID        = "ca-app-pub-3940256099942544/2247696110"
-    const val ADMOB_APP_OPEN_ID      = "ca-app-pub-3940256099942544/9257395921"
-    const val ADMOB_REWARDED_ID      = "ca-app-pub-3940256099942544/5224354917"
+    const val ADMOB_APP_OPEN_ID      = "ca-app-pub-2416033626083993/1641031296"
+    const val ADMOB_REWARDED_ID      = "ca-app-pub-2416033626083993/5780940336"
 
     // Billing — product IDs must match Google Play Console exactly
     const val PRODUCT_PREMIUM_WEEKLY  = "premium_weekly"

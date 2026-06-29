@@ -19,8 +19,8 @@ android {
         applicationId = "com.shaheen.randomchat"
         minSdk = 26
         targetSdk = 35
-        versionCode = 55
-        versionName = "1.011"
+        versionCode = 57
+        versionName = "1.013"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
