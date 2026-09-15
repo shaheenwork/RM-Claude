@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Online counter — 10 noticeable designs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&family=Manjari:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0A1410; --surface:#11201A; --elev:#18281F;
+    --border:rgba(238,236,222,0.09); --border-d:rgba(238,236,222,0.05);
+    --green:#2FB68C; --green-dp:#1C6B4F; --green-dim:#268E6E; --green-soft:rgba(47,182,140,0.10);
+    --brass:#E3B964; --brass-soft:rgba(227,185,100,0.10);
+    --cream:#F1EDDD; --sage:#9FAE9E; --muted:#66766A;
+    --grad:linear-gradient(135deg,var(--green),var(--green-dp));
+    --serif:'Instrument Serif',Georgia,serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:radial-gradient(ellipse 70% 40% at 15% 0%,rgba(31,107,79,0.12),transparent 60%),#05100B;
+    color:var(--cream); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; padding-bottom:80px; }
+  header.page { padding:44px 40px 24px; max-width:1500px; margin:0 auto; }
+  .eyebrow { font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--brass); margin-bottom:14px; }
+  header.page h1 { font-size:36px; font-weight:900; letter-spacing:-1.1px; line-height:1; }
+  header.page p.lead { color:var(--sage); font-size:14.5px; line-height:1.65; max-width:880px; margin-top:14px; }
+  header.page p.lead b { color:var(--cream); }
+
+  section.block { max-width:1500px; margin:0 auto; padding:18px 40px; }
+  .rail { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:28px; }
+
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:18px; overflow:hidden; }
+  .stage {
+    height:200px; display:grid; place-items:center;
+    background:
+      radial-gradient(ellipse 70% 50% at 50% 60%,rgba(47,182,140,0.08),transparent 70%),
+      linear-gradient(180deg,var(--bg),#0C1A14);
+    border-bottom:1px solid var(--border-d);
+    position:relative; overflow:hidden;
+  }
+  .meta { padding:14px 16px 16px; }
+  .meta .title { font-size:14px; font-weight:800; color:var(--cream); letter-spacing:-0.2px; margin-bottom:5px; display:flex; gap:6px; align-items:center; }
+  .meta .num { font-family:var(--mono); color:var(--brass); font-size:11px; padding:1px 6px; border:1px solid var(--brass-soft); border-radius:5px; background:var(--brass-soft); }
+  .meta .desc { font-size:12px; color:var(--sage); line-height:1.5; }
+  .meta .pros { font-size:11px; color:var(--green); margin-top:6px; line-height:1.4; }
+
+  /* ════ shared atoms ════ */
+  .num-cream { font-weight:800; color:var(--cream); }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     01 — PULSING LIVE BADGE
+     ═══════════════════════════════════════════════════════════════════════ */
+  .v1 { display:inline-flex; align-items:center; gap:9px; padding:8px 14px;
+    background:var(--green-soft); border:1px solid rgba(47,182,140,0.30); border-radius:20px; }
+  .v1 .badge { font-size:9px; font-weight:800; letter-spacing:1.5px; color:#fff; background:#E8443C; padding:2px 7px; border-radius:4px;
+    display:inline-flex; align-items:center; gap:4px; animation:v1pulse 2s ease-in-out infinite; }
+  .v1 .badge::before { content:""; width:5px; height:5px; border-radius:50%; background:#fff; animation:v1dot 1s ease-in-out infinite; }
+  .v1 .num { font-weight:800; color:var(--cream); font-size:14px; }
+  .v1 .lab { font-size:12px; color:var(--sage); }
+  @keyframes v1pulse { 0%,100%{box-shadow:0 0 0 0 rgba(232,68,60,0.5);} 50%{box-shadow:0 0 0 8px rgba(232,68,60,0);} }
+  @keyframes v1dot { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     02 — AVATAR STACK
+     ═══════════════════════════════════════════════════════════════════════ */
+  .v2 { display:inline-flex; align-items:center; gap:11px; padding:7px 14px 7px 8px;
+    background:rgba(0,0,0,0.30); border:1px solid var(--border); border-radius:24px; }
+  .v2 .stack { display:flex; }
+  .v2 .av { width:28px; height:28px; border-radius:50%; border:2px solid var(--surface); display:grid; place-items:center;
+    color:#fff; font-size:11px; font-weight:800; margin-left:-8px; }
+  .v2 .av:first-child { margin-left:0; }
+  .v2 .av.a1 { background:#36B59A; }
+  .v2 .av.a2 { background:#E3B964; color:#3a2a00; }
+  .v2 .av.a3 { background:#7BAEDB; }
+  .v2 .av.a4 { background:#E8765A; }
+  .v2 .av.plus { background:var(--elev); color:var(--green); font-size:10px; font-weight:800; }
+  .v2 .num { font-weight:800; color:var(--cream); font-size:13px; }
+  .v2 .lab { font-size:11.5px; color:var(--sage); }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     03 — RAMP-UP COUNTER
+     ═══════════════════════════════════════════════════════════════════════ */
+  .v3 { display:inline-flex; align-items:center; gap:9px; padding:7px 14px;
+    background:rgba(47,182,140,0.08); border:1px solid rgba(47,182,140,0.30); border-radius:20px; }
+  .v3 .dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:ping 2s infinite; box-shadow:0 0 0 0 rgba(47,182,140,0.5); }
+  @keyframes ping { 0%{box-shadow:0 0 0 0 rgba(47,182,140,0.5);} 70%{box-shadow:0 0 0 7px rgba(47,182,140,0);} 100%{box-shadow:0 0 0 0 rgba(47,182,140,0);} }
+  .v3 .num { font-family:var(--mono); font-weight:700; color:var(--green); font-size:14px; min-width:55px; display:inline-block; text-align:right;
+    animation: v3ramp 1.8s ease-out 0.2s 1 both; }
+  .v3 .lab { font-size:12px; color:var(--sage); }
+  @keyframes v3ramp {
+    0% { content: "0"; }
+    100% { content: "1,284"; }
+  }
+  /* CSS @keyframes can't change text. Use a JS-free trick: animate width clip-path */
+  .v3 .ramp-vis { font-family:var(--mono); font-weight:700; color:var(--green); font-size:14px; display:inline-block; position:relative; }
+  .v3 .ramp-vis .full { visibility:hidden; }
+  .v3 .ramp-vis .cur { position:absolute; left:0; top:0; right:0; animation:v3num 1.6s steps(20) 0.2s 1 both; }
+  @keyframes v3num {
+    0% { content: "0"; }
+    5% { content: "62"; }
+    15% { content: "184"; }
+    25% { content: "319"; }
+    35% { content: "486"; }
+    45% { content: "640"; }
+    55% { content: "812"; }
+    65% { content: "947"; }
+    75% { content: "1,072"; }
+    85% { content: "1,190"; }
+    95% { content: "1,260"; }
+    100% { content: "1,284"; }
+  }
+  /* Since content animation is CSS-only and limited, simulate with overlay */
+  .v3 .ramp-vis::after { content: "1,284"; }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     04 — AUDIO WAVE BARS
+     ═══════════════════════════════════════════════════════════════════════ */
+  .v4 { display:inline-flex; align-items:center; gap:10px; padding:8px 14px;
+    background:rgba(47,182,140,0.08); border:1px solid rgba(47,182,140,0.28); border-radius:20px; }
+  .v4 .bars { display:flex; gap:2.5px; align-items:flex-end; height:18px; }
+  .v4 .bar { width:2.5px; background:var(--green); border-radius:1.5px; }
+  .v4 .bar:nth-child(1) { animation: bar 1.1s ease-in-out 0s   infinite; }
+  .v4 .bar:nth-child(2) { animation: bar 0.9s ease-in-out 0.2s infinite; }
+  .v4 .bar:nth-child(3) { animation: bar 1.3s ease-in-out 0.4s infinite; }
+  .v4 .bar:nth-child(4) { animation: bar 0.7s ease-in-out 0.1s infinite; }
+  .v4 .bar:nth-child(5) { animation: bar 1.0s ease-in-out 0.3s infinite; }
+  @keyframes bar { 0%,100%{ height:5px; } 50%{ height:16px; } }
+  .v4 .num { font-weight:800; color:var(--cream); font-size:14px; }
+  .v4 .lab { font-size:12px; color:var(--sage); }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     05 — GLOBE + COUNT
+     ═══════════════════════════════════════════════════════════════════════ */
+  .v5 { display:inline-flex; align-items:center; gap:10px; padding:7px 14px;
+    background:rgba(0,0,0,0.30); border:1px solid var(--border); border-radius:22px; }
+  .v5 .globe { width:22px; height:22px; border-radius:50%; background: radial-gradient(circle at 35% 35%, var(--green) 0%, var(--green-dp) 70%);
+    position:relative; overflow:hidden; }
+  .v5 .globe::before, .v5 .globe::after { content:""; position:absolute; left:0; right:0; top:50%; height:1px; background:rgba(255,255,255,0.30); }
+  .v5 .globe::after { top:30%; }
+  .v5 .globe .lng { position:absolute; left:50%; top:0; bottom:0; width:1px; background:rgba(255,255,255,0.30); animation:spin 5s linear infinite; transform-origin: 0 50%; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .v5 .num { font-weight:800; color:var(--cream); font-size:14px; }
+  .v5 .lab { font-size:11.5px; color:var(--sage); }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     06 — HEART-PULSE NUMBER
+     ═══════════════════════════════════════════════════════════════════════ */
+  .v6 { display:inline-flex; align-items:center; gap:9px; padding:7px 14px;
+    background:var(--green-soft); border:1px solid rgba(47,182,140,0.30); border-radius:22px; }
+  .v6 .dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:ping 2s infinite; }
+  .v6 .num { font-weight:800; color:var(--green); font-size:17px; animation:v6heart 1.4s ease-in-out infinite; transform-origin:center; }
+  @keyframes v6heart { 0%,40%,100%{transform:scale(1);} 50%{transform:scale(1.08);} 60%{transform:scale(1);} 70%{transform:scale(1.05);} }
+  .v6 .lab { font-size:12px; color:var(--sage); }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     07 — LIVE TICKER (activity)
+     ═══════════════════════════════════════════════════════════════════════ */
+  .v7 { display:inline-flex; align-items:center; gap:9px; padding:7px 14px;
+    background:rgba(0,0,0,0.30); border:1px solid var(--border); border-radius:22px; max-width:280px; }
+  .v7 .dot { width:7px; height:7px; border-radius:50%; background:var(--green); flex-shrink:0; animation:ping 2s infinite; }
+  .v7 .ticker { overflow:hidden; height:18px; position:relative; flex:1; font-size:12px; color:var(--cream); }
+  .v7 .ticker ul { list-style:none; position:absolute; left:0; right:0; animation:v7roll 12s steps(4) infinite; }
+  .v7 .ticker li { height:18px; line-height:18px; }
+  .v7 .ticker b { color:var(--green); font-weight:700; }
+  @keyframes v7roll {
+    0%,18%   { transform:translateY(0); }
+    25%,43%  { transform:translateY(-18px); }
+    50%,68%  { transform:translateY(-36px); }
+    75%,93%  { transform:translateY(-54px); }
+    100%     { transform:translateY(-72px); }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     08 — GLOWING CHIP WITH HALO
+     ═══════════════════════════════════════════════════════════════════════ */
+  .v8 { display:inline-flex; align-items:center; gap:9px; padding:8px 16px;
+    background:linear-gradient(135deg,rgba(47,182,140,0.15),rgba(47,182,140,0.05));
+    border:1px solid rgba(47,182,140,0.45); border-radius:22px;
+    position:relative; box-shadow:0 0 28px rgba(47,182,140,0.30), inset 0 0 8px rgba(47,182,140,0.10);
+    animation:v8glow 2.6s ease-in-out infinite alternate; }
+  @keyframes v8glow {
+    from { box-shadow:0 0 16px rgba(47,182,140,0.20), inset 0 0 6px rgba(47,182,140,0.08); }
+    to   { box-shadow:0 0 36px rgba(47,182,140,0.45), inset 0 0 12px rgba(47,182,140,0.18); }
+  }
+  .v8 .dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:ping 2s infinite; }
+  .v8 .num { font-weight:800; color:var(--cream); font-size:14px; }
+  .v8 .lab { font-size:12px; color:var(--green); }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     09 — STORIES RING (rotating brass border)
+     ═══════════════════════════════════════════════════════════════════════ */
+  .v9 { display:inline-flex; align-items:center; gap:10px; padding:6px 14px 6px 6px;
+    background:rgba(0,0,0,0.30); border:1px solid var(--border); border-radius:30px; }
+  .v9 .ring { width:30px; height:30px; border-radius:50%; padding:2px;
+    background:conic-gradient(from 0deg, var(--brass), var(--green), var(--brass));
+    animation:spin 4s linear infinite; }
+  .v9 .ring .inner { width:100%; height:100%; border-radius:50%; background:var(--surface); display:grid; place-items:center; font-size:11px; color:var(--green); font-weight:800; animation:spin 4s linear infinite reverse; }
+  .v9 .num { font-weight:800; color:var(--cream); font-size:14px; }
+  .v9 .lab { font-size:11.5px; color:var(--sage); }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     10 — SPARKLINE (live activity graph)
+     ═══════════════════════════════════════════════════════════════════════ */
+  .v10 { display:inline-flex; align-items:center; gap:10px; padding:7px 14px;
+    background:rgba(47,182,140,0.07); border:1px solid rgba(47,182,140,0.28); border-radius:20px; }
+  .v10 svg { width:48px; height:22px; }
+  .v10 svg .area { fill:rgba(47,182,140,0.20); }
+  .v10 svg .line { fill:none; stroke:var(--green); stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:120; stroke-dashoffset:120; animation:v10draw 2.4s ease-in-out infinite alternate; }
+  @keyframes v10draw { from{stroke-dashoffset:120;} to{stroke-dashoffset:0;} }
+  .v10 svg circle { fill:var(--green); animation:v10dot 1.6s ease-in-out infinite alternate; }
+  @keyframes v10dot { 0%{r:1.6;opacity:0.7;} 100%{r:2.6;opacity:1;} }
+  .v10 .num { font-weight:800; color:var(--cream); font-size:14px; }
+  .v10 .lab { font-size:11.5px; color:var(--sage); }
+
+  .legend { padding:18px; border-radius:14px; background:var(--surface); border:1px solid var(--border); margin-top:30px; }
+  .legend h3 { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--brass); margin-bottom:12px; }
+  .legend table { width:100%; border-collapse:collapse; font-size:13px; }
+  .legend th { text-align:left; padding:9px 10px; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border); font-weight:700; }
+  .legend td { padding:11px 10px; border-bottom:1px solid var(--border-d); color:var(--sage); vertical-align:top; line-height:1.5; }
+  .legend td b { color:var(--cream); }
+
+  .foot { max-width:1500px; margin:6px auto 0; padding:20px 40px; color:var(--muted); font-size:13px; line-height:1.7; }
+  .foot b { color:var(--brass); }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <div class="eyebrow">Online counter · 10 noticeable variants · pick one</div>
+  <h1>Make "1,284 online" actually grab the eye</h1>
+  <p class="lead">Current = a small flat text line. Below = 10 distinct ways to make it stand out as <b>live social proof</b> — animations, motion, glow, avatars, sparkline, ramp-up, etc. All use the green+brass palette. Click around, the live ones animate.</p>
+</header>
+
+<section class="block">
+  <div class="rail">
+
+    <!-- 1 -->
+    <div class="card">
+      <div class="stage">
+        <div class="v1"><span class="badge">LIVE</span><span class="num">1,284</span><span class="lab">online</span></div>
+      </div>
+      <div class="meta">
+        <div class="title">1 · Pulsing LIVE badge <span class="num">animated</span></div>
+        <div class="desc">Red "LIVE" pill pulses with a radiating shadow ring + blinking dot. Twitch/YouTube convention — instant "this is real, this is now."</div>
+        <div class="pros">★ Hard to ignore. Strongest "live" cue.</div>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="card">
+      <div class="stage">
+        <div class="v2">
+          <div class="stack">
+            <div class="av a1">M</div><div class="av a2">K</div><div class="av a3">A</div><div class="av a4">S</div><div class="av plus">+1k</div>
+          </div>
+          <span class="num">1,284</span><span class="lab">Malayalis here</span>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="title">2 · Avatar stack <span class="num">human face</span></div>
+        <div class="desc">4 colored avatar circles overlapped + "+1k" + count. Humanizes the number — feels like people, not a stat.</div>
+        <div class="pros">★ Most human, most warm.</div>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="card">
+      <div class="stage">
+        <div class="v3"><span class="dot"></span><span class="num"><span class="ramp-vis"><span class="full">1,284</span></span></span><span class="lab">online</span></div>
+      </div>
+      <div class="meta">
+        <div class="title">3 · Ramp-up counter <span class="num">on screen entry</span></div>
+        <div class="desc">Number animates from 0 → real count over ~1.5s when home opens. Casino-slot dopamine. (Real impl uses JS tween; CSS-only preview shown.)</div>
+        <div class="pros">★ Best for first-time impression.</div>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="card">
+      <div class="stage">
+        <div class="v4">
+          <div class="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+          <span class="num">1,284</span><span class="lab">talking now</span>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="title">4 · Audio wave bars <span class="num">animated</span></div>
+        <div class="desc">5 little equalizer bars dance next to the count — implies real-time voices/conversations.</div>
+        <div class="pros">★ Implies activity, not just presence.</div>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="card">
+      <div class="stage">
+        <div class="v5">
+          <div class="globe"><div class="lng"></div></div>
+          <span class="num">1,284</span><span class="lab">across the world</span>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="title">5 · Rotating globe <span class="num">animated</span></div>
+        <div class="desc">Tiny globe with rotating longitude line. Reinforces the "worldwide Malayalis" angle for diaspora users.</div>
+        <div class="pros">★ Best for diaspora/pravasi pull.</div>
+      </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="card">
+      <div class="stage">
+        <div class="v6"><span class="dot"></span><span class="num">1,284</span><span class="lab">online</span></div>
+      </div>
+      <div class="meta">
+        <div class="title">6 · Heart-pulse number <span class="num">animated</span></div>
+        <div class="desc">The count itself rhythmically scales 1.0 → 1.08 → 1.0 like a heartbeat. Subtle but the eye catches the motion.</div>
+        <div class="pros">★ Most subtle, premium feel.</div>
+      </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="card">
+      <div class="stage">
+        <div class="v7">
+          <span class="dot"></span>
+          <div class="ticker">
+            <ul>
+              <li><b>1,284</b> Malayalis online now</li>
+              <li>Someone in <b>Kochi</b> just connected</li>
+              <li><b>Dubai → Kerala</b> chat in progress</li>
+              <li>A new Malayali every <b>3 sec</b></li>
+              <li><b>1,284</b> Malayalis online now</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="title">7 · Live activity ticker <span class="num">rolling text</span></div>
+        <div class="desc">Cycles through the count + soft "someone just connected" lines. Multiple social-proof signals in one slot.</div>
+        <div class="pros">★ Most persuasive — multi-signal proof.</div>
+      </div>
+    </div>
+
+    <!-- 8 -->
+    <div class="card">
+      <div class="stage">
+        <div class="v8"><span class="dot"></span><span class="num">1,284</span><span class="lab">online</span></div>
+      </div>
+      <div class="meta">
+        <div class="title">8 · Glowing halo chip <span class="num">animated</span></div>
+        <div class="desc">Same chip shape, but with a soft green outer glow that breathes in and out. Lets the chip stand out without changing layout.</div>
+        <div class="pros">★ Lowest layout change.</div>
+      </div>
+    </div>
+
+    <!-- 9 -->
+    <div class="card">
+      <div class="stage">
+        <div class="v9">
+          <div class="ring"><div class="inner">●</div></div>
+          <span class="num">1,284</span><span class="lab">online</span>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="title">9 · Stories-style ring <span class="num">animated</span></div>
+        <div class="desc">Instagram-story-style conic-gradient ring rotating around a green dot. Familiar gesture, signals "fresh / active".</div>
+        <div class="pros">★ Familiar IG/TikTok visual language.</div>
+      </div>
+    </div>
+
+    <!-- 10 -->
+    <div class="card">
+      <div class="stage">
+        <div class="v10">
+          <svg viewBox="0 0 48 22">
+            <path class="area" d="M0,18 L4,14 L8,16 L12,10 L16,12 L20,7 L24,9 L28,5 L32,8 L36,4 L40,6 L44,2 L48,4 L48,22 L0,22 Z"/>
+            <path class="line" d="M0,18 L4,14 L8,16 L12,10 L16,12 L20,7 L24,9 L28,5 L32,8 L36,4 L40,6 L44,2 L48,4"/>
+            <circle cx="48" cy="4" r="2"/>
+          </svg>
+          <span class="num">1,284</span><span class="lab">online</span>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="title">10 · Sparkline trend <span class="num">animated</span></div>
+        <div class="desc">Mini live-trend graph next to the count. Implies "trending up, peak hours, lots of activity right now."</div>
+        <div class="pros">★ Premium fintech/dashboard feel.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="legend">
+    <h3>Quick pick</h3>
+    <table>
+      <thead><tr><th>#</th><th>Vibe</th><th>Strongest claim</th><th>Best for</th></tr></thead>
+      <tbody>
+        <tr><td><b>1</b></td><td>Twitch / YouTube</td><td>"This is LIVE"</td><td>Maximum attention grab</td></tr>
+        <tr><td><b>2</b></td><td>Warm / human</td><td>"These are PEOPLE"</td><td>Humanize the number</td></tr>
+        <tr><td><b>3</b></td><td>Casino / dopamine</td><td>"Look — it just jumped to 1,284"</td><td>First impression wow</td></tr>
+        <tr><td><b>4</b></td><td>Real-time activity</td><td>"They are TALKING right now"</td><td>Implies action, not just presence</td></tr>
+        <tr><td><b>5</b></td><td>Diaspora / global</td><td>"All over the world"</td><td>Pravasi / Gulf appeal</td></tr>
+        <tr><td><b>6</b></td><td>Subtle / premium</td><td>"This is alive"</td><td>Calm but noticeable</td></tr>
+        <tr><td><b>7</b></td><td>Multi-signal</td><td>"Constant activity"</td><td>Most persuasive</td></tr>
+        <tr><td><b>8</b></td><td>Glow / aura</td><td>"This element is important"</td><td>Lowest visual change</td></tr>
+        <tr><td><b>9</b></td><td>IG / TikTok</td><td>"Fresh, active, social"</td><td>Gen Z familiar</td></tr>
+        <tr><td><b>10</b></td><td>Fintech / data</td><td>"Trending up"</td><td>Premium dashboard feel</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="foot">
+  Reply with a number (or a mix — e.g. <b>"1 + 2's avatars"</b>, <b>"8's glow on the current chip"</b>) → I implement it in the Compose home.
+</div>
+
+</body>
+</html>

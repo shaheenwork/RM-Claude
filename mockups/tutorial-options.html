@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutorial Redesign — 3 Options</title>
+<style>
+  :root{
+    --deep:#0C0814; --navy:#120E1C; --end:#080610;
+    --card:#1A1426; --elev:#221A30; --border:rgba(240,232,245,.08);
+    --pink:#E04A8C; --violet:#6E4FE0; --aurora:#66D7FF;
+    --gold:#FFD062; --goldDim:#FFA040; --pinkSoft:#F08AB5;
+    --tp:#F0E8F5; --ts:#B4A6C2; --tm:#7A6F87;
+    --green:#00C779; --red:#FF5252;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#070510; color:var(--tp);
+    font-family:-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;
+    padding:48px 32px 80px; line-height:1.5;
+  }
+  .serif{font-family:"Instrument Serif",Georgia,"Times New Roman",serif;font-style:italic;font-weight:400}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px;text-align:center}
+  .lede{text-align:center;color:var(--ts);font-size:14px;max-width:680px;margin:0 auto 8px}
+  .note{text-align:center;color:var(--tm);font-size:12.5px;max-width:720px;margin:0 auto 40px}
+
+  .grid{display:flex;gap:48px;justify-content:center;flex-wrap:wrap;max-width:1300px;margin:0 auto}
+  .col{flex:0 0 auto}
+  .colhead{text-align:center;margin-bottom:18px}
+  .colhead .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1.5px;
+    text-transform:uppercase;padding:5px 12px;border-radius:99px;margin-bottom:8px}
+  .colhead h2{font-size:19px;font-weight:700}
+  .colhead p{font-size:12.5px;color:var(--ts);max-width:330px;margin:4px auto 0}
+
+  .stack{display:flex;flex-direction:column;gap:22px}
+
+  /* phone */
+  .ph{
+    width:300px;height:600px;border-radius:38px;position:relative;overflow:hidden;
+    background:linear-gradient(180deg,var(--deep),var(--end));
+    border:1px solid rgba(255,255,255,.07);
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.7), inset 0 0 0 6px #050309;
+  }
+  .ph .blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.5;pointer-events:none}
+  .b-pink{width:220px;height:220px;background:var(--pink);top:-60px;right:-50px}
+  .b-violet{width:200px;height:200px;background:var(--violet);bottom:-50px;left:-60px}
+  .b-gold{width:200px;height:200px;background:var(--gold);top:-50px;right:-40px;opacity:.35}
+  .b-aurora{width:200px;height:200px;background:var(--aurora);bottom:-60px;left:-50px;opacity:.3}
+
+  .scr{position:absolute;inset:0;display:flex;flex-direction:column;padding:30px 24px 24px;z-index:2}
+  .skip{align-self:flex-end;color:var(--tm);font-size:12.5px;margin-bottom:6px}
+  .body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .dots{display:flex;gap:7px;justify-content:center;margin:14px 0}
+  .dot{width:7px;height:7px;border-radius:9px;background:rgba(240,232,245,.18)}
+  .dot.on{width:22px;background:var(--pink)}
+  .dot.on.g{background:var(--gold)}
+  .cta{
+    height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:15px;color:#fff;
+    background:linear-gradient(135deg,var(--pink),var(--violet));
+    box-shadow:0 12px 28px -10px rgba(224,74,140,.7);
+  }
+  .cta.gold{background:linear-gradient(135deg,var(--gold),var(--goldDim));color:#1A1100;
+    box-shadow:0 12px 28px -10px rgba(255,208,98,.6)}
+
+  /* generic bits */
+  .pill{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;
+    padding:7px 13px;border-radius:99px}
+  .pill .d{width:7px;height:7px;border-radius:50%}
+  .glow-ring{border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative}
+  .ico{display:flex;align-items:center;justify-content:center;border-radius:50%}
+
+  /* mini chat (option B) */
+  .chat{width:100%;display:flex;flex-direction:column;gap:9px;padding:4px 2px}
+  .bub{max-width:78%;padding:10px 13px;font-size:12.5px;line-height:1.45;border-radius:16px}
+  .bin{align-self:flex-start;background:rgba(240,232,245,.07);
+    border:1px solid rgba(240,232,245,.08);border-bottom-left-radius:5px;color:var(--tp)}
+  .bout{align-self:flex-end;background:linear-gradient(135deg,var(--pink),var(--violet));
+    color:#fff;border-bottom-right-radius:5px}
+  .sys{align-self:center;font-size:10.5px;color:var(--aurora);
+    background:rgba(102,215,255,.10);border:1px solid rgba(102,215,255,.22);
+    padding:4px 11px;border-radius:99px}
+  .imgbub{align-self:flex-end;width:120px;height:84px;border-radius:16px;border-bottom-right-radius:5px;
+    background:linear-gradient(135deg,#3a2350,#6E4FE0);display:flex;align-items:center;
+    justify-content:center;font-size:22px}
+  .voice{align-self:flex-start;display:flex;align-items:center;gap:8px;padding:10px 13px;
+    background:rgba(240,232,245,.07);border:1px solid rgba(240,232,245,.08);
+    border-radius:16px;border-bottom-left-radius:5px}
+  .wave{display:flex;align-items:center;gap:2px;height:18px}
+  .wave i{width:2.5px;background:var(--aurora);border-radius:2px;display:block}
+  .reactchip{align-self:flex-end;margin-top:-4px;font-size:13px;background:var(--card);
+    border:1px solid var(--border);padding:2px 7px;border-radius:99px}
+
+  /* feature row card (B p2 / A p2) */
+  .frow{display:flex;gap:9px;width:100%;margin-top:14px}
+  .fcell{flex:1;background:linear-gradient(160deg,var(--card),#241a18);
+    border:1px solid rgba(255,208,98,.28);border-radius:13px;padding:11px 6px;text-align:center}
+  .fcell .fi{font-size:18px;margin-bottom:4px}
+  .fcell .ft{font-size:10.5px;font-weight:600;color:var(--tp)}
+
+  /* option C editorial */
+  .ed{display:flex;flex-direction:column;align-items:flex-start;text-align:left;width:100%}
+  .ed .k{font-size:30px;font-weight:800;color:var(--tp);letter-spacing:-1px;line-height:1.05}
+  .ed .big{font-size:62px;line-height:.92;color:var(--pink);letter-spacing:-2px;margin:2px 0 18px}
+  .ed .big.gold{color:var(--gold)}
+  .ed .big.aur{color:var(--aurora)}
+  .ed .meta{font-size:12px;color:var(--ts);letter-spacing:.5px}
+  .ed .glyphrow{display:flex;gap:14px;margin:22px 0 6px;font-size:26px}
+  .ed .glyphrow span{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;
+    justify-content:center;background:rgba(255,208,98,.10);border:1px solid rgba(255,208,98,.3)}
+
+  .scrlabel{text-align:center;font-size:11px;color:var(--tm);margin-top:10px;letter-spacing:.5px}
+  .recommend{display:inline-block;font-size:11px;font-weight:700;color:var(--green);
+    border:1px solid rgba(0,199,121,.4);padding:3px 9px;border-radius:99px;margin-left:8px;vertical-align:middle}
+  .legend{max-width:760px;margin:30px auto 0;font-size:12.5px;color:var(--ts);
+    background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;padding:18px 22px}
+  .legend b{color:var(--tp)}
+</style>
+</head>
+<body>
+
+  <h1>StrangerChat — Tutorial Redesign</h1>
+  <p class="lede">Three directions. Same Midnight palette, serif accents, real app content. Pick one.</p>
+  <p class="note">Each phone = page 1 → 2 → 3 of the onboarding tutorial. Skip top-right, CTA bottom.</p>
+
+  <div class="grid">
+
+    <!-- ════════ OPTION A — CINEMATIC NARRATIVE ════════ -->
+    <div class="col">
+      <div class="colhead">
+        <span class="tag" style="background:rgba(224,74,140,.14);color:var(--pink)">Option A</span>
+        <h2>Cinematic Narrative <span class="recommend">Recommended</span></h2>
+        <p>Story-led. One emotional line + one hero visual per page. Premium shown in context, never as a sales page.</p>
+      </div>
+      <div class="stack">
+
+        <!-- A1 -->
+        <div>
+        <div class="ph">
+          <div class="blob b-pink"></div><div class="blob b-violet"></div>
+          <div class="scr">
+            <div class="skip">Skip</div>
+            <div class="body">
+              <div class="glow-ring" style="width:150px;height:150px;background:radial-gradient(circle,rgba(224,74,140,.28),transparent 70%)">
+                <div class="ico" style="width:96px;height:96px;background:rgba(224,74,140,.10);border:1px solid rgba(224,74,140,.35)">
+                  <span style="font-size:42px">💬</span>
+                </div>
+                <div style="position:absolute;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#66D7FF,#6E4FE0);top:6px;right:14px"></div>
+                <div style="position:absolute;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#FFD062,#FFA040);bottom:10px;left:8px"></div>
+              </div>
+              <div style="margin-top:34px;font-size:25px;font-weight:800;letter-spacing:-.4px">Somewhere, a stranger</div>
+              <div class="serif" style="font-size:34px;color:var(--pinkSoft);line-height:1.1">is about to say hi</div>
+              <p style="color:var(--ts);font-size:13px;margin-top:14px;max-width:230px">
+                One tap matches you with a real person. No name. No number. No trace.</p>
+              <div class="pill" style="margin-top:22px;background:rgba(0,199,121,.10);color:var(--green)">
+                <span class="d" style="background:var(--green)"></span>1,240+ online right now</div>
+            </div>
+            <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="cta">Next &nbsp;→</div>
+          </div>
+        </div>
+        <div class="scrlabel">1 · Identity & instant match</div>
+        </div>
+
+        <!-- A2 -->
+        <div>
+        <div class="ph">
+          <div class="blob b-gold"></div><div class="blob b-violet"></div>
+          <div class="scr">
+            <div class="skip">Skip</div>
+            <div class="body">
+              <div style="font-size:23px;font-weight:800">Words are just</div>
+              <div class="serif" style="font-size:32px;color:var(--gold);margin-bottom:6px">the beginning</div>
+              <p style="color:var(--ts);font-size:12.5px;max-width:220px;margin-bottom:8px">
+                Share a photo, a voice note, a GIF, a reaction — say it your way.</p>
+              <!-- in-context chat snippet -->
+              <div class="chat">
+                <div class="bub bin">hey! random q — cats or dogs 🐾</div>
+                <div class="imgbub">📸</div>
+                <div class="voice"><span style="color:var(--aurora);font-size:14px">▶</span>
+                  <div class="wave">
+                    <i style="height:7px"></i><i style="height:14px"></i><i style="height:9px"></i>
+                    <i style="height:17px"></i><i style="height:6px"></i><i style="height:12px"></i>
+                    <i style="height:15px"></i><i style="height:8px"></i></div>
+                  <span style="font-size:10px;color:var(--tm)">0:07</span></div>
+                <div class="bout">😂 ok that won</div>
+                <div class="reactchip">❤️</div>
+              </div>
+              <div class="pill" style="margin-top:14px;background:rgba(255,208,98,.10);color:var(--gold)">
+                ✦ Free credits by watching a short ad</div>
+            </div>
+            <div class="dots"><span class="dot"></span><span class="dot on g"></span><span class="dot"></span></div>
+            <div class="cta">Next &nbsp;→</div>
+          </div>
+        </div>
+        <div class="scrlabel">2 · Rich media, shown in a real chat</div>
+        </div>
+
+        <!-- A3 -->
+        <div>
+        <div class="ph">
+          <div class="blob b-pink"></div><div class="blob b-aurora"></div>
+          <div class="scr">
+            <div class="body">
+              <div class="glow-ring" style="width:130px;height:130px;background:radial-gradient(circle,rgba(102,215,255,.22),transparent 70%)">
+                <div class="ico" style="width:88px;height:88px;background:rgba(102,215,255,.10);border:1px solid rgba(102,215,255,.35)">
+                  <span style="font-size:38px">🛡️</span></div>
+              </div>
+              <div style="margin-top:26px;font-size:24px;font-weight:800">You're always</div>
+              <div class="serif" style="font-size:33px;color:var(--pinkSoft)">in control</div>
+              <div style="margin-top:22px;width:100%;display:flex;flex-direction:column;gap:9px">
+                <div style="display:flex;gap:11px;align-items:center;background:rgba(255,255,255,.04);border:1px solid var(--border);padding:11px 13px;border-radius:12px;text-align:left">
+                  <span style="font-size:16px">🚩</span><span style="font-size:12.5px">Report anyone in one tap</span></div>
+                <div style="display:flex;gap:11px;align-items:center;background:rgba(255,255,255,.04);border:1px solid var(--border);padding:11px 13px;border-radius:12px;text-align:left">
+                  <span style="font-size:16px">⏳</span><span style="font-size:12.5px">Chats vanish — nothing stored</span></div>
+                <div style="display:flex;gap:11px;align-items:center;background:rgba(255,255,255,.04);border:1px solid var(--border);padding:11px 13px;border-radius:12px;text-align:left">
+                  <span style="font-size:16px">🔒</span><span style="font-size:12.5px">App Lock with device PIN <span style="color:var(--gold)">· Premium</span></span></div>
+              </div>
+            </div>
+            <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot on"></span></div>
+            <div class="cta">⚡ &nbsp;Start chatting</div>
+          </div>
+        </div>
+        <div class="scrlabel">3 · Safety & control → CTA</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════ OPTION B — LIVE PRODUCT DEMO ════════ -->
+    <div class="col">
+      <div class="colhead">
+        <span class="tag" style="background:rgba(102,215,255,.14);color:var(--aurora)">Option B</span>
+        <h2>Live Product Demo</h2>
+        <p>Teaches by showing the real UI. Each page is an actual screen mock — match, chat, safety. Most informative.</p>
+      </div>
+      <div class="stack">
+
+        <!-- B1 -->
+        <div>
+        <div class="ph">
+          <div class="blob b-pink"></div><div class="blob b-violet"></div>
+          <div class="scr">
+            <div class="skip">Skip</div>
+            <div class="body">
+              <p style="font-size:11px;color:var(--tm);letter-spacing:1.5px;text-transform:uppercase">This is matching</p>
+              <div style="position:relative;width:170px;height:170px;display:flex;align-items:center;justify-content:center;margin:14px 0">
+                <div style="position:absolute;width:170px;height:170px;border-radius:50%;border:1px solid rgba(224,74,140,.25)"></div>
+                <div style="position:absolute;width:120px;height:120px;border-radius:50%;border:1px solid rgba(224,74,140,.35)"></div>
+                <div style="width:74px;height:74px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--violet));display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 0 30px rgba(224,74,140,.5)">🔎</div>
+                <div style="position:absolute;top:4px;left:30px;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#66D7FF,#6E4FE0);display:flex;align-items:center;justify-content:center;font-size:14px">🙂</div>
+                <div style="position:absolute;bottom:8px;right:20px;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#FFD062,#FFA040);display:flex;align-items:center;justify-content:center;font-size:14px">😎</div>
+              </div>
+              <div class="serif" style="font-size:26px;color:var(--pinkSoft)">finding someone…</div>
+              <p style="color:var(--ts);font-size:12.5px;margin-top:10px;max-width:220px">
+                Anonymous. Worldwide. Connected in seconds.</p>
+              <div class="pill" style="margin-top:18px;background:rgba(0,199,121,.10);color:var(--green)">
+                <span class="d" style="background:var(--green)"></span>1,240+ strangers online</div>
+            </div>
+            <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="cta">Next &nbsp;→</div>
+          </div>
+        </div>
+        <div class="scrlabel">1 · The match screen, live</div>
+        </div>
+
+        <!-- B2 -->
+        <div>
+        <div class="ph">
+          <div class="blob b-gold"></div><div class="blob b-violet"></div>
+          <div class="scr">
+            <div class="skip">Skip</div>
+            <div style="text-align:center;margin-bottom:10px">
+              <div style="font-size:19px;font-weight:800">Say it any way</div>
+              <div class="serif" style="font-size:15px;color:var(--ts)">a real conversation, mocked</div>
+            </div>
+            <div class="body" style="justify-content:flex-start">
+              <div class="chat">
+                <div class="sys">You're connected — say hi 👋</div>
+                <div class="bub bin">yo where you from?</div>
+                <div class="bout">guess 😏</div>
+                <div class="imgbub">🖼️</div>
+                <div class="bub bin">no way that's clean</div>
+                <div class="voice"><span style="color:var(--aurora);font-size:14px">▶</span>
+                  <div class="wave"><i style="height:6px"></i><i style="height:13px"></i><i style="height:9px"></i><i style="height:16px"></i><i style="height:7px"></i><i style="height:12px"></i><i style="height:15px"></i></div>
+                  <span style="font-size:10px;color:var(--tm)">0:05</span></div>
+                <div style="align-self:flex-end;display:flex;gap:6px;align-items:flex-end">
+                  <div class="imgbub" style="width:96px;height:70px;background:linear-gradient(135deg,#4a2340,#E04A8C);font-size:18px">GIF</div>
+                </div>
+                <div class="reactchip">😂</div>
+              </div>
+              <div class="frow">
+                <div class="fcell"><div class="fi">📷</div><div class="ft">Photos</div></div>
+                <div class="fcell"><div class="fi">🎙️</div><div class="ft">Voice</div></div>
+                <div class="fcell"><div class="fi">🎞️</div><div class="ft">GIFs</div></div>
+                <div class="fcell"><div class="fi">❤️</div><div class="ft">React</div></div>
+              </div>
+            </div>
+            <div class="dots"><span class="dot"></span><span class="dot on g"></span><span class="dot"></span></div>
+            <div class="cta">Next &nbsp;→</div>
+          </div>
+        </div>
+        <div class="scrlabel">2 · Real chat + feature strip</div>
+        </div>
+
+        <!-- B3 -->
+        <div>
+        <div class="ph">
+          <div class="blob b-aurora"></div><div class="blob b-pink"></div>
+          <div class="scr">
+            <div style="text-align:center;margin-bottom:8px">
+              <div style="font-size:20px;font-weight:800">Safe by default</div>
+              <div class="serif" style="font-size:15px;color:var(--ts)">what happens when you leave</div>
+            </div>
+            <div class="body" style="justify-content:flex-start">
+              <div class="chat" style="margin-bottom:6px">
+                <div class="sys" style="color:var(--red);background:rgba(255,82,82,.10);border-color:rgba(255,82,82,.25)">Chat ended · nothing saved</div>
+              </div>
+              <div style="width:100%;background:var(--elev);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px">
+                <div style="font-size:12px;color:var(--tm);margin-bottom:9px">REPORT THIS PERSON</div>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <div style="background:rgba(255,82,82,.10);border:1px solid rgba(255,82,82,.25);color:#ff8a8a;font-size:12px;padding:9px 11px;border-radius:10px">Harassment or abuse</div>
+                  <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);font-size:12px;padding:9px 11px;border-radius:10px;color:var(--ts)">Spam · Nudity · Other</div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;width:100%">
+                <div style="display:flex;gap:10px;align-items:center;font-size:12px;color:var(--ts)"><span>⏳</span> Messages auto-expire</div>
+                <div style="display:flex;gap:10px;align-items:center;font-size:12px;color:var(--ts)"><span>🤖</span> AI-moderated content</div>
+                <div style="display:flex;gap:10px;align-items:center;font-size:12px;color:var(--ts)"><span style="color:var(--gold)">🔒</span> App Lock <span style="color:var(--gold)">· Premium</span></div>
+              </div>
+            </div>
+            <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot on"></span></div>
+            <div class="cta">⚡ &nbsp;Start chatting</div>
+          </div>
+        </div>
+        <div class="scrlabel">3 · Report sheet + privacy → CTA</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════ OPTION C — EDITORIAL MINIMAL ════════ -->
+    <div class="col">
+      <div class="colhead">
+        <span class="tag" style="background:rgba(255,208,98,.14);color:var(--gold)">Option C</span>
+        <h2>Editorial Minimal</h2>
+        <p>Huge type, 2–3 words per page. Fastest to swipe, boldest brand voice. Least explanatory.</p>
+      </div>
+      <div class="stack">
+
+        <!-- C1 -->
+        <div>
+        <div class="ph">
+          <div class="blob b-pink"></div><div class="blob b-violet"></div>
+          <div class="scr">
+            <div class="skip">Skip</div>
+            <div class="body" style="justify-content:flex-end;padding-bottom:10px">
+              <div class="ed">
+                <div class="k">talk to</div>
+                <div class="big serif">strangers</div>
+                <div class="meta">anonymous &nbsp;·&nbsp; worldwide &nbsp;·&nbsp; no trace</div>
+                <div class="pill" style="margin-top:26px;background:rgba(0,199,121,.10);color:var(--green)">
+                  <span class="d" style="background:var(--green)"></span>1,240+ online</div>
+              </div>
+            </div>
+            <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="cta">Next &nbsp;→</div>
+          </div>
+        </div>
+        <div class="scrlabel">1 · One statement</div>
+        </div>
+
+        <!-- C2 -->
+        <div>
+        <div class="ph">
+          <div class="blob b-gold"></div><div class="blob b-violet"></div>
+          <div class="scr">
+            <div class="skip">Skip</div>
+            <div class="body" style="justify-content:flex-end;padding-bottom:10px">
+              <div class="ed">
+                <div class="k">say it with</div>
+                <div class="big gold serif">anything</div>
+                <div class="glyphrow">
+                  <span>📷</span><span>🎙️</span><span>🎞️</span><span>❤️</span>
+                </div>
+                <div class="meta" style="margin-top:14px">photos · voice · gifs · reactions</div>
+                <div class="meta" style="color:var(--tm);margin-top:8px">free credits — just watch an ad</div>
+              </div>
+            </div>
+            <div class="dots"><span class="dot"></span><span class="dot on g"></span><span class="dot"></span></div>
+            <div class="cta">Next &nbsp;→</div>
+          </div>
+        </div>
+        <div class="scrlabel">2 · Media as glyphs</div>
+        </div>
+
+        <!-- C3 -->
+        <div>
+        <div class="ph">
+          <div class="blob b-aurora"></div><div class="blob b-pink"></div>
+          <div class="scr">
+            <div class="body" style="justify-content:flex-end;padding-bottom:10px">
+              <div class="ed">
+                <div class="k">stay</div>
+                <div class="big aur serif">safe</div>
+                <div style="display:flex;flex-direction:column;gap:11px;margin-top:6px">
+                  <div style="font-size:13px;color:var(--ts)">🚩 &nbsp;report in one tap</div>
+                  <div style="font-size:13px;color:var(--ts)">⏳ &nbsp;chats vanish, nothing stored</div>
+                  <div style="font-size:13px;color:var(--ts)">🔒 &nbsp;app lock <span style="color:var(--gold)">· premium</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot on"></span></div>
+            <div class="cta">⚡ &nbsp;Start chatting</div>
+          </div>
+        </div>
+        <div class="scrlabel">3 · Safety, stripped</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="legend">
+    <b>How they differ —</b><br>
+    <b>A · Cinematic Narrative</b> (recommended): emotional hook line + serif accent + one hero visual per page. Premium woven into a real chat snippet, not a sales grid. Warmest, most "premium app" feel — fits the 20-40 audience.<br><br>
+    <b>B · Live Product Demo</b>: shows the actual match screen, a real chat, and the real report sheet. Highest information transfer, lowest abstraction — best if you want users to *recognize* the UI before using it.<br><br>
+    <b>C · Editorial Minimal</b>: 2-3 words, giant serif, max whitespace. Fastest to skip through, boldest voice — riskiest (teaches least).<br><br>
+    All three drop the old generic feature-grid Premium page, keep Skip + dot indicators + gradient CTA, reuse the exact Midnight palette &amp; serif-italic display.
+  </div>
+
+</body>
+</html>

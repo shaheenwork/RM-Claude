@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Home — 10 full layouts (premium + credits + ad)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&family=Manjari:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0A1410; --bg2:#0C1A14; --surface:#11201A; --elev:#18281F;
+    --border:rgba(238,236,222,0.09); --border-d:rgba(238,236,222,0.05);
+    --green:#2FB68C; --green-dp:#1C6B4F; --green-dim:#268E6E;
+    --brass:#E3B964; --brass-dp:#C99C48;
+    --brass-soft:rgba(227,185,100,0.07); --brass-bd:rgba(227,185,100,0.38);
+    --coral:#E8765A; --cream:#F1EDDD; --sage:#9FAE9E; --muted:#66766A;
+    --grad:linear-gradient(135deg,var(--green),var(--green-dp));
+    --grad-brass:linear-gradient(135deg,#F4D89B,var(--brass) 55%,var(--brass-dp));
+    --serif:'Instrument Serif',Georgia,serif;
+    --ml:'Manjari','Noto Sans Malayalam',sans-serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:radial-gradient(ellipse 70% 40% at 15% 0%,rgba(31,107,79,0.12),transparent 60%),radial-gradient(ellipse 60% 30% at 90% 4%,rgba(227,185,100,0.06),transparent 55%),#05100B;
+    color:var(--cream); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; padding-bottom:60px; }
+  header.page { padding:44px 40px 24px; max-width:1700px; margin:0 auto; }
+  .eyebrow { font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--brass); display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .eyebrow::after { content:""; flex:1; height:1px; background:linear-gradient(90deg,rgba(227,185,100,0.26),transparent); }
+  header.page h1 { font-size:34px; font-weight:900; letter-spacing:-1.1px; line-height:1; }
+  header.page p.lead { color:var(--sage); font-size:14.5px; line-height:1.65; max-width:880px; margin-top:14px; }
+  header.page p.lead b { color:var(--cream); }
+  .checklist { margin-top:16px; padding:12px 16px; background:rgba(47,182,140,0.07); border:1px solid rgba(47,182,140,0.22); border-left:3px solid var(--green); border-radius:10px; max-width:880px; font-size:13px; color:var(--sage); }
+  .checklist b { color:var(--green); }
+  .checklist code { background:rgba(0,0,0,0.25); padding:1px 6px; border-radius:4px; color:var(--cream); font-size:11.5px; }
+
+  section.block { max-width:1700px; margin:0 auto; padding:18px 40px; }
+  .rail { display:grid; grid-template-columns:repeat(auto-fill,minmax(296px,1fr)); gap:30px; }
+  .device .cap { font-size:12px; color:var(--sage); margin-top:13px; line-height:1.5; }
+  .device .cap b { color:var(--cream); display:block; font-size:13.5px; font-weight:800; margin-bottom:3px; }
+  .device .cap .ph { color:var(--brass); font-size:11.5px; font-style:italic; margin-top:4px; display:block; }
+
+  .phone { width:296px; height:640px; border-radius:38px; overflow:hidden; border:7px solid #141815; position:relative;
+    box-shadow:0 28px 56px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.03); display:flex; flex-direction:column; background:var(--bg); }
+  .phone::before { content:""; position:absolute; top:9px; left:50%; transform:translateX(-50%); width:86px; height:21px; background:#000; border-radius:14px; z-index:50; }
+  .statusbar { height:38px; padding:12px 22px 0; display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; color:var(--cream); flex-shrink:0; }
+  .screen { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; padding:6px 16px 0; flex-shrink:0; }
+  .topbar .gear { color:var(--muted); font-size:17px; }
+
+  /* ── brand atoms ──────────────────────────────────────────────────── */
+  .logo-mark { width:42px; height:42px; border-radius:13px 13px 13px 5px; background:var(--grad);
+    display:grid; place-items:center; border:1px solid rgba(255,255,255,0.14); box-shadow:0 4px 14px rgba(47,182,140,0.30); }
+  .logo-mark span { font-family:var(--ml); font-size:22px; font-weight:700; color:var(--cream); line-height:1; }
+  .logo-mark.sm { width:32px; height:32px; border-radius:10px 10px 10px 4px; }
+  .logo-mark.sm span { font-size:16px; }
+  .logo-mark.md { width:38px; height:38px; border-radius:12px 12px 12px 4px; }
+  .logo-mark.md span { font-size:19px; }
+
+  /* hero text */
+  .h1 { font-size:21px; font-weight:700; color:var(--cream); line-height:1.05; letter-spacing:-0.3px; }
+  .h2 { font-family:var(--serif); font-style:italic; font-size:29px; color:var(--brass); line-height:1.0; letter-spacing:-0.4px; }
+  .sub { font-size:11.5px; color:var(--sage); line-height:1.35; margin-top:4px; text-align:center; }
+
+  /* presence */
+  .pres { display:inline-flex; align-items:center; gap:6px; font-size:11px; color:var(--green); font-weight:600; }
+  .pres.chip { background:rgba(47,182,140,0.10); border:1px solid rgba(47,182,140,0.25); padding:3px 9px; border-radius:13px; }
+  .pres .dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:ping 2s infinite; box-shadow:0 0 0 0 rgba(47,182,140,0.5); }
+  @keyframes ping { 0%{box-shadow:0 0 0 0 rgba(47,182,140,0.5);} 70%{box-shadow:0 0 0 6px rgba(47,182,140,0);} 100%{box-shadow:0 0 0 0 rgba(47,182,140,0);} }
+
+  /* gender — smaller */
+  .gender-pill { display:flex; gap:6px; }
+  .gender-pill .gp {
+    flex:1; display:flex; align-items:center; justify-content:center; gap:5px;
+    padding:6px 0; border-radius:16px; font-size:12px; font-weight:600;
+    color:var(--sage); border:1px solid var(--border); background:transparent;
+  }
+  .gender-pill .gp.on { background:var(--grad); color:#fff; border-color:transparent; }
+
+  .gender-seg { display:flex; background:var(--elev); border-radius:13px; padding:3px; gap:3px; width:fit-content; }
+  .gender-seg .seg { padding:5px 12px; font-size:11.5px; font-weight:600; color:var(--sage); border-radius:10px; }
+  .gender-seg .seg.on { background:var(--grad); color:#fff; }
+
+  /* CTA */
+  .cta { width:100%; padding:12px 16px; border-radius:22px; text-align:center;
+    font-size:13.5px; font-weight:800; color:#06140E;
+    background:var(--grad); box-shadow:0 6px 16px rgba(47,182,140,0.28);
+    display:flex; align-items:center; justify-content:center; gap:6px; }
+
+  /* AdMob test banner — common to every option */
+  .admob { height:50px; background:#FFF9F0; border-top:1px solid #E5D9C5; display:flex; align-items:center; gap:10px; padding:0 12px; flex-shrink:0; }
+  .admob .badge { background:#E5D9C5; color:#5C4B30; font-size:9px; font-weight:800; padding:2px 5px; border-radius:3px; letter-spacing:0.5px; }
+  .admob .ad-title { color:#2A6FE0; font-size:13px; font-weight:700; }
+  .admob .ad-sub { color:#444; font-size:11px; flex:1; }
+  .admob .ad-cta { background:#34A853; color:#fff; font-size:10px; font-weight:800; padding:5px 9px; border-radius:4px; }
+
+  /* watch ad credits — base atoms */
+  .credits-row { display:flex; align-items:center; gap:8px; padding:8px 11px; border-radius:12px; background:var(--surface); border:1px solid var(--border); }
+  .credits-row .icons { display:flex; gap:8px; flex:1; }
+  .credits-row .icons span { font-size:13px; color:var(--green); opacity:0.85; display:inline-flex; gap:2px; align-items:center; }
+  .credits-row .icons span b { font-size:10px; color:var(--green); font-weight:700; }
+  .credits-row .label { font-size:11px; color:var(--cream); font-weight:700; }
+  .credits-row .watch-btn { font-size:10.5px; color:var(--green); background:rgba(47,182,140,0.15); border:1px solid rgba(47,182,140,0.35); padding:5px 10px; border-radius:11px; font-weight:800; display:inline-flex; align-items:center; gap:4px; }
+
+  /* premium icons strip */
+  .prem-strip { display:flex; align-items:center; gap:8px; padding:8px 11px; border-radius:12px; background:var(--brass-soft); border:1px solid var(--brass-bd); }
+  .prem-strip .lab { font-size:10px; color:var(--brass); font-weight:800; letter-spacing:0.3px; flex-shrink:0; }
+  .prem-strip .icons { display:flex; gap:8px; flex:1; justify-content:center; font-size:13px; }
+  .prem-strip .upg { font-size:9.5px; color:#3a2a00; background:var(--grad-brass); padding:4px 8px; border-radius:9px; font-weight:800; }
+
+  /* side-by-side cards */
+  .dual { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .dual .card { padding:10px 9px; border-radius:12px; display:flex; flex-direction:column; gap:5px; align-items:center; text-align:center; }
+  .dual .card.prem { background:var(--brass-soft); border:1px solid var(--brass-bd); }
+  .dual .card.cred { background:rgba(47,182,140,0.08); border:1px solid rgba(47,182,140,0.30); }
+  .dual .card .ti { font-size:10px; font-weight:800; letter-spacing:0.4px; }
+  .dual .card.prem .ti { color:var(--brass); }
+  .dual .card.cred .ti { color:var(--green); }
+  .dual .card .ico { display:flex; gap:5px; font-size:13px; }
+  .dual .card .cta-mini { font-size:10px; font-weight:800; padding:4px 9px; border-radius:9px; margin-top:2px; }
+  .dual .card.prem .cta-mini { background:var(--grad-brass); color:#3a2a00; }
+  .dual .card.cred .cta-mini { background:rgba(47,182,140,0.20); color:var(--green); border:1px solid rgba(47,182,140,0.35); }
+
+  /* tab toggle */
+  .tabs { display:flex; background:var(--elev); padding:3px; border-radius:14px; gap:3px; }
+  .tabs .tab { flex:1; padding:7px; text-align:center; font-size:11px; font-weight:700; color:var(--sage); border-radius:11px; display:flex; align-items:center; justify-content:center; gap:5px; }
+  .tabs .tab.on.prem { background:var(--grad-brass); color:#3a2a00; }
+  .tabs .tab.on.cred { background:var(--grad); color:#fff; }
+  .tab-body { padding:10px 12px; border-radius:0 0 14px 14px; background:var(--surface); border:1px solid var(--border); border-top:none; margin-top:-1px; }
+  .tab-body .feat-row { display:flex; gap:10px; justify-content:center; font-size:14px; margin-bottom:7px; }
+  .tab-body .feat-row span { display:flex; flex-direction:column; align-items:center; gap:1px; }
+  .tab-body .feat-row span b { font-size:8.5px; color:var(--sage); font-weight:600; }
+  .tab-body .row { display:flex; justify-content:space-between; align-items:center; }
+  .tab-body .price { font-size:11px; color:var(--cream); font-weight:700; }
+  .tab-body .upg { font-size:10px; color:#3a2a00; background:var(--grad-brass); padding:4px 10px; border-radius:10px; font-weight:800; }
+
+  /* combo card */
+  .combo { padding:10px; border-radius:14px; background:linear-gradient(135deg,var(--brass-soft),rgba(47,182,140,0.05)); border:1px solid var(--brass-bd); display:flex; flex-direction:column; gap:7px; }
+  .combo .row { display:flex; justify-content:space-between; align-items:center; }
+  .combo .row .lab-p { font-size:10px; color:var(--brass); font-weight:800; letter-spacing:0.3px; }
+  .combo .row .lab-c { font-size:10px; color:var(--green); font-weight:800; letter-spacing:0.3px; }
+  .combo .icons { display:flex; gap:8px; font-size:14px; justify-content:center; }
+  .combo .actions { display:flex; gap:8px; }
+  .combo .actions .upg { flex:1; font-size:10.5px; color:#3a2a00; background:var(--grad-brass); padding:6px; border-radius:10px; font-weight:800; text-align:center; }
+  .combo .actions .watch { flex:1; font-size:10.5px; color:var(--green); background:rgba(47,182,140,0.18); border:1px solid rgba(47,182,140,0.35); padding:5px; border-radius:10px; font-weight:800; text-align:center; }
+  .combo hr { border:none; border-top:1px dashed var(--border); margin:0; }
+
+  /* bento layout */
+  .bento { display:grid; grid-template-columns:1.2fr 1fr; gap:6px; }
+  .bento .cell { padding:8px 9px; border-radius:11px; background:var(--surface); border:1px solid var(--border); }
+  .bento .cell.prem { background:var(--brass-soft); border-color:var(--brass-bd); }
+  .bento .cell.cred { background:rgba(47,182,140,0.08); border-color:rgba(47,182,140,0.30); }
+  .bento .cell .h { font-size:9.5px; font-weight:800; letter-spacing:0.3px; }
+  .bento .cell.prem .h { color:var(--brass); }
+  .bento .cell.cred .h { color:var(--green); }
+  .bento .cell .ic { display:flex; gap:5px; font-size:12px; margin-top:4px; }
+  .bento .cell .ac { font-size:9.5px; font-weight:800; padding:3px 7px; border-radius:7px; margin-top:5px; align-self:flex-start; }
+  .bento .cell.prem .ac { background:var(--grad-brass); color:#3a2a00; }
+  .bento .cell.cred .ac { background:rgba(47,182,140,0.20); color:var(--green); }
+
+  /* footer band stacked */
+  .footer-band { display:flex; flex-direction:column; gap:6px; padding:10px 16px 12px; border-top:1px solid var(--border-d); background:linear-gradient(180deg,transparent,rgba(0,0,0,0.18)); flex-shrink:0; }
+
+  /* per-option containers */
+  .opt { flex:1; display:flex; flex-direction:column; padding:0 18px 8px; min-height:0; }
+  .opt .hero { display:flex; flex-direction:column; align-items:center; text-align:center; }
+  .opt .actions { display:flex; flex-direction:column; gap:8px; }
+
+  /* layouts */
+  .opt.lay-stack .hero { gap:4px; margin-top:6px; }
+  .opt.lay-stack .top-spacer { flex:1; }
+  .opt.lay-stack .actions { margin-top:10px; }
+
+  .opt.lay-balanced { padding:0 18px 6px; }
+  .opt.lay-balanced .hero { gap:4px; flex:1; justify-content:center; }
+  .opt.lay-balanced .actions { gap:8px; }
+
+  .opt.lay-tight { padding:0 18px 4px; }
+  .opt.lay-tight .hero { gap:3px; margin-top:4px; }
+  .opt.lay-tight .actions { gap:6px; margin-top:8px; }
+
+  .legend { padding:18px; border-radius:14px; background:var(--surface); border:1px solid var(--border); margin-top:30px; }
+  .legend h3 { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--brass); margin-bottom:12px; }
+  .legend table { width:100%; border-collapse:collapse; font-size:13px; }
+  .legend th { text-align:left; padding:9px 10px; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border); font-weight:700; }
+  .legend td { padding:11px 10px; border-bottom:1px solid var(--border-d); color:var(--sage); vertical-align:top; line-height:1.5; }
+  .legend td b { color:var(--cream); }
+
+  .foot { max-width:1700px; margin:6px auto 0; padding:20px 40px; color:var(--muted); font-size:13px; line-height:1.7; }
+  .foot b { color:var(--brass); }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <div class="eyebrow">Home redesign · 10 full layouts · pick one</div>
+  <h1>Random Malayali — Home, fully loaded × 10</h1>
+  <p class="lead">Every phone below contains <b>all 9 required pieces</b>: brand mark, headline, sub line, online counter, gender select (smaller), Start chatting CTA, premium sneak peek (shows features), watch-ad free credits section, and the AdMob banner. What varies = how the two monetization blocks (premium peek + credits) are composed.</p>
+  <div class="checklist"><b>Required in every option:</b>
+    <code>brand</code> <code>headline</code> <code>"Someone interesting..."</code> <code>● online count</code>
+    <code>♂♀ gender (smaller)</code> <code>💬 Start chatting</code>
+    <code>✦ premium peek</code> <code>📺 watch-ad credits</code> <code>AdMob banner</code></div>
+</header>
+
+<section class="block">
+  <div class="rail">
+
+    <!-- ============================================================ -->
+    <!-- OPTION 1 — Stacked Strips                                     -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt lay-stack">
+            <div class="hero">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="h1" style="margin-top:6px;">Talk to a</div>
+              <div class="h2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres chip" style="margin-top:6px;"><span class="dot"></span> 1,284 Malayalis online</div>
+            </div>
+            <div class="top-spacer"></div>
+            <div class="actions">
+              <div class="gender-pill">
+                <div class="gp on">♂ Male</div>
+                <div class="gp">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+              <div class="prem-strip">
+                <div class="lab">✦ PREMIUM</div>
+                <div class="icons">📷 🎙 ❤️ 💾 🚫</div>
+                <div class="upg">Try</div>
+              </div>
+              <div class="credits-row">
+                <div class="label">📺 Free credits</div>
+                <div class="icons"><span>📷 <b>×0</b></span><span>🎙 <b>×0</b></span><span>🎬 <b>×0</b></span></div>
+                <div class="watch-btn">▶ Watch</div>
+              </div>
+            </div>
+          </div>
+          <div class="admob"><span class="badge">AD</span><span class="ad-title">Nice job!</span><span class="ad-sub">This is a 320×50 test ad.</span><span class="ad-cta">INSTALL</span></div>
+        </div>
+      </div>
+      <div class="cap"><b>1 · Stacked strips</b>Two slim horizontal strips one above the other — premium (brass) on top, credits (green) below. Clean and predictable.<span class="ph">Safest, most classic.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 2 — Side-by-side cards                                -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt lay-balanced">
+            <div class="hero">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="h1" style="margin-top:6px;">Talk to a</div>
+              <div class="h2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres" style="margin-top:5px;"><span class="dot"></span> 1,284 Malayalis online</div>
+            </div>
+            <div class="actions">
+              <div class="gender-seg" style="align-self:center;">
+                <div class="seg on">♂ Male</div>
+                <div class="seg">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+              <div class="dual">
+                <div class="card prem">
+                  <div class="ti">✦ PREMIUM</div>
+                  <div class="ico">📷 🎙 ❤️ 🚫</div>
+                  <div class="cta-mini">Upgrade</div>
+                </div>
+                <div class="card cred">
+                  <div class="ti">📺 FREE CREDITS</div>
+                  <div class="ico">📷 🎙 🎬</div>
+                  <div class="cta-mini">▶ Watch Ad</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="admob"><span class="badge">AD</span><span class="ad-title">Nice job!</span><span class="ad-sub">This is a 320×50 test ad.</span><span class="ad-cta">INSTALL</span></div>
+        </div>
+      </div>
+      <div class="cap"><b>2 · Side-by-side</b>Premium + Credits as two 50/50 mini-cards. Color codes them: brass = pay, green = free.<span class="ph">Compact, balanced, no hierarchy fight.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 3 — Tabbed offers                                      -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt lay-balanced">
+            <div class="hero">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="h1" style="margin-top:6px;">Talk to a</div>
+              <div class="h2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres" style="margin-top:5px;"><span class="dot"></span> 1,284 Malayalis online</div>
+            </div>
+            <div class="actions">
+              <div class="gender-pill">
+                <div class="gp on">♂ Male</div>
+                <div class="gp">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+              <div class="tabs">
+                <div class="tab on prem">✦ Premium</div>
+                <div class="tab">📺 Free credits</div>
+              </div>
+              <div class="tab-body" style="margin-top:-6px;">
+                <div class="feat-row">
+                  <span>📷<b>Photos</b></span>
+                  <span>🎙<b>Voice</b></span>
+                  <span>❤️<b>React</b></span>
+                  <span>💾<b>Save</b></span>
+                  <span>🚫<b>No ads</b></span>
+                </div>
+                <div class="row"><span class="price">$4.99/mo</span><span class="upg">Upgrade</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="admob"><span class="badge">AD</span><span class="ad-title">Nice job!</span><span class="ad-sub">This is a 320×50 test ad.</span><span class="ad-cta">INSTALL</span></div>
+        </div>
+      </div>
+      <div class="cap"><b>3 · Tabbed offers</b>Single area, two tabs — flip between Premium features (shown) and Free Credits status.<span class="ph">Most efficient use of space.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 4 — Combo card (premium + credits in one)              -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt lay-balanced">
+            <div class="hero">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="h1" style="margin-top:6px;">Talk to a</div>
+              <div class="h2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres chip" style="margin-top:5px;"><span class="dot"></span> 1,284 online</div>
+            </div>
+            <div class="actions">
+              <div class="gender-pill">
+                <div class="gp on">♂ Male</div>
+                <div class="gp">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+              <div class="combo">
+                <div class="row"><span class="lab-p">✦ PREMIUM UNLOCKS</span><span style="font-size:9.5px;color:var(--sage);">$4.99/mo</span></div>
+                <div class="icons">📷 🎙 ❤️ 👀 💾 🚫</div>
+                <hr/>
+                <div class="row"><span class="lab-c">📺 FREE TODAY · 0 0 0</span><span style="font-size:9.5px;color:var(--sage);">+1 of each per ad</span></div>
+                <div class="actions">
+                  <div class="upg">Upgrade</div>
+                  <div class="watch">▶ Watch Ad</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="admob"><span class="badge">AD</span><span class="ad-title">Nice job!</span><span class="ad-sub">This is a 320×50 test ad.</span><span class="ad-cta">INSTALL</span></div>
+        </div>
+      </div>
+      <div class="cap"><b>4 · Combo card</b>Single card with two stacked sections (premium on top, credits below, dashed divider). Two CTAs side-by-side at bottom.<span class="ph">All-in-one — least scroll, clear hierarchy.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 5 — Bento mix                                          -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt lay-tight">
+            <div class="hero">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="h1" style="margin-top:5px;">Talk to a</div>
+              <div class="h2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres" style="margin-top:4px;"><span class="dot"></span> 1,284 Malayalis online</div>
+            </div>
+            <div class="actions">
+              <div class="gender-seg" style="align-self:center;">
+                <div class="seg on">♂ M</div>
+                <div class="seg">♀ F</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+              <div class="bento">
+                <div class="cell prem">
+                  <div class="h">✦ PREMIUM</div>
+                  <div class="ic">📷 🎙 ❤️ 🚫</div>
+                  <div class="ac">Upgrade</div>
+                </div>
+                <div class="cell cred">
+                  <div class="h">📺 EARN</div>
+                  <div class="ic">📷 🎙 🎬</div>
+                  <div class="ac">Watch</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="admob"><span class="badge">AD</span><span class="ad-title">Nice job!</span><span class="ad-sub">This is a 320×50 test ad.</span><span class="ad-cta">INSTALL</span></div>
+        </div>
+      </div>
+      <div class="cap"><b>5 · Bento mix</b>Asymmetric bento (premium wider than credits) — modern startup-y feel. Tight type, max info density.<span class="ph">Designer-modern (Linear / Vercel / Cluely vibe).</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 6 — Hero + Bottom dock                                 -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt lay-balanced">
+            <div class="hero" style="flex:1;justify-content:center;">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="h1" style="margin-top:6px;">Talk to a</div>
+              <div class="h2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres chip" style="margin-top:6px;"><span class="dot"></span> 1,284 Malayalis online</div>
+              <div style="margin-top:14px;" class="gender-pill" >
+                <div class="gp on">♂ Male</div>
+                <div class="gp">♀ Female</div>
+              </div>
+              <div style="margin-top:10px;width:100%;" class="cta">💬 Start chatting</div>
+            </div>
+          </div>
+          <div class="footer-band">
+            <div class="prem-strip">
+              <div class="lab">✦ PREMIUM</div>
+              <div class="icons">📷 🎙 ❤️ 💾 🚫</div>
+              <div class="upg">Try</div>
+            </div>
+            <div class="credits-row">
+              <div class="label">📺 Free</div>
+              <div class="icons"><span>📷 <b>×0</b></span><span>🎙 <b>×0</b></span><span>🎬 <b>×0</b></span></div>
+              <div class="watch-btn">▶ Watch</div>
+            </div>
+          </div>
+          <div class="admob"><span class="badge">AD</span><span class="ad-title">Nice job!</span><span class="ad-sub">This is a 320×50 test ad.</span><span class="ad-cta">INSTALL</span></div>
+        </div>
+      </div>
+      <div class="cap"><b>6 · Hero + bottom dock</b>Hero+gender+CTA breathe in the upper 65%. Premium and credits dock to a brass-tinted bottom band above the ad.<span class="ph">Best breathing room around the CTA.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 7 — Single feature spotlight                           -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt lay-balanced">
+            <div class="hero">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="h1" style="margin-top:6px;">Talk to a</div>
+              <div class="h2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres chip" style="margin-top:5px;"><span class="dot"></span> 1,284 online · worldwide</div>
+            </div>
+            <div class="actions">
+              <div class="gender-pill">
+                <div class="gp on">♂ Male</div>
+                <div class="gp">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+              <div style="padding:9px 12px;border-radius:13px;background:var(--brass-soft);border:1px solid var(--brass-bd);display:flex;align-items:center;gap:10px;">
+                <div style="width:30px;height:30px;border-radius:50%;background:rgba(227,185,100,0.18);display:grid;place-items:center;font-size:14px;">🎙</div>
+                <div style="flex:1;">
+                  <div style="font-size:11.5px;color:var(--brass);font-weight:800;">Voice notes — Premium</div>
+                  <div style="font-size:9.5px;color:var(--sage);">+ photos · react · save · no ads</div>
+                </div>
+                <div style="font-size:9.5px;color:#3a2a00;background:var(--grad-brass);padding:4px 9px;border-radius:9px;font-weight:800;">Try</div>
+              </div>
+              <div class="credits-row">
+                <div class="label">📺 Free credits</div>
+                <div class="icons"><span>📷 <b>×0</b></span><span>🎙 <b>×0</b></span><span>🎬 <b>×0</b></span></div>
+                <div class="watch-btn">▶ Watch</div>
+              </div>
+            </div>
+          </div>
+          <div class="admob"><span class="badge">AD</span><span class="ad-title">Nice job!</span><span class="ad-sub">This is a 320×50 test ad.</span><span class="ad-cta">INSTALL</span></div>
+        </div>
+      </div>
+      <div class="cap"><b>7 · Single-feature spotlight</b>Premium peek = ONE highlighted feature (rotates) + tiny "+ rest" line. Plus dedicated credits row.<span class="ph">Premium feels descriptive, not a wall of icons.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 8 — Inverted (offers above CTA)                        -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt lay-tight">
+            <div class="hero">
+              <div class="logo-mark md"><span>മ</span></div>
+              <div class="h1" style="margin-top:5px;font-size:18px;">Talk to a</div>
+              <div class="h2" style="font-size:26px;">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres" style="margin-top:4px;"><span class="dot"></span> 1,284 online · worldwide</div>
+            </div>
+            <div class="actions">
+              <div class="dual">
+                <div class="card prem">
+                  <div class="ti">✦ PREMIUM</div>
+                  <div class="ico">📷 🎙 ❤️ 🚫</div>
+                  <div class="cta-mini">Upgrade</div>
+                </div>
+                <div class="card cred">
+                  <div class="ti">📺 EARN FREE</div>
+                  <div class="ico">📷 🎙 🎬</div>
+                  <div class="cta-mini">▶ Watch Ad</div>
+                </div>
+              </div>
+              <div class="gender-seg" style="align-self:center;">
+                <div class="seg on">♂ Male</div>
+                <div class="seg">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+            </div>
+          </div>
+          <div class="admob"><span class="badge">AD</span><span class="ad-title">Nice job!</span><span class="ad-sub">This is a 320×50 test ad.</span><span class="ad-cta">INSTALL</span></div>
+        </div>
+      </div>
+      <div class="cap"><b>8 · Inverted offers</b>Premium + credits sit BETWEEN hero and CTA. CTA is the last thing before the ad — strongest "click here" placement.<span class="ph">Best CTA salience.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 9 — Sticky offer band                                  -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt lay-balanced">
+            <div class="hero" style="flex:1;justify-content:center;">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="h1" style="margin-top:6px;">Talk to a</div>
+              <div class="h2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres chip" style="margin-top:5px;"><span class="dot"></span> 1,284 Malayalis online</div>
+              <div class="gender-pill" style="margin-top:14px;width:100%;">
+                <div class="gp on">♂ Male</div>
+                <div class="gp">♀ Female</div>
+              </div>
+              <div class="cta" style="margin-top:10px;">💬 Start chatting</div>
+            </div>
+          </div>
+          <div style="padding:8px 14px 4px;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.30));flex-shrink:0;">
+            <div style="display:flex;gap:8px;">
+              <div style="flex:1;display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:11px;background:var(--brass-soft);border:1px solid var(--brass-bd);">
+                <span style="color:var(--brass);font-size:10px;font-weight:800;">✦</span>
+                <span style="font-size:10.5px;color:var(--cream);">Photos · Voice · No ads</span>
+                <span style="margin-left:auto;font-size:9.5px;color:#3a2a00;background:var(--grad-brass);padding:3px 7px;border-radius:8px;font-weight:800;">Try</span>
+              </div>
+              <div style="flex:1;display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:11px;background:rgba(47,182,140,0.08);border:1px solid rgba(47,182,140,0.30);">
+                <span style="color:var(--green);font-size:11px;">📺</span>
+                <span style="font-size:10.5px;color:var(--cream);">×0 ×0 ×0</span>
+                <span style="margin-left:auto;font-size:9.5px;color:var(--green);background:rgba(47,182,140,0.20);border:1px solid rgba(47,182,140,0.35);padding:3px 7px;border-radius:8px;font-weight:800;">Watch</span>
+              </div>
+            </div>
+          </div>
+          <div class="admob"><span class="badge">AD</span><span class="ad-title">Nice job!</span><span class="ad-sub">This is a 320×50 test ad.</span><span class="ad-cta">INSTALL</span></div>
+        </div>
+      </div>
+      <div class="cap"><b>9 · Sticky offer band</b>Hero + CTA dominate the screen. Offers compress into two pill-strips at the very bottom edge — present, not pushy.<span class="ph">Best hero-to-CTA focus.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 10 — Modern app shell                                   -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div style="display:flex;align-items:center;gap:8px;"><div class="logo-mark sm"><span>മ</span></div><div style="font-size:13px;font-weight:800;letter-spacing:-0.2px;">Random <span style="font-family:var(--serif);font-style:italic;color:var(--brass);font-weight:400;font-size:14px;">Malayali</span></div></div><span class="gear">⚙</span></div>
+          <div class="opt lay-balanced">
+            <div class="hero">
+              <div class="h1" style="margin-top:10px;font-size:24px;">Talk to a</div>
+              <div class="h2" style="font-size:34px;">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres chip" style="margin-top:6px;"><span class="dot"></span> 1,284 Malayalis online · worldwide</div>
+            </div>
+            <div class="actions">
+              <div class="gender-pill">
+                <div class="gp on">♂ Male</div>
+                <div class="gp">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+              <div style="display:flex;gap:8px;">
+                <div style="flex:2;display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:13px;background:var(--brass-soft);border:1px solid var(--brass-bd);">
+                  <div style="font-size:10px;color:var(--brass);font-weight:800;">✦</div>
+                  <div style="flex:1;">
+                    <div style="font-size:11px;color:var(--cream);font-weight:700;">Premium</div>
+                    <div style="font-size:9.5px;color:var(--sage);">📷 🎙 ❤️ 💾 🚫</div>
+                  </div>
+                  <div style="font-size:9.5px;color:#3a2a00;background:var(--grad-brass);padding:4px 9px;border-radius:9px;font-weight:800;">Try</div>
+                </div>
+                <div style="flex:1.2;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 6px;border-radius:13px;background:rgba(47,182,140,0.08);border:1px solid rgba(47,182,140,0.30);">
+                  <div style="font-size:14px;">📺</div>
+                  <div style="font-size:9px;color:var(--green);font-weight:800;letter-spacing:0.3px;">FREE +1</div>
+                  <div style="font-size:9px;color:var(--green);">Watch</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="admob"><span class="badge">AD</span><span class="ad-title">Nice job!</span><span class="ad-sub">This is a 320×50 test ad.</span><span class="ad-cta">INSTALL</span></div>
+        </div>
+      </div>
+      <div class="cap"><b>10 · Modern app shell</b>Brand in the top bar (no center logo), big editorial headline, premium = wide brass strip + a compact green "📺 +1" tile for ad-credit.<span class="ph">App-like (Notion / Things), most "shipped product" feel.</span></div>
+    </div>
+
+  </div>
+
+  <div class="legend">
+    <h3>Pick by what you want most</h3>
+    <table>
+      <thead><tr><th>#</th><th>Layout</th><th>Premium peek</th><th>Credits peek</th><th>Best for</th></tr></thead>
+      <tbody>
+        <tr><td><b>1</b></td><td>Stacked</td><td>Icon strip + Try</td><td>Row with counts + Watch</td><td>Safe, conventional</td></tr>
+        <tr><td><b>2</b></td><td>Two cards</td><td>Mini card w/ icons</td><td>Mini card w/ icons</td><td>Visual parity</td></tr>
+        <tr><td><b>3</b></td><td>Tabbed</td><td>Tab w/ feature names</td><td>Other tab</td><td>Tightest vertical</td></tr>
+        <tr><td><b>4</b></td><td>Combo card</td><td>Top half of card</td><td>Bottom half of card</td><td>All-in-one, clear path</td></tr>
+        <tr><td><b>5</b></td><td>Bento</td><td>Wide cell</td><td>Narrow cell</td><td>Designer-modern</td></tr>
+        <tr><td><b>6</b></td><td>Hero + dock</td><td>Dock strip 1</td><td>Dock strip 2</td><td>Hero/CTA breathes</td></tr>
+        <tr><td><b>7</b></td><td>Spotlight</td><td>1 feature highlighted</td><td>Row with counts</td><td>Descriptive premium</td></tr>
+        <tr><td><b>8</b></td><td>Inverted</td><td>Card above CTA</td><td>Card above CTA</td><td>CTA last → strongest tap</td></tr>
+        <tr><td><b>9</b></td><td>Sticky band</td><td>Slim pill in band</td><td>Slim pill in band</td><td>Hero focused, offers quiet</td></tr>
+        <tr><td><b>10</b></td><td>App shell</td><td>Wide brass strip</td><td>Tall green tile</td><td>Most app-like, shipped feel</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="foot">
+  Reply with a number (or a mix — e.g. <b>"4 with 2's gender"</b>, <b>"10 but offers like 7's spotlight"</b>) and I implement it cleanly into HomeScreen.kt.
+</div>
+
+</body>
+</html>

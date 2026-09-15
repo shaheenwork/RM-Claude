@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Koott — best-direction mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&family=Manjari:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ─────────────────────────────────────────────────────────────────────────
+     "Koott" — trust-coded Kerala palette.
+     Green = safety/trust (deliberate move OFF hookup pink-violet).
+     Brass = warmth, premium, the lamp. Cream = text. Coral ONLY for hearts.
+     ───────────────────────────────────────────────────────────────────────── */
+  :root {
+    --bg:       #0A1410;
+    --bg2:      #0C1A14;
+    --surface:  #11201A;
+    --elev:     #18281F;
+    --border:   rgba(238,236,222,0.09);
+    --border-d: rgba(238,236,222,0.05);
+
+    --green:    #2FB68C;   /* trust / live / primary action */
+    --green-dp: #1C6B4F;
+    --green-dim:#268E6E;
+    --brass:    #E3B964;   /* warmth / premium / accent */
+    --brass-dp: #C99C48;
+    --brass-gl: rgba(227,185,100,0.26);
+    --coral:    #E8765A;   /* hearts only, sparing */
+    --cream:    #F1EDDD;
+    --sage:     #9FAE9E;
+    --muted:    #66766A;
+
+    --safe-bg:  rgba(47,182,140,0.12);
+    --grad:     linear-gradient(135deg, var(--green), var(--green-dp));
+    --grad-brass: linear-gradient(135deg, #F4D89B, var(--brass) 55%, var(--brass-dp));
+    --ml: 'Manjari','Noto Sans Malayalam',sans-serif;
+    --serif: 'Instrument Serif', Georgia, serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    background: radial-gradient(ellipse 70% 40% at 15% 0%, rgba(31,107,79,0.12), transparent 60%),
+                radial-gradient(ellipse 60% 30% at 90% 4%, rgba(227,185,100,0.06), transparent 55%), #05100B;
+    color: var(--cream); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; padding-bottom:70px;
+  }
+  header.page { padding:44px 40px 24px; max-width:1320px; margin:0 auto; }
+  .eyebrow { font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--brass); display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .eyebrow::after { content:""; flex:1; height:1px; background:linear-gradient(90deg,var(--brass-gl),transparent); }
+  header.page h1 { font-size:42px; font-weight:900; letter-spacing:-1.2px; line-height:1; }
+  header.page h1 .ml { font-family:var(--ml); font-weight:700; color:var(--brass); font-size:0.7em; margin-left:6px; }
+  header.page .tag { font-family:var(--serif); font-style:italic; font-size:24px; color:var(--brass); margin-top:6px; }
+  header.page p.lead { color:var(--sage); font-size:15px; line-height:1.65; max-width:780px; margin-top:16px; }
+  header.page p.lead b { color:var(--cream); font-weight:600; }
+  .warn { margin-top:18px; max-width:780px; background:rgba(232,118,90,0.07); border:1px solid rgba(232,118,90,0.25); border-left:3px solid var(--coral); border-radius:12px; padding:13px 18px; font-size:13.5px; color:var(--sage); line-height:1.6; }
+  .warn b { color:var(--coral); }
+
+  section.block { max-width:1320px; margin:0 auto; padding:24px 40px; }
+  .sec-title { display:flex; align-items:baseline; gap:12px; margin:26px 0 8px; }
+  .sec-title h2 { font-size:21px; font-weight:800; letter-spacing:-0.4px; }
+  .sec-title .num { font-family:var(--serif); font-style:italic; font-size:19px; color:var(--brass); }
+  .sec-desc { color:var(--sage); font-size:14px; line-height:1.6; max-width:840px; margin-bottom:24px; }
+  .sec-desc b { color:var(--cream); }
+
+  .rail { display:flex; gap:28px; flex-wrap:wrap; }
+  .device { width:296px; }
+  .device .cap { font-size:12px; color:var(--sage); margin-top:13px; text-align:center; line-height:1.5; }
+  .device .cap b { color:var(--cream); display:block; font-size:13px; font-weight:700; }
+  .device .cap .maps { color:var(--green); font-family:ui-monospace,monospace; font-size:10.5px; }
+
+  .phone { width:296px; height:638px; border-radius:40px; overflow:hidden; border:7px solid #141815; position:relative;
+    box-shadow:0 30px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.03); display:flex; flex-direction:column; background:var(--bg); }
+  .phone::before { content:""; position:absolute; top:9px; left:50%; transform:translateX(-50%); width:90px; height:22px; background:#000; border-radius:14px; z-index:50; }
+  .statusbar { height:40px; padding:13px 24px 0; display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:var(--cream); flex-shrink:0; }
+  .screen { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; }
+
+  .lamp { width:54px; height:54px; position:relative; display:grid; place-items:center; }
+  .lamp .glow { position:absolute; inset:-6px; border-radius:50%; background:radial-gradient(circle,var(--brass-gl),transparent 68%); filter:blur(6px); }
+  .lamp .disc { width:48px; height:48px; border-radius:50%; background:radial-gradient(circle at 38% 30%,#F6DFA0,var(--brass) 52%,var(--brass-dp)); display:grid; place-items:center; box-shadow:0 4px 14px rgba(227,185,100,0.35), inset 0 -2px 6px rgba(120,80,10,0.4); }
+  .lamp .disc span { font-size:23px; }
+
+  /* ===== ONBOARDING / TRUST ============================================== */
+  .ob { flex:1; display:flex; flex-direction:column; align-items:center; padding:8px 24px 18px; text-align:center;
+    background:linear-gradient(180deg,var(--bg),var(--bg2)); }
+  .ob .brand { display:flex; align-items:center; gap:10px; margin-top:26px; }
+  .ob .wordmark { font-size:30px; font-weight:900; letter-spacing:-1px; }
+  .ob .wordmark .ml { font-family:var(--ml); color:var(--brass); }
+  .ob .tagline { font-family:var(--serif); font-style:italic; font-size:18px; color:var(--brass); margin-top:6px; }
+  .ob .blurb { font-size:13px; color:var(--sage); margin-top:8px; line-height:1.5; max-width:230px; }
+  .trust { width:100%; margin-top:24px; display:flex; flex-direction:column; gap:10px; }
+  .trust .row { display:flex; align-items:center; gap:12px; text-align:left; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:13px 14px; }
+  .trust .row .ic { width:36px; height:36px; border-radius:10px; background:var(--safe-bg); display:grid; place-items:center; font-size:16px; flex-shrink:0; }
+  .trust .row .tx { font-size:12.5px; line-height:1.4; }
+  .trust .row .tx b { font-size:13px; font-weight:700; color:var(--cream); display:block; }
+  .trust .row .tx span { color:var(--sage); }
+  .ob .cta { margin-top:auto; width:100%; padding:16px; border-radius:26px; text-align:center; font-size:15px; font-weight:800; color:#06140E; background:var(--grad); box-shadow:0 8px 22px rgba(47,182,140,0.3); }
+  .ob .fine { font-size:10.5px; color:var(--muted); margin-top:12px; }
+
+  /* ===== HOME ============================================================ */
+  .home { flex:1; display:flex; flex-direction:column; padding:6px 22px 16px; position:relative;
+    background:radial-gradient(circle 220px at 50% 16%, rgba(47,182,140,0.10), transparent 70%), linear-gradient(180deg,var(--bg),var(--bg2)); }
+  .home .top { display:flex; justify-content:space-between; align-items:center; padding:4px 0; }
+  .home .top .wm { font-size:18px; font-weight:900; letter-spacing:-0.5px; }
+  .home .top .wm .ml { font-family:var(--ml); color:var(--brass); }
+  .home .top .gear { color:var(--muted); font-size:18px; }
+  .home .hero { display:flex; flex-direction:column; align-items:center; text-align:center; margin-top:18px; }
+  .namaskaram { font-family:var(--ml); color:var(--brass); font-size:16px; }
+  .home .welcome { font-size:24px; font-weight:800; letter-spacing:-0.5px; margin-top:2px; }
+  .home .accent { font-family:var(--serif); font-style:italic; font-size:28px; color:var(--green); line-height:1.05; }
+  .presence { display:inline-flex; align-items:center; gap:7px; margin-top:12px; padding:6px 13px; border-radius:20px; background:var(--safe-bg); font-size:11.5px; font-weight:600; color:var(--green); }
+  .presence .ld { width:7px; height:7px; border-radius:50%; background:var(--green); animation:ping 2s infinite; }
+  @keyframes ping { 0%{box-shadow:0 0 0 0 rgba(47,182,140,0.5);} 70%{box-shadow:0 0 0 7px rgba(47,182,140,0);} 100%{box-shadow:0 0 0 0 rgba(47,182,140,0);} }
+
+  .vibe-h { font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin:22px 0 10px; align-self:flex-start; }
+  .vibes { display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; }
+  .vibe { border-radius:14px; padding:13px; border:1px solid var(--border); background:var(--surface); text-align:left; }
+  .vibe.on { border-color:var(--green); background:var(--safe-bg); }
+  .vibe .e { font-size:20px; } .vibe .n { font-size:13px; font-weight:700; color:var(--cream); margin-top:4px; }
+  .vibe .ml { font-family:var(--ml); font-size:12px; color:var(--sage); }
+  .home .cta { margin-top:16px; width:100%; padding:16px; border-radius:26px; text-align:center; font-size:15px; font-weight:800; color:#06140E; background:var(--grad); box-shadow:0 8px 22px rgba(47,182,140,0.3); }
+  .home .cta .ml { font-weight:700; }
+  .home .streak { display:flex; align-items:center; justify-content:center; gap:6px; font-size:11px; color:var(--brass); margin-top:12px; }
+
+  /* ===== CONNECTING ====================================================== */
+  .connect { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden;
+    background:radial-gradient(ellipse 70% 50% at 50% 40%, rgba(31,107,79,0.18), transparent 70%); }
+  .corewrap { position:relative; width:220px; height:220px; display:grid; place-items:center; }
+  .ring { position:absolute; width:108px; height:108px; border-radius:50%; border:1px solid rgba(47,182,140,0.45); top:50%; left:50%; margin:-54px 0 0 -54px; animation:expand 2.6s linear infinite; }
+  .ring.r2{animation-delay:.86s;} .ring.r3{animation-delay:1.73s;}
+  @keyframes expand { 0%{transform:scale(1);opacity:.55;} 100%{transform:scale(2.1);opacity:0;} }
+  .cglow { position:absolute; width:166px; height:166px; border-radius:50%; background:radial-gradient(circle,var(--brass-gl),transparent 66%); filter:blur(14px); animation:breathe 1.4s ease-in-out infinite alternate; }
+  @keyframes breathe { from{opacity:.45;transform:scale(.96);} to{opacity:.8;transform:scale(1.06);} }
+  .core { width:100px; height:100px; border-radius:50%; display:grid; place-items:center; position:relative; background:var(--grad-brass); border:2px solid rgba(255,255,255,0.16); box-shadow:0 10px 28px rgba(227,185,100,0.4); animation:breathe2 1.4s ease-in-out infinite alternate; }
+  @keyframes breathe2 { from{transform:scale(.95);} to{transform:scale(1.06);} }
+  .core span { font-size:38px; }
+  .orbit { position:absolute; width:200px; height:200px; animation:spin 9s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg);} }
+  .av { position:absolute; width:38px; height:38px; border-radius:50%; display:grid; place-items:center; font-size:16px; border:1.5px solid; animation:upr 9s linear infinite; }
+  .av.a{top:-4px;left:50%;margin-left:-19px;background:var(--safe-bg);border-color:rgba(47,182,140,0.5);}
+  .av.b{bottom:8px;right:6px;background:rgba(227,185,100,0.16);border-color:rgba(227,185,100,0.5);}
+  .av.c{bottom:8px;left:6px;background:rgba(232,118,90,0.16);border-color:rgba(232,118,90,0.5);}
+  @keyframes upr { to{transform:rotate(-360deg);} }
+  .connect .head { margin-top:28px; font-size:20px; font-weight:800; color:var(--cream); z-index:2; }
+  .connect .head-ac { font-family:var(--serif); font-style:italic; font-size:23px; color:var(--brass); z-index:2; }
+  .connect .status { margin-top:10px; font-size:13px; color:var(--sage); z-index:2; }
+  .connect .status .typed { border-right:2px solid var(--green); padding-right:3px; animation:blink 1s step-end infinite; }
+  @keyframes blink { 50%{border-color:transparent;} }
+  .connect .safe { margin-top:18px; font-size:11.5px; color:var(--green); background:var(--safe-bg); padding:6px 14px; border-radius:18px; z-index:2; }
+  .connect .cancel { margin-top:30px; font-size:13px; color:var(--muted); border:1px solid var(--border); border-radius:22px; padding:8px 24px; z-index:2; }
+
+  /* ===== CHAT ============================================================ */
+  .chat { flex:1; display:flex; flex-direction:column; min-height:0; background:linear-gradient(180deg,var(--bg),var(--bg2)); }
+  .cbar { display:flex; align-items:center; gap:8px; padding:8px 10px; background:rgba(17,32,26,0.96); border-bottom:1px solid var(--border-d); flex-shrink:0; }
+  .cbar .back { font-size:20px; color:var(--sage); }
+  .cbar .who { flex:1; }
+  .cbar .who .nm { font-size:14px; font-weight:700; color:var(--cream); display:flex; align-items:center; gap:6px; }
+  .cbar .who .vt { font-size:8.5px; font-weight:800; color:var(--brass); background:rgba(227,185,100,0.15); padding:2px 6px; border-radius:6px; }
+  .cbar .who .st { font-size:11px; color:var(--green); display:flex; align-items:center; gap:5px; margin-top:1px; }
+  .cbar .who .st::before { content:"●"; font-size:7px; }
+  /* SAFETY surfaced, not buried */
+  .cbar .safebtn { font-size:10.5px; font-weight:700; color:var(--coral); border:1px solid rgba(232,118,90,0.4); border-radius:14px; padding:5px 10px; }
+
+  .conn-strip { text-align:center; font-size:11px; padding:7px 14px; background:var(--safe-bg); color:var(--green); display:flex; align-items:center; justify-content:center; gap:6px; }
+  .msgs { flex:1; overflow:hidden; padding:10px 12px; display:flex; flex-direction:column; gap:7px; min-height:0; }
+  .b { max-width:78%; padding:9px 13px; font-size:13.5px; line-height:1.45; border-radius:18px; position:relative; }
+  .b .t { font-size:9.5px; margin-top:4px; opacity:.7; text-align:right; }
+  .b.in { align-self:flex-start; border-bottom-left-radius:5px; background:rgba(241,237,221,0.07); border:1px solid rgba(241,237,221,0.08); color:var(--cream); }
+  .b.in .t { color:var(--muted); }
+  .b.out { align-self:flex-end; border-bottom-right-radius:5px; background:var(--grad); color:#EAF7F0; }
+  .b.out .t { color:rgba(234,247,240,0.8); }
+  .react { position:absolute; bottom:-11px; right:8px; background:var(--elev); border:1px solid var(--border); border-radius:12px; font-size:10px; padding:2px 6px; }
+  /* PII auto-block toast — your best safety asset, now visible */
+  .pii { align-self:center; font-size:10.5px; color:var(--brass); background:rgba(227,185,100,0.10); border:1px solid rgba(227,185,100,0.25); border-radius:14px; padding:6px 12px; display:flex; gap:6px; align-items:center; text-align:center; }
+  .composer { display:flex; align-items:center; gap:8px; padding:9px 10px; background:var(--surface); border-top:1px solid var(--border-d); flex-shrink:0; }
+  .composer .plus,.composer .send { width:38px; height:38px; border-radius:50%; display:grid; place-items:center; flex-shrink:0; font-size:18px; }
+  .composer .plus { background:var(--elev); border:1px solid var(--border); color:var(--sage); }
+  .composer .field { flex:1; height:38px; border-radius:20px; display:flex; align-items:center; padding:0 15px; font-size:13px; background:var(--elev); color:var(--muted); }
+  .composer .send { background:var(--grad); color:#06140E; }
+
+  /* ===== POST-CHAT / RETENTION =========================================== */
+  .post { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; text-align:center;
+    background:linear-gradient(180deg,var(--bg),var(--bg2)); }
+  .post .lamp { margin-bottom:14px; }
+  .post h3 { font-size:20px; font-weight:800; }
+  .post .ml { font-family:var(--ml); color:var(--brass); font-size:15px; margin-top:4px; }
+  .post .sub { font-size:13px; color:var(--sage); margin-top:10px; max-width:220px; line-height:1.5; }
+  .reconnect { width:100%; margin-top:22px; padding:15px; border-radius:24px; font-size:14px; font-weight:800; color:#06140E; background:var(--grad-brass); box-shadow:0 8px 20px rgba(227,185,100,0.28); }
+  .reconnect .ml { color:#3a2a00; margin:0; font-size:12px; }
+  .again2 { width:100%; margin-top:10px; padding:14px; border-radius:24px; font-size:14px; font-weight:800; color:#06140E; background:var(--grad); }
+  .feelsafe { margin-top:18px; font-size:11.5px; color:var(--muted); }
+  .feelsafe span { color:var(--green); }
+
+  table.copy { width:100%; border-collapse:collapse; font-size:13.5px; max-width:1000px; }
+  table.copy th { text-align:left; padding:11px 16px; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border); }
+  table.copy td { padding:12px 16px; border-bottom:1px solid var(--border-d); vertical-align:top; line-height:1.5; }
+  table.copy .loc { color:var(--muted); font-family:ui-monospace,monospace; font-size:11.5px; }
+  table.copy .new { color:var(--green); font-weight:600; }
+  .foot { max-width:1320px; margin:6px auto 0; padding:22px 40px; color:var(--muted); font-size:13px; line-height:1.7; }
+  .foot b { color:var(--brass); }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <div class="eyebrow">Best-direction concept · not yet approved</div>
+  <h1>Koott <span class="ml">കൂട്ട്</span></h1>
+  <div class="tag">A companion among Malayalis you haven't met yet.</div>
+  <p class="lead">
+    My honest recommendation — this is a <b>strategy mockup</b>, not a paint job. It rebrands off "StrangerChat,"
+    moves OFF the pink-violet hookup coding to a <b>trust-coded green + brass Kerala palette</b>, surfaces your best
+    asset (auto-hiding personal info) instead of burying it, replaces fake online counts with honest presence, and
+    adds the two things random-chat is missing: <b>light identity (a vibe)</b> and <b>a reason to come back</b>.
+  </p>
+  <div class="warn">
+    <b>This contradicts "keep current theme" on purpose.</b> Pink→violet reads hookup/desperate and scares the women
+    + conservative users you need. If you must keep the current palette, the <b>structure, copy, safety surfacing,
+    rebrand, and retention</b> changes still stand — only the colors would differ.
+  </div>
+</header>
+
+<section class="block">
+  <div class="sec-title"><span class="num">01</span><h2>The flow, redesigned</h2></div>
+  <p class="sec-desc"><b>Trust → choose a vibe → connect → safe chat → a reason to return.</b> Every frame fights the three killers: ghost-town (vibe + safety pull women in), fake-metrics (honest presence), no-retention (reconnect + streak).</p>
+
+  <div class="rail">
+
+    <!-- ONBOARDING / TRUST -->
+    <div class="device">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>5G &nbsp; 100</span></div>
+        <div class="screen">
+          <div class="ob">
+            <div class="brand">
+              <div class="lamp"><div class="glow"></div><div class="disc"><span>🪔</span></div></div>
+              <div class="wordmark">Koott <span class="ml">കൂട്ട്</span></div>
+            </div>
+            <div class="tagline">Talk to a Malayali. Safely.</div>
+            <div class="blurb">Anonymous chat made for Malayalis — wherever you are.</div>
+            <div class="trust">
+              <div class="row"><div class="ic">🔒</div><div class="tx"><b>Your info stays hidden</b><span>Numbers &amp; socials auto-blocked — always.</span></div></div>
+              <div class="row"><div class="ic">🚩</div><div class="tx"><b>Report &amp; block in one tap</b><span>Bad actor? Gone instantly.</span></div></div>
+              <div class="row"><div class="ic">🌴</div><div class="tx"><b>Malayalis only</b><span>Naadan, Gulf, or anywhere abroad.</span></div></div>
+            </div>
+            <div class="cta">Get started</div>
+            <div class="fine">18+ · No name, no number, no signup</div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>Onboarding — trust first</b><span class="maps">OnboardingScreen.kt</span></div>
+    </div>
+
+    <!-- HOME -->
+    <div class="device">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>5G &nbsp; 100</span></div>
+        <div class="screen">
+          <div class="home">
+            <div class="top"><div class="wm">Koott <span class="ml">കൂട്ട്</span></div><div class="gear">⚙</div></div>
+            <div class="hero">
+              <div class="namaskaram">നമസ്കാരം 👋</div>
+              <div class="welcome">Who do you want</div>
+              <div class="accent">to talk to today?</div>
+              <div class="presence"><span class="ld"></span> Hundreds of Malayalis online now</div>
+            </div>
+            <div class="vibe-h">Pick a vibe</div>
+            <div class="vibes">
+              <div class="vibe on"><div class="e">☕</div><div class="n">Timepass</div><div class="ml">വെറുതേ വർത്താനം</div></div>
+              <div class="vibe"><div class="e">🌧️</div><div class="n">Vent it out</div><div class="ml">മനസ്സ് തുറക്കാം</div></div>
+              <div class="vibe"><div class="e">😄</div><div class="n">Just fun</div><div class="ml">ചിരിക്കാം</div></div>
+              <div class="vibe"><div class="e">🌴</div><div class="n">Naadu vlibes</div><div class="ml">നാട്ടുകാര്യം</div></div>
+            </div>
+            <div class="cta">Find a koott &nbsp;·&nbsp; <span class="ml">കൂട്ട് കണ്ടെത്തൂ</span></div>
+            <div class="streak">🔥 4-day streak · come back tomorrow</div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>Home — vibe + honest presence</b><span class="maps">HomeScreen.kt</span></div>
+    </div>
+
+    <!-- CONNECTING -->
+    <div class="device">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>5G &nbsp; 100</span></div>
+        <div class="screen">
+          <div class="connect">
+            <div class="corewrap">
+              <div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div>
+              <div class="cglow"></div>
+              <div class="core"><span>🪔</span></div>
+              <div class="orbit"><div class="av a">☕</div><div class="av b">🌴</div><div class="av c">😄</div></div>
+            </div>
+            <div class="head">Finding a Malayali</div>
+            <div class="head-ac">who's up for a chat</div>
+            <div class="status"><span class="typed">Matching your vibe — Timepass</span></div>
+            <div class="safe">🔒 Your number &amp; name stay hidden</div>
+            <div class="cancel">Cancel</div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>Connecting — safe framing</b><span class="maps">MatchmakingDialog.kt</span></div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="device">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>5G &nbsp; 100</span></div>
+        <div class="screen">
+          <div class="chat">
+            <div class="cbar">
+              <span class="back">‹</span>
+              <div class="who"><div class="nm">A Malayali <span class="vt">☕ TIMEPASS</span></div><div class="st">Online</div></div>
+              <span class="safebtn">⚑ Report</span>
+            </div>
+            <div class="conn-strip">🔒 Connected — personal info stays hidden. Say hi!</div>
+            <div class="msgs">
+              <div class="b in">Hai 🙂 evideyaa?<div class="t">10:24</div></div>
+              <div class="b out">Thrissur! ningalo?<div class="t">10:24 ✓✓</div></div>
+              <div class="b in">Kochi 😄 but joli Gulf-l<div class="t">10:25</div><div class="react">❤️</div></div>
+              <div class="pii">🔒 A phone number was hidden to keep you both safe</div>
+              <div class="b out" style="margin-top:6px;">Pravasi alle, namuk സുഖം 😎<div class="t">10:25 ✓✓</div></div>
+            </div>
+            <div class="composer"><span class="plus">+</span><span class="field">Message…</span><span class="send">➤</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>Chat — safety surfaced</b><span class="maps">ChatScreen.kt · MessageBubble.kt</span></div>
+    </div>
+
+    <!-- POST-CHAT / RETENTION -->
+    <div class="device">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>5G &nbsp; 100</span></div>
+        <div class="screen">
+          <div class="post">
+            <div class="lamp"><div class="glow"></div><div class="disc"><span>🪔</span></div></div>
+            <h3>That was a good koott</h3>
+            <div class="ml">വീണ്ടും സംസാരിക്കണോ?</div>
+            <div class="sub">Send a reconnect request. If they accept, you can talk again — still anonymous.</div>
+            <div class="reconnect">↺ Send reconnect request<div class="ml">വീണ്ടും കൂട്ടാവാം</div></div>
+            <div class="again2">Find another Malayali</div>
+            <div class="feelsafe">Did you feel safe?  <span>👍 Yes</span> · 👎 No</div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>Post-chat — the retention spine</b><span class="maps">new state in ChatScreen.kt</span></div>
+    </div>
+
+  </div>
+</section>
+
+<section class="block">
+  <div class="sec-title"><span class="num">02</span><h2>What changed &amp; why</h2></div>
+  <table class="copy">
+    <thead><tr><th style="width:22%">Change</th><th style="width:30%">Kills which problem</th><th>How</th></tr></thead>
+    <tbody>
+      <tr><td class="loc">Rebrand → Koott</td><td>Generic/creepy "StrangerChat"</td><td class="new">Warm, safe, unmistakably Malayali. "Companion," not "stranger."</td></tr>
+      <tr><td class="loc">Green + brass palette</td><td>Pink-violet = hookup coding</td><td class="new">Green = trust/safety. Pulls women + conservative users back.</td></tr>
+      <tr><td class="loc">Trust onboarding</td><td>"Scam/horny app" first impression</td><td class="new">Lead with auto-hide info + report + Malayali-only.</td></tr>
+      <tr><td class="loc">Honest presence</td><td>Fake +11–23 count (trust bomb)</td><td class="new">"Hundreds online" — no fakeable exact number to get caught on.</td></tr>
+      <tr><td class="loc">Vibe pick</td><td>Faceless + horny-by-default</td><td class="new">Sets intent (vent/fun/timepass), filters predators, adds identity-lite.</td></tr>
+      <tr><td class="loc">Surfaced report + PII toast</td><td>Safety buried in ⋮ menu</td><td class="new">Report on the bar; PII-block shown live = visible protection.</td></tr>
+      <tr><td class="loc">Reconnect + streak</td><td>Zero retention in random 1:1</td><td class="new">Opt-in continuity + daily return loop = the missing spine.</td></tr>
+      <tr><td class="loc">Killed ghost-typing-spy</td><td>Creepy surveillance vibe</td><td class="new">Remove "see stranger's draft." Replace premium value w/ safety + reconnect.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="foot">
+  <b>Reminder:</b> mockup only — no code touched. Three real builds now exist in <code>mockups/</code>:
+  <b>current-theme-new-copy.html</b> (your last ask: same theme, new words),
+  <b>malayali-redesign.html</b> (Kerala palette, light+dark),
+  and this <b>koott-best-direction.html</b> (my honest strategic best). Tell me which to take into code.
+</div>
+
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chat-ended panel — redesign options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A1410; --bg2:#0C1A14; --surface:#11201A; --elev:#18281F;
+    --border:rgba(238,236,222,0.10); --border-d:rgba(238,236,222,0.05);
+    --green:#2FB68C; --green-dp:#1C6B4F; --green-dim:#268E6E;
+    --brass:#E3B964; --brass-dp:#C99C48; --brass-gl:rgba(227,185,100,0.28);
+    --coral:#E8765A; --cream:#F1EDDD; --sage:#9FAE9E; --muted:#66766A;
+    --safe-bg:rgba(47,182,140,0.12);
+    --grad-green:linear-gradient(135deg,var(--green),var(--green-dp));
+    --grad-brass:linear-gradient(135deg,#F4D89B,var(--brass) 55%,var(--brass-dp));
+    --serif:'Instrument Serif',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#04090A;color:var(--cream);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding:40px;}
+  header.page{max-width:1300px;margin:0 auto 22px;}
+  header h1{font-size:28px;font-weight:900;letter-spacing:-0.6px;}
+  header p{color:var(--sage);font-size:14px;line-height:1.6;max-width:820px;margin-top:10px;}
+  header p b{color:var(--cream);}
+  .note{margin-top:14px;background:rgba(232,118,90,0.06);border:1px solid rgba(232,118,90,0.22);border-left:3px solid var(--coral);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--sage);max-width:820px;line-height:1.55;}
+  .note b{color:var(--coral);}
+
+  section.block{max-width:1300px;margin:0 auto;padding:26px 0;border-top:1px solid #0c1612;}
+  section h2{font-size:19px;font-weight:800;color:var(--brass);margin-bottom:4px;}
+  section .lead{color:var(--sage);font-size:13px;line-height:1.6;max-width:820px;margin-bottom:22px;}
+
+  .rail{display:flex;gap:34px;flex-wrap:wrap;}
+  .device{width:300px;}
+  .device .cap{font-size:12px;color:var(--sage);margin-top:13px;text-align:center;line-height:1.5;}
+  .device .cap b{color:var(--cream);display:block;font-size:13px;font-weight:700;margin-bottom:2px;}
+
+  /* phone frame — show only bottom portion (chat tail + ended panel) */
+  .phone{width:300px;height:540px;border-radius:34px;border:8px solid #14201A;background:var(--bg);position:relative;overflow:hidden;box-shadow:0 24px 52px rgba(0,0,0,0.6);display:flex;flex-direction:column;}
+  .phone .scroll{flex:1;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(180deg,var(--bg),var(--bg2));}
+
+  /* faded chat tail above the panel */
+  .tail{padding:14px 14px 8px;display:flex;flex-direction:column;gap:8px;opacity:0.5;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 60%);mask-image:linear-gradient(to bottom,transparent,#000 60%);}
+  .b{max-width:74%;padding:8px 12px;font-size:12.5px;line-height:1.4;border-radius:15px;}
+  .b.in{align-self:flex-start;border-bottom-left-radius:4px;background:rgba(241,237,221,0.07);border:1px solid rgba(241,237,221,0.08);color:var(--cream);}
+  .b.out{align-self:flex-end;border-bottom-right-radius:4px;background:var(--grad-green);color:#EAF7F0;}
+
+  /* shared ad slot — labeled so it never reads as broken content */
+  .adslot{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:#0d1712;}
+  .adslot .adlabel{position:absolute;top:0;left:0;font-size:8px;font-weight:800;letter-spacing:1px;color:var(--muted);background:rgba(0,0,0,0.35);padding:2px 7px;border-radius:0 0 7px 0;z-index:2;text-transform:uppercase;}
+  .adbody{height:54px;display:flex;align-items:center;justify-content:center;gap:8px;color:#9aa;font-size:12px;background:repeating-linear-gradient(45deg,#0e1812,#0e1812 8px,#0c150f 8px,#0c150f 16px);}
+  .adbody .mock{display:flex;align-items:center;gap:8px;color:var(--sage);}
+  .adbody .mock .sq{width:30px;height:30px;border-radius:6px;background:linear-gradient(135deg,#2b3a33,#1c2922);}
+
+  /* primary / secondary buttons */
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border-radius:24px;font-weight:800;cursor:pointer;border:none;}
+  .btn.green{background:var(--grad-green);color:#06140E;box-shadow:0 8px 20px rgba(47,182,140,0.28);padding:14px;font-size:14px;}
+  .btn.ghost{background:transparent;color:var(--sage);border:1px solid var(--border);padding:12px;font-size:13px;}
+  .btn.brassline{background:rgba(227,185,100,0.08);border:1px solid rgba(227,185,100,0.35);color:var(--brass);padding:12px;font-size:13px;}
+
+  /* ════ OPTION A — Centered closure card ════ */
+  .panelA{background:var(--surface);border-top:1px solid var(--border);padding:22px 18px 18px;display:flex;flex-direction:column;align-items:center;gap:0;border-radius:24px 24px 0 0;}
+  .panelA .glyph{width:54px;height:54px;border-radius:16px;background:var(--safe-bg);display:grid;place-items:center;font-size:24px;margin-bottom:14px;border:1px solid rgba(47,182,140,0.25);}
+  .panelA .h{font-size:21px;font-weight:800;color:var(--cream);letter-spacing:-0.3px;}
+  .panelA .sub{font-size:13px;color:var(--sage);margin-top:5px;text-align:center;line-height:1.45;}
+  .panelA .acts{width:100%;margin-top:18px;display:flex;flex-direction:column;gap:9px;}
+  .panelA .adwrap{width:100%;margin-top:16px;}
+
+  /* ════ OPTION B — Editorial minimal ════ */
+  .panelB{background:linear-gradient(180deg,var(--bg2),var(--surface));border-top:1px solid var(--border);padding:26px 20px 18px;display:flex;flex-direction:column;align-items:center;}
+  .panelB .line{width:30px;height:3px;border-radius:2px;background:var(--brass);opacity:0.7;margin-bottom:16px;}
+  .panelB .h{font-family:var(--serif);font-style:italic;font-size:30px;color:var(--brass);line-height:1;letter-spacing:-0.4px;}
+  .panelB .sub{font-size:12.5px;color:var(--sage);margin-top:8px;letter-spacing:0.2px;}
+  .panelB .acts{width:100%;margin-top:20px;display:flex;flex-direction:column;gap:9px;}
+  .panelB .adwrap{width:100%;margin-top:16px;}
+
+  /* ════ OPTION C — Recap / stats card ════ */
+  .panelC{background:var(--surface);border-top:1px solid var(--border);padding:20px 18px 18px;display:flex;flex-direction:column;border-radius:24px 24px 0 0;}
+  .panelC .top{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .panelC .top .glyph{width:42px;height:42px;border-radius:12px;background:var(--safe-bg);display:grid;place-items:center;font-size:20px;flex-shrink:0;border:1px solid rgba(47,182,140,0.22);}
+  .panelC .top .h{font-size:17px;font-weight:800;color:var(--cream);}
+  .panelC .top .sub{font-size:12px;color:var(--sage);margin-top:1px;}
+  .stats{display:flex;gap:10px;margin-bottom:14px;}
+  .stat{flex:1;background:#0d1712;border:1px solid var(--border);border-radius:12px;padding:11px 8px;text-align:center;}
+  .stat .n{font-size:20px;font-weight:900;color:var(--green);letter-spacing:-0.5px;}
+  .stat .l{font-size:10px;color:var(--muted);letter-spacing:0.4px;text-transform:uppercase;margin-top:2px;}
+  .panelC .save{display:flex;align-items:center;gap:10px;background:rgba(227,185,100,0.07);border:1px solid rgba(227,185,100,0.30);border-radius:12px;padding:11px 12px;margin-bottom:12px;cursor:pointer;}
+  .panelC .save .ic{width:30px;height:30px;border-radius:8px;background:rgba(227,185,100,0.16);display:grid;place-items:center;font-size:15px;color:var(--brass);flex-shrink:0;}
+  .panelC .save .tx{flex:1;}
+  .panelC .save .tx b{font-size:12.5px;font-weight:700;color:var(--brass);display:block;}
+  .panelC .save .tx span{font-size:10.5px;color:var(--sage);}
+  .panelC .save .chev{color:var(--brass);font-size:14px;}
+  .panelC .acts{display:flex;flex-direction:column;gap:9px;}
+  .panelC .adwrap{margin-top:14px;}
+
+  footer{max-width:1300px;margin:24px auto 0;color:var(--muted);font-size:12.5px;line-height:1.7;padding:18px 0;border-top:1px solid #0e1a14;}
+  footer b{color:var(--brass);}
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1>Chat-ended panel — 3 modern options</h1>
+  <p>Current panel jams a raw <b>468×60 test-ad</b> between the "Chat has ended" pill and the button — reads as broken content. All 3 options below give the moment <b>real closure</b>, contain the ad in a labeled slot so it stops looking like an error, and keep the green+brass system.</p>
+  <div class="note"><b>Logic unchanged:</b> same actions (save-via-ad for free users, new chat). Only layout + hierarchy change. Premium users see no ad slot.</div>
+</header>
+
+<section class="block">
+  <h2>The 3 options, side by side</h2>
+  <p class="lead">Shown in the free-user state (with ad + save-strip). Premium users get the same panel minus the ad slot, minus the save-via-ad strip.</p>
+
+  <div class="rail">
+
+    <!-- ═══ OPTION A ═══ -->
+    <div class="device">
+      <div class="phone"><div class="scroll">
+        <div class="tail">
+          <div class="b in">Sherikkum nannayi 😄</div>
+          <div class="b out">Pinne kaanaam, take care 🙏</div>
+        </div>
+        <div class="panelA">
+          <div class="glyph">👋</div>
+          <div class="h">Chat ended</div>
+          <div class="sub">Hope you had a good one. Ready to meet someone new?</div>
+          <div class="adwrap">
+            <div class="adslot"><span class="adlabel">Ad</span>
+              <div class="adbody"><span class="mock"><span class="sq"></span> Sponsored</span></div>
+            </div>
+          </div>
+          <div class="acts">
+            <button class="btn brassline">🔖 Watch ad to save this chat</button>
+            <button class="btn green">Meet another Malayali</button>
+          </div>
+        </div>
+      </div></div>
+      <div class="device-cap cap"><b>Option A — Closure card</b>Icon + headline + warm sub. Ad in labeled slot above actions. Safe, universal.</div>
+    </div>
+
+    <!-- ═══ OPTION B ═══ -->
+    <div class="device">
+      <div class="phone"><div class="scroll">
+        <div class="tail">
+          <div class="b in">Sherikkum nannayi 😄</div>
+          <div class="b out">Pinne kaanaam, take care 🙏</div>
+        </div>
+        <div class="panelB">
+          <div class="line"></div>
+          <div class="h">That's a wrap</div>
+          <div class="sub">CONVERSATION ENDED</div>
+          <div class="adwrap">
+            <div class="adslot"><span class="adlabel">Ad</span>
+              <div class="adbody"><span class="mock"><span class="sq"></span> Sponsored</span></div>
+            </div>
+          </div>
+          <div class="acts">
+            <button class="btn brassline">🔖 Save this chat — watch a short ad</button>
+            <button class="btn green">Meet another Malayali</button>
+          </div>
+        </div>
+      </div></div>
+      <div class="cap"><b>Option B — Editorial</b>Serif italic headline, kasavu line accent. Premium-magazine feel, most distinct.</div>
+    </div>
+
+    <!-- ═══ OPTION C ═══ -->
+    <div class="device">
+      <div class="phone"><div class="scroll">
+        <div class="tail">
+          <div class="b in">Sherikkum nannayi 😄</div>
+          <div class="b out">Pinne kaanaam, take care 🙏</div>
+        </div>
+        <div class="panelC">
+          <div class="top">
+            <div class="glyph">✓</div>
+            <div>
+              <div class="h">Chat ended</div>
+              <div class="sub">Nice conversation!</div>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="n">24</div><div class="l">Messages</div></div>
+            <div class="stat"><div class="n">6m</div><div class="l">Duration</div></div>
+            <div class="stat"><div class="n">3</div><div class="l">Reactions</div></div>
+          </div>
+          <div class="save">
+            <div class="ic">🔖</div>
+            <div class="tx"><b>Save this chat</b><span>Watch a short ad to keep it</span></div>
+            <div class="chev">›</div>
+          </div>
+          <div class="adwrap">
+            <div class="adslot"><span class="adlabel">Ad</span>
+              <div class="adbody"><span class="mock"><span class="sq"></span> Sponsored</span></div>
+            </div>
+          </div>
+          <div class="acts" style="margin-top:14px;">
+            <button class="btn green">Meet another Malayali</button>
+          </div>
+        </div>
+      </div></div>
+      <div class="cap"><b>Option C — Recap card</b>Mini stats give dopamine + closure. Highest engagement, slightly more build.</div>
+    </div>
+
+  </div>
+</section>
+
+<section class="block">
+  <h2>Premium-user variant (no ads)</h2>
+  <p class="lead">Same panels, ad slot + watch-ad save strip removed. Save becomes a direct one-tap (premium already has it). Showing Option A &amp; C clean.</p>
+  <div class="rail">
+
+    <div class="device">
+      <div class="phone"><div class="scroll">
+        <div class="tail">
+          <div class="b in">Sherikkum nannayi 😄</div>
+          <div class="b out">Pinne kaanaam, take care 🙏</div>
+        </div>
+        <div class="panelA">
+          <div class="glyph">👋</div>
+          <div class="h">Chat ended</div>
+          <div class="sub">Hope you had a good one. Ready to meet someone new?</div>
+          <div class="acts">
+            <button class="btn brassline">🔖 Save this chat</button>
+            <button class="btn green">Meet another Malayali</button>
+          </div>
+        </div>
+      </div></div>
+      <div class="cap"><b>A — Premium</b>Clean, no ad clutter.</div>
+    </div>
+
+    <div class="device">
+      <div class="phone"><div class="scroll">
+        <div class="tail">
+          <div class="b in">Sherikkum nannayi 😄</div>
+          <div class="b out">Pinne kaanaam, take care 🙏</div>
+        </div>
+        <div class="panelC">
+          <div class="top">
+            <div class="glyph">✓</div>
+            <div>
+              <div class="h">Chat ended</div>
+              <div class="sub">Nice conversation!</div>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="n">24</div><div class="l">Messages</div></div>
+            <div class="stat"><div class="n">6m</div><div class="l">Duration</div></div>
+            <div class="stat"><div class="n">3</div><div class="l">Reactions</div></div>
+          </div>
+          <div class="acts">
+            <button class="btn brassline">🔖 Save this chat</button>
+            <button class="btn green">Meet another Malayali</button>
+          </div>
+        </div>
+      </div></div>
+      <div class="cap"><b>C — Premium</b>Recap + clean save.</div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <b>Pick one (A / B / C).</b> All keep the existing logic — save-via-rewarded-ad for free users, direct save for premium, "Meet another Malayali" to requeue.
+  Ad sits in a bordered, "Ad"-labeled slot so it never reads as broken UI. &nbsp;·&nbsp;
+  <b>Note on Option C:</b> the stats (messages / duration / reactions) need 3 small values from the ViewModel — messages.size already exists, duration + reaction-count are a tiny add. A &amp; B need zero new data.
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Redesign Mockup — Malayali Connection App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&family=Manjari:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ─────────────────────────────────────────────────────────────────────────
+     PALETTE — "Kerala Backwaters"
+     Brass/gold = brand, CTA, the lamp, the kasavu thread.
+     Teal-green = connection, live, outgoing bubbles, backwaters.
+     Terracotta = sparing warm accent (roof tiles / spice).
+     Cream / deep green-charcoal = text.
+     ───────────────────────────────────────────────────────────────────────── */
+  :root {
+    /* dark mode */
+    --d-bg:       #0A140F;
+    --d-bg2:      #0C1A13;
+    --d-surface:  #122019;
+    --d-elev:     #182A20;
+    --d-border:   rgba(240,236,220,0.09);
+    --d-border2:  rgba(240,236,220,0.05);
+
+    --brass:      #E3B964;
+    --brass-dim:  #C99C48;
+    --brass-glow: rgba(227,185,100,0.28);
+    --teal:       #36B59A;
+    --teal-deep:  #1F6B4F;
+    --teal-dim:   #2A8E78;
+    --terra:      #D98A5B;
+
+    --d-cream:    #F2ECDD;
+    --d-sage:     #A6B0A0;
+    --d-muted:    #6E7A6E;
+
+    /* light mode */
+    --l-bg:       #F6F1E5;
+    --l-bg2:      #F1E9D7;
+    --l-surface:  #FFFFFF;
+    --l-elev:     #FBF7EC;
+    --l-border:   rgba(28,50,38,0.12);
+    --l-border2:  rgba(28,50,38,0.06);
+
+    --green-pri:  #1C6B4E;
+    --brass-l:    #A9802F;
+    --teal-l:     #1F8F76;
+    --terra-l:    #BF6233;
+
+    --l-ink:      #16251C;
+    --l-ink2:     #46584C;
+    --l-muted:    #7E8A7C;
+
+    --ml: 'Manjari', 'Noto Sans Malayalam', sans-serif;
+    --serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background:
+      radial-gradient(ellipse 80% 50% at 15% 0%, rgba(31,107,79,0.10), transparent 60%),
+      radial-gradient(ellipse 70% 40% at 90% 5%, rgba(227,185,100,0.07), transparent 55%),
+      #060B08;
+    color: var(--d-cream);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 80px;
+  }
+
+  /* ── Page chrome ───────────────────────────────────────────────────────── */
+  header.page {
+    padding: 46px 40px 30px;
+    max-width: 1280px; margin: 0 auto;
+  }
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--brass); display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  }
+  .eyebrow::after { content:""; flex:1; height:1px; background: linear-gradient(90deg, var(--brass-glow), transparent); }
+  header.page h1 {
+    font-size: 40px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; margin-bottom: 6px;
+  }
+  header.page h1 .ml { font-family: var(--ml); font-weight: 700; color: var(--brass); font-size: 0.85em; }
+  header.page .tagline { font-family: var(--serif); font-style: italic; font-size: 24px; color: var(--brass); letter-spacing: -0.3px; }
+  header.page p.lead { color: var(--d-sage); font-size: 15px; line-height: 1.65; max-width: 760px; margin-top: 18px; }
+  header.page p.lead b { color: var(--d-cream); font-weight: 600; }
+
+  .note {
+    margin: 22px 0 0; max-width: 760px;
+    background: rgba(227,185,100,0.06);
+    border: 1px solid rgba(227,185,100,0.18);
+    border-left: 3px solid var(--brass);
+    border-radius: 12px; padding: 14px 18px;
+    font-size: 13.5px; color: var(--d-sage); line-height: 1.6;
+  }
+  .note b { color: var(--brass); }
+
+  section.block { max-width: 1280px; margin: 0 auto; padding: 30px 40px; }
+  .sec-title { display: flex; align-items: baseline; gap: 12px; margin: 34px 0 8px; }
+  .sec-title h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
+  .sec-title .num { font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--brass); }
+  .sec-desc { color: var(--d-sage); font-size: 14px; line-height: 1.6; max-width: 820px; margin-bottom: 26px; }
+
+  /* ── kasavu hairline (signature motif: gold thread of a Kerala mundu) ──── */
+  .kasavu { height: 2px; background: linear-gradient(90deg, transparent, var(--brass) 20%, #F7E4B0 50%, var(--brass) 80%, transparent); opacity: 0.5; margin: 6px 0; border-radius: 2px; }
+
+  /* ── Design-language reference ─────────────────────────────────────────── */
+  .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  @media (max-width: 920px){ .ref-grid { grid-template-columns: 1fr; } }
+  .ref-card { background: var(--d-surface); border: 1px solid var(--d-border); border-radius: 18px; padding: 22px; }
+  .ref-card h3 { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--d-muted); margin-bottom: 16px; font-weight: 700; }
+  .ref-card.light { background: var(--l-surface); }
+  .ref-card.light h3 { color: var(--l-muted); }
+
+  .swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+  .sw { width: 78px; }
+  .sw .chip { height: 50px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); }
+  .sw .nm { font-size: 10.5px; color: var(--d-sage); margin-top: 6px; font-weight: 600; }
+  .sw .hx { font-size: 9.5px; color: var(--d-muted); font-family: ui-monospace, monospace; }
+  .ref-card.light .sw .nm { color: var(--l-ink2); }
+  .ref-card.light .sw .hx { color: var(--l-muted); }
+  .ref-card.light .sw .chip { border: 1px solid rgba(0,0,0,0.10); }
+
+  .type-row { display:flex; align-items:baseline; gap:14px; padding: 9px 0; border-bottom: 1px solid var(--d-border2); }
+  .type-row:last-child { border-bottom: none; }
+  .type-row .lbl { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--d-muted); width: 96px; flex-shrink:0; }
+
+  /* ── Phone frames ──────────────────────────────────────────────────────── */
+  .rail { display: flex; gap: 30px; flex-wrap: wrap; }
+  .device { width: 300px; }
+  .device > .cap { font-size: 12px; color: var(--d-sage); margin-top: 14px; text-align: center; line-height: 1.5; }
+  .device > .cap b { color: var(--d-cream); font-weight: 700; display:block; font-size: 13px; }
+  .device > .cap .maps { color: var(--brass); font-family: ui-monospace, monospace; font-size: 10.5px; }
+
+  .phone {
+    width: 300px; height: 640px; border-radius: 40px; overflow: hidden;
+    border: 7px solid #161a18; position: relative;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.03);
+    display: flex; flex-direction: column;
+  }
+  .phone::before {
+    content:""; position: absolute; top: 9px; left: 50%; transform: translateX(-50%);
+    width: 92px; height: 22px; background: #0a0a0a; border-radius: 14px; z-index: 50;
+  }
+  .phone.dark { background: var(--d-bg); }
+  .phone.light { background: var(--l-bg); }
+
+  .statusbar { height: 40px; padding: 13px 24px 0; display:flex; justify-content: space-between; font-size: 11px; font-weight: 700; flex-shrink:0; }
+  .phone.dark .statusbar { color: var(--d-cream); }
+  .phone.light .statusbar { color: var(--l-ink); }
+  .statusbar .dots { letter-spacing: 1px; }
+
+  .screen { flex:1; display:flex; flex-direction: column; overflow: hidden; position: relative; }
+
+  /* ===== HOME (dark) ====================================================== */
+  .home { flex:1; display:flex; flex-direction:column; padding: 4px 22px 16px; position: relative; }
+  .home.dark::after {
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:
+      radial-gradient(circle 220px at 82% 12%, rgba(227,185,100,0.10), transparent 70%),
+      radial-gradient(circle 240px at 10% 86%, rgba(31,107,79,0.16), transparent 72%);
+  }
+  .home .topbar { display:flex; justify-content: space-between; align-items:center; padding: 6px 0; z-index:2; }
+  .home .premium-pill { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color: var(--brass);
+    background: rgba(227,185,100,0.14); padding: 5px 11px; border-radius: 20px; }
+  .home .gear { color: var(--d-muted); font-size:18px; }
+  .phone.light .home .gear { color: var(--l-muted); }
+
+  .home .hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; z-index:2; }
+
+  /* brass lamp logo */
+  .lamp { width: 60px; height: 60px; position: relative; display:grid; place-items:center; margin-bottom: 14px; }
+  .lamp .glow { position:absolute; inset:-8px; border-radius:50%; background: radial-gradient(circle, var(--brass-glow), transparent 68%); filter: blur(6px); }
+  .lamp .disc { width: 54px; height: 54px; border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, #F4D89B, var(--brass) 52%, var(--brass-dim));
+    display:grid; place-items:center; box-shadow: 0 4px 16px rgba(227,185,100,0.35), inset 0 -2px 6px rgba(120,80,10,0.4); }
+  .lamp .disc span { font-size: 26px; }
+
+  .namaskaram { font-family: var(--ml); color: var(--brass); font-size: 18px; margin-bottom: 2px; }
+  .home .welcome { font-size: 27px; font-weight: 800; letter-spacing: -0.6px; }
+  .phone.dark .home .welcome { color: var(--d-cream); }
+  .phone.light .home .welcome { color: var(--l-ink); }
+  .home .accent { font-family: var(--serif); font-style: italic; font-size: 34px; line-height:1.05; letter-spacing:-0.5px; }
+  .phone.dark .home .accent { color: #F0D08A; }
+  .phone.light .home .accent { color: var(--green-pri); }
+  .home .sub { font-size: 13px; margin-top: 8px; }
+  .phone.dark .home .sub { color: var(--d-sage); }
+  .phone.light .home .sub { color: var(--l-ink2); }
+
+  .online-chip { display:inline-flex; align-items:center; gap:7px; margin-top:14px; padding:6px 13px; border-radius:20px;
+    font-size:11.5px; font-weight:600; }
+  .phone.dark .online-chip { background: rgba(54,181,154,0.12); color: var(--teal); }
+  .phone.light .online-chip { background: rgba(31,143,118,0.14); color: var(--teal-l); }
+  .online-chip .ld { width:7px; height:7px; border-radius:50%; background: var(--teal); box-shadow:0 0 0 0 rgba(54,181,154,0.6); animation: ping 2s infinite; }
+  @keyframes ping { 0%{box-shadow:0 0 0 0 rgba(54,181,154,0.55);} 70%{box-shadow:0 0 0 7px rgba(54,181,154,0);} 100%{box-shadow:0 0 0 0 rgba(54,181,154,0);} }
+
+  .diaspora { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 14px; }
+  .phone.dark .diaspora { color: var(--d-muted); }
+  .phone.light .diaspora { color: var(--l-muted); }
+
+  .cta { margin-top: 18px; width: 100%; padding: 16px; border-radius: 26px; text-align:center;
+    font-size: 15px; font-weight: 800; letter-spacing: 0.2px; color: #2A1C00;
+    background: linear-gradient(135deg, #F4D89B, var(--brass) 55%, var(--brass-dim));
+    box-shadow: 0 8px 24px rgba(227,185,100,0.30); cursor: pointer; }
+  .cta .sm { font-weight: 600; }
+
+  .pcard { width:100%; margin-top: 14px; border-radius: 18px; padding: 16px;
+    background: linear-gradient(135deg, var(--d-elev), #14241B 60%, var(--d-elev));
+    border: 1px solid rgba(227,185,100,0.30); text-align:left; }
+  .phone.light .pcard { background: linear-gradient(135deg,#FFF, #F6F0E0); border:1px solid rgba(169,128,47,0.35); }
+  .pcard .pt { display:flex; align-items:center; gap:7px; font-size:14px; font-weight:800; color: var(--brass); }
+  .phone.light .pcard .pt { color: var(--brass-l); }
+  .pcard .pd { font-size:11.5px; line-height:1.5; margin-top:7px; }
+  .phone.dark .pcard .pd { color: var(--d-sage); }
+  .phone.light .pcard .pd { color: var(--l-ink2); }
+  .pcard .pr { display:flex; justify-content: space-between; align-items:center; margin-top:12px; }
+  .pcard .price { font-size:13px; font-weight:700; }
+  .phone.dark .pcard .price { color: var(--d-cream); }
+  .phone.light .pcard .price { color: var(--l-ink); }
+  .pcard .upg { font-size:12px; font-weight:800; color:#2A1C00; background: linear-gradient(90deg,var(--brass),var(--brass-dim)); padding:7px 16px; border-radius:18px; }
+
+  /* ===== CONNECTING / WAITING ============================================ */
+  .connect { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 0; position:relative; overflow:hidden;
+    background: radial-gradient(ellipse 70% 50% at 50% 38%, rgba(31,107,79,0.18), transparent 70%); }
+  /* faint globe latitude arcs — the "Malayalis everywhere" motif */
+  .connect .globe { position:absolute; top:50%; left:50%; width: 360px; height: 360px; transform: translate(-50%,-58%); pointer-events:none; opacity:0.5; }
+  .connect .globe i { position:absolute; border:1px solid rgba(54,181,154,0.16); border-radius:50%; top:50%; left:50%; transform: translate(-50%,-50%); }
+
+  .corewrap { position: relative; width: 230px; height: 230px; display:grid; place-items:center; }
+  .ring { position:absolute; width: 110px; height:110px; border-radius:50%; border:1px solid rgba(227,185,100,0.45); top:50%; left:50%; margin:-55px 0 0 -55px; animation: expand 2.6s linear infinite; }
+  .ring.r2 { animation-delay: 0.86s; } .ring.r3 { animation-delay: 1.73s; }
+  @keyframes expand { 0%{transform:scale(1);opacity:.55;} 100%{transform:scale(2.2);opacity:0;} }
+  .core-glow { position:absolute; width:170px; height:170px; border-radius:50%; background: radial-gradient(circle, var(--brass-glow), transparent 66%); filter: blur(14px); animation: breathe 1.4s ease-in-out infinite alternate; }
+  @keyframes breathe { from{opacity:.45; transform:scale(.96);} to{opacity:.8; transform:scale(1.06);} }
+  .core { width: 104px; height:104px; border-radius:50%; display:grid; place-items:center; position:relative;
+    background: radial-gradient(circle at 38% 30%, #F6DFA0, var(--brass) 50%, var(--brass-dim));
+    box-shadow: 0 10px 30px rgba(227,185,100,0.4), inset 0 -3px 10px rgba(120,80,10,0.35);
+    border: 2px solid rgba(255,255,255,0.18); animation: breathe2 1.4s ease-in-out infinite alternate; }
+  @keyframes breathe2 { from{transform:scale(.95);} to{transform:scale(1.06);} }
+  .core span { font-size: 40px; }
+
+  /* orbiting Malayalis (avatars) */
+  .orbit { position:absolute; width: 210px; height:210px; animation: spin 9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .av { position:absolute; width: 40px; height:40px; border-radius:50%; display:grid; place-items:center; font-size:18px;
+    border:1.5px solid; }
+  .av.a { top:-6px; left:50%; margin-left:-20px; background: rgba(54,181,154,0.16); border-color: rgba(54,181,154,0.5); animation: upr 9s linear infinite; }
+  .av.b { bottom:8px; right:6px; background: rgba(227,185,100,0.16); border-color: rgba(227,185,100,0.5); animation: upr 9s linear infinite; }
+  .av.c { bottom:8px; left:6px; background: rgba(217,138,91,0.16); border-color: rgba(217,138,91,0.5); animation: upr 9s linear infinite; }
+  @keyframes upr { to { transform: rotate(-360deg); } } /* keep emoji upright */
+
+  .connect .head { margin-top: 30px; font-size: 21px; font-weight: 800; color: var(--d-cream); letter-spacing:-0.3px; z-index:2; }
+  .connect .head-ac { font-family: var(--serif); font-style: italic; font-size: 25px; color:#F0D08A; z-index:2; letter-spacing:-0.3px; }
+  .connect .status { margin-top: 12px; font-size: 13px; color: var(--d-sage); z-index:2; min-height: 18px; }
+  .connect .status .typed { border-right: 2px solid var(--teal); padding-right: 3px; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50%{ border-color: transparent; } }
+  .connect .cancel { margin-top: 46px; font-size:13px; color: var(--d-muted); border:1px solid var(--d-border); border-radius: 22px; padding: 8px 24px; z-index:2; }
+
+  /* ===== CHAT ============================================================= */
+  .chat { flex:1; display:flex; flex-direction:column; min-height:0; }
+  .chat .cbar { display:flex; align-items:center; gap:8px; padding: 8px 10px; flex-shrink:0; }
+  .phone.dark .chat .cbar { background: rgba(18,32,25,0.95); border-bottom:1px solid var(--d-border2); }
+  .phone.light .chat .cbar { background: var(--l-surface); border-bottom:1px solid var(--l-border2); }
+  .chat .back { font-size: 20px; }
+  .phone.dark .chat .back { color: var(--d-sage); } .phone.light .chat .back { color: var(--l-ink2); }
+  .chat .who { flex:1; }
+  .chat .who .nm { font-size: 14.5px; font-weight: 700; display:flex; align-items:center; gap:6px; }
+  .phone.dark .chat .who .nm { color: var(--d-cream); } .phone.light .chat .who .nm { color: var(--l-ink); }
+  .chat .who .badge { font-size:8.5px; font-weight:800; letter-spacing:.3px; color: var(--brass); background: rgba(227,185,100,0.15); padding:2px 6px; border-radius:6px; }
+  .chat .who .st { font-size: 11px; color: var(--teal); display:flex; align-items:center; gap:5px; margin-top:1px; }
+  .chat .who .st::before { content:""; width:6px; height:6px; border-radius:50%; background: var(--teal); }
+  .chat .more { font-size: 20px; }
+  .phone.dark .chat .more { color: var(--d-sage); } .phone.light .chat .more { color: var(--l-ink2); }
+
+  .conn-strip { text-align:center; font-size: 11.5px; padding: 7px 14px; }
+  .phone.dark .conn-strip { background: rgba(227,185,100,0.08); color: var(--brass); }
+  .phone.light .conn-strip { background: rgba(169,128,47,0.10); color: var(--brass-l); }
+
+  .msgs { flex:1; overflow:hidden; padding: 10px 12px; display:flex; flex-direction:column; gap: 7px; min-height:0; }
+  .day { align-self:center; font-size:10px; letter-spacing:.4px; padding:3px 12px; border-radius:14px; }
+  .phone.dark .day { background: rgba(54,181,154,0.10); color: var(--d-sage); border:1px solid rgba(54,181,154,0.18); }
+  .phone.light .day { background: rgba(31,143,118,0.10); color: var(--l-ink2); border:1px solid rgba(31,143,118,0.18); }
+
+  .b { max-width: 78%; padding: 9px 13px; font-size: 13.5px; line-height: 1.45; border-radius: 17px; position: relative; }
+  .b .t { font-size: 9.5px; margin-top: 4px; opacity: .7; text-align: right; }
+  .b.in { align-self:flex-start; border-bottom-left-radius: 5px; }
+  .b.out { align-self:flex-end; border-bottom-right-radius: 5px; color: #EAF5EF; background: linear-gradient(135deg, var(--teal-dim), var(--teal-deep)); }
+  .b.out .t { color: rgba(234,245,239,0.8); }
+  .phone.dark .b.in { background: rgba(242,236,221,0.07); border:1px solid rgba(242,236,221,0.08); color: var(--d-cream); }
+  .phone.dark .b.in .t { color: var(--d-muted); }
+  .phone.light .b.in { background: var(--l-surface); border:1px solid var(--l-border2); color: var(--l-ink); box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+  .phone.light .b.in .t { color: var(--l-muted); }
+
+  .react { position:absolute; bottom:-11px; right:8px; background: var(--d-elev); border:1px solid var(--d-border); border-radius:12px; font-size:10px; padding:2px 6px; display:flex; gap:3px; align-items:center; }
+  .phone.light .react { background:#fff; border:1px solid var(--l-border); }
+  .react .ct { color: var(--teal); font-weight:700; }
+
+  .ghost { align-self:flex-start; max-width:78%; border-radius:17px; border-bottom-left-radius:5px; padding: 8px 12px; }
+  .phone.dark .ghost { background: rgba(242,236,221,0.05); border:1px solid rgba(54,181,154,0.30); }
+  .phone.light .ghost { background: var(--l-elev); border:1px solid rgba(31,143,118,0.30); }
+  .ghost .lv { font-size:8px; font-weight:800; letter-spacing:1px; color: var(--teal); display:flex; align-items:center; gap:4px; }
+  .ghost .lv::before { content:""; width:5px; height:5px; border-radius:50%; background: var(--teal); animation: breathe 1s infinite alternate; }
+  .ghost .gt { font-size:13px; font-style: italic; margin-top:3px; }
+  .phone.dark .ghost .gt { color: rgba(242,236,221,0.8); } .phone.light .ghost .gt { color: var(--l-ink2); }
+
+  .composer { display:flex; align-items:center; gap:8px; padding: 9px 10px; flex-shrink:0; }
+  .phone.dark .composer { background: var(--d-surface); border-top:1px solid var(--d-border2); }
+  .phone.light .composer { background: var(--l-surface); border-top:1px solid var(--l-border2); }
+  .composer .plus, .composer .send { width:38px; height:38px; border-radius:50%; display:grid; place-items:center; flex-shrink:0; font-size:18px; }
+  .phone.dark .composer .plus { background: var(--d-elev); border:1px solid var(--d-border); color: var(--d-sage); }
+  .phone.light .composer .plus { background: var(--l-elev); border:1px solid var(--l-border); color: var(--l-ink2); }
+  .composer .field { flex:1; height:38px; border-radius:20px; display:flex; align-items:center; padding: 0 15px; font-size:13px; }
+  .phone.dark .composer .field { background: var(--d-elev); color: var(--d-muted); }
+  .phone.light .composer .field { background: var(--l-elev); color: var(--l-muted); }
+  .composer .send { background: linear-gradient(135deg, #F4D89B, var(--brass) 60%, var(--brass-dim)); color:#2A1C00; box-shadow: 0 4px 12px rgba(227,185,100,0.3); }
+
+  /* chat-ended */
+  .ended { padding: 16px; display:flex; flex-direction:column; align-items:center; gap:12px; flex-shrink:0; }
+  .phone.dark .ended { background: var(--d-surface); border-top:1px solid var(--d-border2); }
+  .phone.light .ended { background: var(--l-surface); border-top:1px solid var(--l-border2); }
+  .ended .sys { font-size:11px; padding:5px 14px; border-radius:14px; }
+  .phone.dark .ended .sys { background: rgba(54,181,154,0.10); color: var(--d-sage); border:1px solid rgba(54,181,154,0.2); }
+  .phone.light .ended .sys { background: rgba(31,143,118,0.10); color: var(--l-ink2); border:1px solid rgba(31,143,118,0.2); }
+  .ended .again { width:100%; text-align:center; padding:14px; border-radius:24px; font-size:14px; font-weight:800; color:#2A1C00;
+    background: linear-gradient(135deg, #F4D89B, var(--brass) 55%, var(--brass-dim)); box-shadow: 0 8px 20px rgba(227,185,100,0.28); }
+
+  /* ── copy table ────────────────────────────────────────────────────────── */
+  table.copy { width:100%; border-collapse: collapse; font-size: 13.5px; max-width: 1000px; }
+  table.copy th { text-align:left; padding: 12px 16px; font-size:11px; letter-spacing:1px; text-transform:uppercase; color: var(--d-muted); border-bottom: 1px solid var(--d-border); }
+  table.copy td { padding: 13px 16px; border-bottom: 1px solid var(--d-border2); vertical-align: top; line-height:1.5; }
+  table.copy .loc { color: var(--d-muted); font-family: ui-monospace, monospace; font-size: 11.5px; }
+  table.copy .old { color: #E08A7A; }
+  table.copy .old s { opacity: .7; }
+  table.copy .new { color: var(--teal); font-weight: 600; }
+  table.copy tr:hover td { background: rgba(255,255,255,0.015); }
+
+  .legend { display:flex; gap: 20px; flex-wrap:wrap; margin: 4px 0 22px; font-size: 12px; color: var(--d-sage); }
+  .legend span { display:inline-flex; align-items:center; gap:7px; }
+  .legend i { width:12px; height:12px; border-radius:3px; display:inline-block; }
+
+  .foot { max-width:1280px; margin: 10px auto 0; padding: 24px 40px; color: var(--d-muted); font-size: 13px; line-height:1.7; }
+  .foot b { color: var(--brass); }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <div class="eyebrow">Visual redesign · mockup for approval</div>
+  <h1>A connection app for Malayalis <span class="ml">എവിടെയും</span></h1>
+  <div class="tagline">Kerala-rooted, worldwide-warm.</div>
+  <p class="lead">
+    This is a <b>cosmetic / styling pass only</b> — no features, logic, routing, or component structure change.
+    The direction nods to Kerala through <b>light and warmth</b> (a brass <i>nilavilakku</i> glow, the gold
+    <i>kasavu</i> thread, backwater greens, kasavu-cream surfaces) rather than literal motifs like houseboats or
+    elephants. The connection moment uses a <b>brass lamp core orbited by people</b> on faint globe arcs — a quiet
+    "Malayalis everywhere" cue for the diaspora. Both <b>dark</b> and <b>light</b> modes are shown since the app is
+    used at every hour, in every timezone.
+  </p>
+  <div class="note">
+    <b>Open question for you:</b> the app is currently branded <i>“StrangerChat”</i> and addresses the user as
+    <i>“stranger.”</i> For a Malayali-only app I’ve softened this to <i>“Anonymous Malayali”</i> and a warm
+    <i>Namaskaram</i> greeting in the mockup. I did <b>not</b> rename the app itself — tell me if you want a new
+    wordmark, or to keep “StrangerChat.”
+  </div>
+</header>
+
+<!-- ── DESIGN LANGUAGE ───────────────────────────────────────────────────── -->
+<section class="block">
+  <div class="sec-title"><span class="num">01</span><h2>Design language</h2></div>
+  <p class="sec-desc">Palette is split by role so it never feels busy: <b>brass/gold</b> = brand, primary CTA, the lamp, the kasavu thread; <b>teal-green</b> = connection, live status, your own messages; <b>terracotta</b> used sparingly. Type pairs a clean Latin UI face (Inter) with a serif-italic for emotional accents, and a subtle Malayalam face (Manjari) for the logo / greeting only.</p>
+  <div class="ref-grid">
+    <div class="ref-card">
+      <h3>Dark mode — Backwaters at night</h3>
+      <div class="swatches">
+        <div class="sw"><div class="chip" style="background:#0A140F"></div><div class="nm">Base</div><div class="hx">#0A140F</div></div>
+        <div class="sw"><div class="chip" style="background:#122019"></div><div class="nm">Surface</div><div class="hx">#122019</div></div>
+        <div class="sw"><div class="chip" style="background:#E3B964"></div><div class="nm">Brass</div><div class="hx">#E3B964</div></div>
+        <div class="sw"><div class="chip" style="background:#36B59A"></div><div class="nm">Teal</div><div class="hx">#36B59A</div></div>
+        <div class="sw"><div class="chip" style="background:#1F6B4F"></div><div class="nm">Palm</div><div class="hx">#1F6B4F</div></div>
+        <div class="sw"><div class="chip" style="background:#D98A5B"></div><div class="nm">Terracotta</div><div class="hx">#D98A5B</div></div>
+        <div class="sw"><div class="chip" style="background:#F2ECDD"></div><div class="nm">Cream text</div><div class="hx">#F2ECDD</div></div>
+      </div>
+    </div>
+    <div class="ref-card light">
+      <h3>Light mode — Kasavu cream &amp; palm</h3>
+      <div class="swatches">
+        <div class="sw"><div class="chip" style="background:#F6F1E5"></div><div class="nm" style="color:#46584C">Base</div><div class="hx" style="color:#7E8A7C">#F6F1E5</div></div>
+        <div class="sw"><div class="chip" style="background:#FFFFFF"></div><div class="nm" style="color:#46584C">Surface</div><div class="hx" style="color:#7E8A7C">#FFFFFF</div></div>
+        <div class="sw"><div class="chip" style="background:#1C6B4E"></div><div class="nm" style="color:#46584C">Palm</div><div class="hx" style="color:#7E8A7C">#1C6B4E</div></div>
+        <div class="sw"><div class="chip" style="background:#A9802F"></div><div class="nm" style="color:#46584C">Brass</div><div class="hx" style="color:#7E8A7C">#A9802F</div></div>
+        <div class="sw"><div class="chip" style="background:#1F8F76"></div><div class="nm" style="color:#46584C">Teal</div><div class="hx" style="color:#7E8A7C">#1F8F76</div></div>
+        <div class="sw"><div class="chip" style="background:#BF6233"></div><div class="nm" style="color:#46584C">Terracotta</div><div class="hx" style="color:#7E8A7C">#BF6233</div></div>
+        <div class="sw"><div class="chip" style="background:#16251C"></div><div class="nm" style="color:#46584C">Ink text</div><div class="hx" style="color:#7E8A7C">#16251C</div></div>
+      </div>
+    </div>
+    <div class="ref-card">
+      <h3>Typography</h3>
+      <div class="type-row"><span class="lbl">Logo / accent</span><span style="font-family:var(--ml);color:var(--brass);font-size:22px;">നമസ്കാരം · കൂട്ട്</span></div>
+      <div class="type-row"><span class="lbl">Display</span><span style="font-family:var(--serif);font-style:italic;font-size:30px;color:#F0D08A;">interesting</span></div>
+      <div class="type-row"><span class="lbl">Title</span><span style="font-size:22px;font-weight:800;letter-spacing:-0.4px;">Welcome back</span></div>
+      <div class="type-row"><span class="lbl">Body</span><span style="font-size:15px;">Someone interesting is online right now.</span></div>
+      <div class="type-row"><span class="lbl">Caption</span><span style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--d-muted);">1,284 Malayalis online</span></div>
+    </div>
+    <div class="ref-card">
+      <h3>Signature — the kasavu thread</h3>
+      <p style="font-size:13px;color:var(--d-sage);line-height:1.6;margin-bottom:14px;">A single fine gold line, borrowed from the gold border of a Kerala mundu/sari. Used as a divider, card edge, and active-tab marker — recognisably Kerala without a single literal graphic.</p>
+      <div class="kasavu"></div>
+      <div class="kasavu" style="margin-top:18px;width:60%;"></div>
+      <div class="kasavu" style="margin-top:18px;width:30%;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── KEY SCREENS (DARK) ────────────────────────────────────────────────── -->
+<section class="block">
+  <div class="sec-title"><span class="num">02</span><h2>Key screens — dark mode</h2></div>
+  <p class="sec-desc">The two states you asked for — <b>connecting / waiting</b> and <b>chat</b> — plus Home, where the “tonight” copy lives. Each frame maps 1:1 onto an existing Compose file so logic stays untouched. The connecting state is animated; let it run for a moment.</p>
+
+  <div class="rail">
+
+    <!-- HOME dark -->
+    <div class="device">
+      <div class="phone dark">
+        <div class="statusbar"><span>9:41</span><span class="dots">5G &nbsp; 100</span></div>
+        <div class="screen">
+          <div class="home dark">
+            <div class="topbar">
+              <span class="premium-pill">✦ Premium</span>
+              <span class="gear">⚙</span>
+            </div>
+            <div class="hero">
+              <div class="lamp"><div class="glow"></div><div class="disc"><span>🪔</span></div></div>
+              <div class="namaskaram">നമസ്കാരം</div>
+              <div class="welcome">Welcome back</div>
+              <div class="accent">a Malayali’s waiting</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="online-chip"><span class="ld"></span> 1,284 Malayalis online</div>
+              <div class="diaspora">Kerala · Gulf · US · UK · 40+ countries</div>
+              <div class="cta">Connect now &nbsp;·&nbsp; <span class="sm">ഇപ്പോൾ</span></div>
+              <div class="pcard">
+                <div class="pt">✦ Premium</div>
+                <div class="pd">Photos &amp; voice notes · React · Live typing preview · Save chats · No ads</div>
+                <div class="pr"><span class="price">$4.99 / month</span><span class="upg">Upgrade</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>Home</b><span class="maps">HomeScreen.kt</span></div>
+    </div>
+
+    <!-- CONNECTING -->
+    <div class="device">
+      <div class="phone dark">
+        <div class="statusbar"><span>9:41</span><span class="dots">5G &nbsp; 100</span></div>
+        <div class="screen">
+          <div class="connect">
+            <div class="globe">
+              <i style="width:120px;height:120px;"></i>
+              <i style="width:210px;height:210px;"></i>
+              <i style="width:300px;height:300px;"></i>
+            </div>
+            <div class="corewrap">
+              <div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div>
+              <div class="core-glow"></div>
+              <div class="core"><span>🪔</span></div>
+              <div class="orbit">
+                <div class="av a">🌊</div>
+                <div class="av b">☕</div>
+                <div class="av c">🎬</div>
+              </div>
+            </div>
+            <div class="head">Finding a Malayali</div>
+            <div class="head-ac">near you, or across the world</div>
+            <div class="status"><span class="typed">Looking for someone interesting</span></div>
+            <div class="cancel">Cancel</div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>Connecting / waiting</b><span class="maps">MatchmakingDialog.kt</span></div>
+    </div>
+
+    <!-- CHAT dark -->
+    <div class="device">
+      <div class="phone dark">
+        <div class="statusbar"><span>9:41</span><span class="dots">5G &nbsp; 100</span></div>
+        <div class="screen">
+          <div class="chat">
+            <div class="cbar">
+              <span class="back">‹</span>
+              <div class="who">
+                <div class="nm">Anonymous Malayali <span class="badge">✦ PREMIUM</span></div>
+                <div class="st">Online</div>
+              </div>
+              <span class="more">⋮</span>
+            </div>
+            <div class="conn-strip">👋 You’re connected to a fellow Malayali — say hi!</div>
+            <div class="msgs">
+              <div class="day">Today</div>
+              <div class="b in">Hey! 🌴 Evideyaa naadu?<div class="t">10:24</div></div>
+              <div class="b out">Thrissur 😄 ningalo?<div class="t">10:24 ✓✓</div></div>
+              <div class="b in">Kochi! But Dubai-l aanu ippo<div class="t">10:25</div>
+                <div class="react">❤️ <span class="ct">1</span></div></div>
+              <div class="b out" style="margin-top:6px;">Pravasi life alle 😅<div class="t">10:25 ✓✓</div></div>
+              <div class="ghost">
+                <div class="lv">TYPING</div>
+                <div class="gt">Adipoli, ente cousin um avide…</div>
+              </div>
+            </div>
+            <div class="composer">
+              <span class="plus">+</span>
+              <span class="field">Message…</span>
+              <span class="send">➤</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>Chat</b><span class="maps">ChatScreen.kt · MessageBubble.kt</span></div>
+    </div>
+
+    <!-- CHAT ENDED dark -->
+    <div class="device">
+      <div class="phone dark">
+        <div class="statusbar"><span>9:41</span><span class="dots">5G &nbsp; 100</span></div>
+        <div class="screen">
+          <div class="chat">
+            <div class="cbar">
+              <span class="back">‹</span>
+              <div class="who"><div class="nm">Anonymous Malayali</div><div class="st" style="color:var(--d-muted);">Chat ended</div></div>
+              <span class="more">⋮</span>
+            </div>
+            <div class="msgs">
+              <div class="day">Today</div>
+              <div class="b in">Pinne kaanaam, take care! 🙏<div class="t">10:31</div></div>
+              <div class="b out">Sherikkum nannayi 😄<div class="t">10:31 ✓✓</div></div>
+            </div>
+            <div class="ended">
+              <span class="sys">Chat has ended</span>
+              <div class="again">Meet another Malayali</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>Chat ended</b><span class="maps">ChatScreen.kt (ended state)</span></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── LIGHT MODE ────────────────────────────────────────────────────────── -->
+<section class="block">
+  <div class="sec-title"><span class="num">03</span><h2>Same screens — light mode</h2></div>
+  <p class="sec-desc">Daytime in any timezone. Kasavu-cream base, palm-green for your own messages and primary actions, brass for accents.</p>
+
+  <div class="rail">
+
+    <!-- HOME light -->
+    <div class="device">
+      <div class="phone light">
+        <div class="statusbar"><span>9:41</span><span class="dots">5G &nbsp; 100</span></div>
+        <div class="screen">
+          <div class="home light">
+            <div class="topbar">
+              <span class="premium-pill" style="color:var(--brass-l);background:rgba(169,128,47,0.14);">✦ Premium</span>
+              <span class="gear">⚙</span>
+            </div>
+            <div class="hero">
+              <div class="lamp"><div class="glow"></div><div class="disc"><span>🪔</span></div></div>
+              <div class="namaskaram" style="color:var(--brass-l);">നമസ്കാരം</div>
+              <div class="welcome">Welcome back</div>
+              <div class="accent">a Malayali’s waiting</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="online-chip"><span class="ld"></span> 1,284 Malayalis online</div>
+              <div class="diaspora">Kerala · Gulf · US · UK · 40+ countries</div>
+              <div class="cta">Connect now &nbsp;·&nbsp; <span class="sm">ഇപ്പോൾ</span></div>
+              <div class="pcard">
+                <div class="pt">✦ Premium</div>
+                <div class="pd">Photos &amp; voice notes · React · Live typing preview · Save chats · No ads</div>
+                <div class="pr"><span class="price">$4.99 / month</span><span class="upg">Upgrade</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>Home — light</b><span class="maps">HomeScreen.kt</span></div>
+    </div>
+
+    <!-- CHAT light -->
+    <div class="device">
+      <div class="phone light">
+        <div class="statusbar"><span>9:41</span><span class="dots">5G &nbsp; 100</span></div>
+        <div class="screen">
+          <div class="chat">
+            <div class="cbar">
+              <span class="back">‹</span>
+              <div class="who">
+                <div class="nm">Anonymous Malayali</div>
+                <div class="st">Online</div>
+              </div>
+              <span class="more">⋮</span>
+            </div>
+            <div class="conn-strip">👋 You’re connected to a fellow Malayali — say hi!</div>
+            <div class="msgs">
+              <div class="day">Today</div>
+              <div class="b in">Helloo 👋 Engane und?<div class="t">2:10</div></div>
+              <div class="b out">Adipoli! Evideya from?<div class="t">2:10 ✓✓</div></div>
+              <div class="b in">London — but veedu Kottayam 🌴<div class="t">2:11</div>
+                <div class="react">😂 <span class="ct">1</span></div></div>
+              <div class="b out" style="margin-top:6px;">Ende, nammal aalukal evideyum und 😎<div class="t">2:11 ✓✓</div></div>
+            </div>
+            <div class="composer">
+              <span class="plus">+</span>
+              <span class="field">Message…</span>
+              <span class="send">➤</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>Chat — light</b><span class="maps">ChatScreen.kt · MessageBubble.kt</span></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── COPY FIXES ────────────────────────────────────────────────────────── -->
+<section class="block">
+  <div class="sec-title"><span class="num">04</span><h2>Copy fixes — time-neutral &amp; on-brand</h2></div>
+  <p class="sec-desc">Every time-of-day assumption found in the app code, made neutral. The “tonight” line you flagged is the first row. All of these are <b>string-only</b> edits — no logic touched.</p>
+  <div class="legend">
+    <span><i style="background:#E08A7A"></i> current</span>
+    <span><i style="background:#36B59A"></i> proposed</span>
+  </div>
+  <table class="copy">
+    <thead><tr><th style="width:24%">Location</th><th style="width:36%">Now</th><th>Proposed</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="loc">HomeScreen.kt:208</td>
+        <td class="old"><s>“Someone interesting is online tonight”</s></td>
+        <td class="new">“Someone interesting is online right now”</td>
+      </tr>
+      <tr>
+        <td class="loc">MatchmakingDialog.kt:67</td>
+        <td class="old"><s>“Scanning the night”</s> <span style="color:var(--d-muted)">(status #1 of 4)</span></td>
+        <td class="new">“Finding a Malayali for you”</td>
+      </tr>
+      <tr>
+        <td class="loc">HomeScreen.kt:192–199</td>
+        <td class="old">“Welcome back,” / “stranger”</td>
+        <td class="new">“നമസ്കാരം” + “Welcome back” / “a Malayali’s waiting”</td>
+      </tr>
+      <tr>
+        <td class="loc">HomeScreen.kt:190</td>
+        <td class="old"><s>// “Good evening, stranger” pattern</s> <span style="color:var(--d-muted)">(code comment)</span></td>
+        <td class="new">Comment updated to drop “evening” — no UI impact</td>
+      </tr>
+      <tr>
+        <td class="loc">ChatScreen.kt:491</td>
+        <td class="old">“You’re connected to a random stranger — say Hi!”</td>
+        <td class="new">“You’re connected to a fellow Malayali — say hi!”</td>
+      </tr>
+      <tr>
+        <td class="loc">ChatScreen.kt:355</td>
+        <td class="old">“Anonymous Stranger”</td>
+        <td class="new">“Anonymous Malayali” <span style="color:var(--d-muted)">(pending your branding call)</span></td>
+      </tr>
+      <tr>
+        <td class="loc">ChatScreen.kt:666</td>
+        <td class="old">“New Stranger”</td>
+        <td class="new">“Meet another Malayali”</td>
+      </tr>
+      <tr>
+        <td class="loc">Splash / Onboarding</td>
+        <td class="old">“Anonymous. Private. Instant.”</td>
+        <td class="new">Keep — already time-neutral (optionally “Kerala-rooted. Anonymous. Instant.”)</td>
+      </tr>
+      <tr>
+        <td class="loc">FcmManager.kt:17</td>
+        <td class="old"><span style="color:var(--d-muted)">“…today’s” — backend timezone comment</span></td>
+        <td class="new"><span style="color:var(--d-muted)">Left as-is — internal logic, not user-facing</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── INVENTORY ─────────────────────────────────────────────────────────── -->
+<section class="block">
+  <div class="sec-title"><span class="num">05</span><h2>Full screen / component inventory</h2></div>
+  <p class="sec-desc">Everything in the UI layer with visuals. Items in <b>bold</b> are mocked above; the rest reuse the same tokens (palette, type, kasavu line, bubble styles) and would be restyled in the implementation step without structural change.</p>
+  <table class="copy">
+    <thead><tr><th style="width:34%">File</th><th>What it renders</th></tr></thead>
+    <tbody>
+      <tr><td class="loc">SplashScreen.kt</td><td>Logo + “StrangerChat” + tagline, pulse loader</td></tr>
+      <tr><td class="loc">OnboardingScreen.kt</td><td>Consent gate (age / privacy / terms), brand header, Continue button</td></tr>
+      <tr><td class="loc"><b>HomeScreen.kt</b></td><td><b>Hero greeting, online count, Connect CTA, premium + rewards cards, ad banner</b></td></tr>
+      <tr><td class="loc"><b>MatchmakingDialog.kt</b></td><td><b>Connecting/waiting — pulsing core, orbit avatars, cycling status, Cancel</b></td></tr>
+      <tr><td class="loc"><b>ChatScreen.kt</b></td><td><b>Top bar, connected strip, message list, composer, chat-ended state, sheets &amp; dialogs</b></td></tr>
+      <tr><td class="loc"><b>MessageBubble.kt</b></td><td><b>In/out bubbles, reactions, reply chips, audio waveform, ghost typing, photo viewer</b></td></tr>
+      <tr><td class="loc">StatusChip.kt</td><td>System chip + online/away chip</td></tr>
+      <tr><td class="loc">PremiumCard.kt</td><td>Home premium card, CyanButton (primary CTA), GoldButton</td></tr>
+      <tr><td class="loc">PremiumScreen.kt</td><td>Full premium / paywall screen</td></tr>
+      <tr><td class="loc">SettingsScreen.kt</td><td>Settings list</td></tr>
+      <tr><td class="loc">SavedChatsScreen.kt</td><td>Saved conversations list (premium)</td></tr>
+      <tr><td class="loc">LockScreen.kt</td><td>App lock / gate</td></tr>
+      <tr><td class="loc">TutorialScreen.kt + tutorial/</td><td>First-run tutorial walkthrough</td></tr>
+      <tr><td class="loc">GifPickerSheet.kt · ReportDialog.kt · LockedMediaButton.kt · AnimatedLoader.kt</td><td>GIF picker, report dialog, locked-media upsell, loaders</td></tr>
+      <tr><td class="loc">theme/ (Color · Type · Theme · Tokens · Brushes · AppType)</td><td>The token layer — where the new palette/gradients actually plug in</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="foot">
+  <div class="kasavu" style="max-width:1200px;margin-bottom:20px;"></div>
+  <b>Next step (after you approve):</b> nothing is touched in the codebase yet. On approval I’ll map these styles onto the
+  existing components — mostly by editing the <b>theme/</b> token files (Color, Brushes, AppType) so the new look
+  propagates, plus the handful of string + per-screen tweaks shown above. Component names, props, and signatures stay
+  exactly as they are. &nbsp;·&nbsp; Tell me your call on the <b>branding question</b> (keep “StrangerChat” vs. a new
+  Malayali wordmark) and whether you want the light theme actually wired up or kept dark-only for now.
+</div>
+
+</body>
+</html>

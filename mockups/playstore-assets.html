@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Random Malayali — Play Store assets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&family=Manjari:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* PALETTE — Random Malayali (green + brass) */
+  :root {
+    --bg:#0A1410; --bg2:#0C1A14; --surface:#11201A; --elev:#18281F;
+    --border:rgba(238,236,222,0.10);
+    --green:#2FB68C; --green-dp:#1C6B4F; --green-dim:#268E6E;
+    --brass:#E3B964; --brass-dp:#C99C48; --brass-gl:rgba(227,185,100,0.30);
+    --coral:#E8765A; --cream:#F1EDDD; --sage:#9FAE9E; --muted:#66766A;
+    --safe-bg:rgba(47,182,140,0.12);
+    --grad:linear-gradient(135deg,var(--green),var(--green-dp));
+    --grad-brass:linear-gradient(135deg,#F4D89B,var(--brass) 55%,var(--brass-dp));
+    --ml:'Manjari','Noto Sans Malayalam',sans-serif;
+    --serif:'Instrument Serif',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:#04090A;
+    color:var(--cream);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:40px;
+  }
+  header.page{max-width:1500px;margin:0 auto 18px;}
+  header h1{font-size:32px;font-weight:900;letter-spacing:-0.6px;}
+  header h1 .ml{font-family:var(--ml);color:var(--brass);font-weight:700;margin-left:6px;}
+  header p{color:var(--sage);font-size:14px;line-height:1.6;max-width:880px;margin-top:10px;}
+  header p b{color:var(--cream);}
+  .note{margin-top:14px;background:rgba(227,185,100,0.06);border:1px solid rgba(227,185,100,0.2);border-left:3px solid var(--brass);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--sage);max-width:880px;line-height:1.55;}
+  .note code{font-family:ui-monospace,monospace;background:#0e1a14;padding:2px 6px;border-radius:4px;color:var(--green);font-size:12px;}
+
+  section.block{max-width:1500px;margin:0 auto;padding:28px 0;border-top:1px solid #0c1612;}
+  section h2{font-size:20px;font-weight:800;color:var(--brass);margin-bottom:6px;}
+  section .lead{color:var(--sage);font-size:13.5px;line-height:1.6;max-width:880px;margin-bottom:22px;}
+
+  .grid{display:flex;gap:22px;flex-wrap:wrap;}
+  .item{display:flex;flex-direction:column;gap:8px;}
+  .item .lbl{font-size:11.5px;font-weight:700;color:var(--brass);letter-spacing:0.4px;}
+  .item .lbl b{display:block;color:var(--cream);font-weight:800;font-size:13px;margin-bottom:1px;}
+
+  /* === SCREENSHOT (1080×1920) — scaled preview === */
+  .shot-slot{width:297px;height:528px;overflow:hidden;border-radius:14px;box-shadow:0 18px 40px rgba(0,0,0,0.55);background:#000;}
+  .shot{
+    width:1080px;height:1920px;
+    transform:scale(0.275);transform-origin:top left;
+    position:relative;display:flex;flex-direction:column;align-items:stretch;
+  }
+
+  /* shot backgrounds */
+  .bg-green{background:radial-gradient(ellipse 70% 50% at 50% 20%,rgba(47,182,140,0.20),transparent 65%),linear-gradient(180deg,#0A1410,#0C1A14 60%,#08120E);}
+  .bg-deep{background:radial-gradient(ellipse 70% 50% at 80% 8%,rgba(227,185,100,0.12),transparent 60%),radial-gradient(ellipse 60% 40% at 20% 88%,rgba(47,182,140,0.16),transparent 65%),#080F0B;}
+  .bg-brass{background:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(227,185,100,0.18),transparent 65%),linear-gradient(180deg,#0C1A14,#0A1410);}
+  .bg-coral{background:radial-gradient(ellipse 70% 50% at 50% 30%,rgba(232,118,90,0.13),transparent 65%),linear-gradient(180deg,#0C1A14,#0A1410);}
+
+  /* headline strips */
+  .strip-top{padding:120px 80px 36px;text-align:center;}
+  .strip-top .h{font-size:84px;font-weight:900;line-height:1.05;letter-spacing:-1.6px;color:var(--cream);}
+  .strip-top .h.sm{font-size:72px;}
+  .strip-top .h .ac{font-family:var(--serif);font-style:italic;color:var(--brass);font-weight:400;}
+  .strip-top .h .br{color:var(--brass);}
+  .strip-top .sub{font-size:32px;color:var(--sage);margin-top:18px;line-height:1.4;font-weight:500;}
+  .strip-bot{padding:36px 80px 100px;text-align:center;}
+  .strip-bot .sub{font-size:34px;color:var(--sage);line-height:1.4;font-weight:500;}
+  .strip-bot .sub .br{color:var(--brass);font-weight:700;}
+
+  /* big-number overlay (for variant 1B) */
+  .num-strip{padding:90px 80px 16px;text-align:center;}
+  .num-strip .n{font-size:160px;font-weight:900;color:var(--green);letter-spacing:-4px;line-height:1;text-shadow:0 0 50px rgba(47,182,140,0.4);}
+  .num-strip .nl{font-size:30px;letter-spacing:6px;text-transform:uppercase;color:var(--sage);font-weight:700;margin-top:8px;}
+
+  /* === Phone frame inside shot === */
+  .phn{
+    margin:0 auto;width:680px;height:1320px;border-radius:62px;
+    border:10px solid #14201A;background:var(--bg);position:relative;overflow:hidden;
+    box-shadow:0 40px 90px rgba(0,0,0,0.7),inset 0 0 0 2px rgba(255,255,255,0.04);
+  }
+  .phn::before{content:"";position:absolute;top:14px;left:50%;transform:translateX(-50%);width:170px;height:34px;background:#000;border-radius:22px;z-index:50;}
+  .phn-screen{position:absolute;inset:0;display:flex;flex-direction:column;}
+
+  .statusbar{height:70px;padding:30px 38px 0;display:flex;justify-content:space-between;font-size:18px;font-weight:700;color:var(--cream);flex-shrink:0;}
+
+  /* Brand mark — chat bubble + മ */
+  .mark{
+    border-radius:32px 32px 32px 10px;
+    background:var(--grad);
+    display:grid;place-items:center;
+    box-shadow:0 12px 30px rgba(47,182,140,0.4);
+    border:2px solid rgba(255,255,255,0.14);
+  }
+  .mark span{font-family:var(--ml);font-weight:700;color:var(--cream);line-height:1;}
+  .mark.s{width:108px;height:108px;} .mark.s span{font-size:60px;}
+  .mark.m{width:150px;height:150px;border-radius:46px 46px 46px 14px;} .mark.m span{font-size:84px;}
+  .mark.lg{width:200px;height:200px;border-radius:60px 60px 60px 18px;} .mark.lg span{font-size:112px;}
+  .mark.xl{width:280px;height:280px;border-radius:84px 84px 84px 24px;} .mark.xl span{font-size:158px;}
+
+  /* === HOME mini === */
+  .home-mini{flex:1;display:flex;flex-direction:column;padding:0 56px 40px;position:relative;
+    background:radial-gradient(circle 280px at 50% 18%,rgba(47,182,140,0.10),transparent 65%);}
+  .home-mini .top{display:flex;justify-content:space-between;align-items:center;padding:10px 0;}
+  .home-mini .gear{color:var(--muted);font-size:36px;}
+  .home-mini .premium-pill{display:inline-flex;align-items:center;gap:6px;font-size:22px;font-weight:700;color:var(--brass);background:rgba(227,185,100,0.16);padding:8px 18px;border-radius:30px;}
+  .home-mini .hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:0;}
+  .home-mini .lamp{margin-bottom:18px;}
+  .home-mini .welcome{font-size:52px;font-weight:800;letter-spacing:-1px;color:var(--cream);}
+  .home-mini .accent{font-family:var(--serif);font-style:italic;font-size:72px;color:var(--brass);line-height:1.0;letter-spacing:-1px;margin-top:2px;}
+  .home-mini .sub{font-size:26px;color:var(--sage);margin-top:14px;}
+  .home-mini .presence{display:inline-flex;align-items:center;gap:14px;margin-top:24px;padding:12px 26px;border-radius:40px;background:var(--safe-bg);font-size:23px;font-weight:600;color:var(--green);}
+  .home-mini .presence.lg{font-size:28px;padding:16px 32px;}
+  .home-mini .presence .dot{width:16px;height:16px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green);}
+  .home-mini .diaspora{font-size:18px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-top:18px;font-weight:600;}
+  .home-mini .cta{margin-top:34px;width:100%;padding:30px;border-radius:54px;text-align:center;font-size:32px;font-weight:800;color:#06140E;background:var(--grad);box-shadow:0 18px 40px rgba(47,182,140,0.34);display:flex;align-items:center;justify-content:center;gap:14px;}
+  .home-mini .cta .ic{font-size:30px;}
+  .home-mini .pcard{width:100%;margin-top:30px;border-radius:36px;padding:28px;background:linear-gradient(135deg,var(--elev),#1A2A1A 50%,var(--elev));border:2px solid rgba(227,185,100,0.45);text-align:left;}
+  .home-mini .pcard .pt{display:flex;align-items:center;gap:10px;font-size:26px;font-weight:800;color:var(--brass);}
+  .home-mini .pcard .pd{font-size:19px;line-height:1.4;color:var(--sage);margin-top:10px;}
+  .home-mini .pcard .pr{display:flex;justify-content:space-between;align-items:center;margin-top:18px;}
+  .home-mini .pcard .price{font-size:24px;font-weight:700;color:var(--cream);}
+  .home-mini .pcard .upg{font-size:22px;font-weight:800;color:#3a2a00;background:var(--grad-brass);padding:14px 30px;border-radius:36px;}
+
+  /* === MATCH mini === */
+  .match-mini{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 56px 60px;
+    background:radial-gradient(ellipse 70% 50% at 50% 40%,rgba(31,107,79,0.20),transparent 65%);}
+  .core-wrap{position:relative;width:420px;height:420px;display:grid;place-items:center;}
+  .ring{position:absolute;width:230px;height:230px;border-radius:50%;border:2px solid rgba(47,182,140,0.5);top:50%;left:50%;margin:-115px 0 0 -115px;}
+  .ring.r2{transform:scale(1.45);opacity:0.36;}
+  .ring.r3{transform:scale(1.92);opacity:0.18;}
+  .core-glow-l{position:absolute;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,var(--brass-gl),transparent 66%);filter:blur(32px);}
+  .core{width:210px;height:210px;border-radius:60px 60px 60px 18px;background:var(--grad);display:grid;place-items:center;box-shadow:0 20px 50px rgba(47,182,140,0.42);border:3px solid rgba(255,255,255,0.18);position:relative;}
+  .core span{font-family:var(--ml);font-size:120px;font-weight:700;color:var(--cream);line-height:1;}
+  .orbit-av{position:absolute;width:78px;height:78px;border-radius:50%;display:grid;place-items:center;font-size:36px;border:3px solid;}
+  .orbit-av.a{top:-10px;left:50%;margin-left:-39px;background:var(--safe-bg);border-color:rgba(47,182,140,0.5);}
+  .orbit-av.b{bottom:8px;right:-4px;background:rgba(227,185,100,0.16);border-color:rgba(227,185,100,0.5);}
+  .orbit-av.c{bottom:8px;left:-4px;background:rgba(232,118,90,0.16);border-color:rgba(232,118,90,0.5);}
+  .match-mini .head{margin-top:60px;font-size:46px;font-weight:800;color:var(--cream);}
+  .match-mini .head-ac{font-family:var(--serif);font-style:italic;font-size:50px;color:var(--brass);margin-top:8px;}
+  .match-mini .status{margin-top:24px;font-size:26px;color:var(--sage);}
+  .match-mini .safe{margin-top:40px;font-size:24px;color:var(--green);background:var(--safe-bg);padding:14px 30px;border-radius:36px;font-weight:600;}
+  .match-mini .cancel{margin-top:36px;font-size:24px;color:var(--muted);border:2px solid var(--border);border-radius:40px;padding:14px 40px;}
+
+  /* === CHAT mini === */
+  .chat-mini{flex:1;display:flex;flex-direction:column;min-height:0;}
+  .chat-mini .cbar{display:flex;align-items:center;gap:18px;padding:18px 28px;background:rgba(17,32,26,0.96);border-bottom:1px solid var(--border);flex-shrink:0;}
+  .chat-mini .cbar .back{font-size:42px;color:var(--sage);}
+  .chat-mini .cbar .who{flex:1;}
+  .chat-mini .cbar .who .nm{font-size:30px;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:12px;}
+  .chat-mini .cbar .who .badge{font-size:16px;font-weight:800;color:var(--brass);background:rgba(227,185,100,0.15);padding:4px 12px;border-radius:10px;}
+  .chat-mini .cbar .who .st{font-size:22px;color:var(--green);display:flex;align-items:center;gap:10px;margin-top:4px;}
+  .chat-mini .cbar .who .st::before{content:"●";font-size:16px;}
+  .chat-mini .cbar .more{font-size:42px;color:var(--sage);}
+  .conn-strip{text-align:center;font-size:22px;padding:16px 28px;background:var(--safe-bg);color:var(--green);font-weight:600;}
+  .msgs{flex:1;padding:24px 28px;display:flex;flex-direction:column;gap:14px;overflow:hidden;min-height:0;}
+  .b{max-width:78%;padding:18px 26px;font-size:28px;line-height:1.4;border-radius:36px;}
+  .b .t{font-size:18px;margin-top:6px;opacity:0.7;text-align:right;}
+  .b.in{align-self:flex-start;border-bottom-left-radius:10px;background:rgba(241,237,221,0.07);border:2px solid rgba(241,237,221,0.08);color:var(--cream);}
+  .b.in .t{color:var(--muted);}
+  .b.out{align-self:flex-end;border-bottom-right-radius:10px;background:var(--grad);color:#EAF7F0;}
+  .b.out .t{color:rgba(234,247,240,0.8);}
+  .composer{display:flex;align-items:center;gap:14px;padding:20px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;}
+  .composer .plus,.composer .send{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;font-size:36px;flex-shrink:0;}
+  .composer .plus{background:var(--elev);border:2px solid var(--border);color:var(--sage);}
+  .composer .field{flex:1;height:74px;border-radius:38px;display:flex;align-items:center;padding:0 26px;font-size:24px;background:var(--elev);color:var(--muted);}
+  .composer .send{background:var(--grad);color:#06140E;}
+
+  /* === SPLASH mini === */
+  .splash-mini{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;text-align:center;padding:0 56px;background:radial-gradient(circle 420px at 50% 42%,rgba(47,182,140,0.15),transparent 70%);}
+  .splash-mini .wm{font-size:78px;font-weight:900;letter-spacing:-2px;}
+  .splash-mini .wm .r{color:var(--green);} .splash-mini .wm .m{color:var(--cream);}
+  .splash-mini .tag{font-size:26px;letter-spacing:1.6px;text-transform:uppercase;color:var(--sage);font-weight:700;}
+
+  /* === SAFETY mini (for #7) === */
+  .safe-mini{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 56px;gap:30px;}
+  .safe-mini .icon-c{width:170px;height:170px;border-radius:50%;background:rgba(232,118,90,0.14);display:grid;place-items:center;border:3px solid rgba(232,118,90,0.45);box-shadow:0 0 50px rgba(232,118,90,0.18);}
+  .safe-mini .icon-c span{font-size:78px;}
+  .safe-mini .title{font-size:46px;font-weight:800;color:var(--cream);text-align:center;line-height:1.1;}
+  .safe-mini .desc{font-size:26px;color:var(--sage);text-align:center;line-height:1.4;max-width:520px;}
+  .safe-mini .acts{display:flex;gap:18px;margin-top:14px;}
+  .safe-mini .act{padding:20px 36px;border-radius:38px;font-size:24px;font-weight:700;}
+  .safe-mini .act.r{background:var(--coral);color:#fff;}
+  .safe-mini .act.b{background:var(--surface);border:2px solid var(--border);color:var(--cream);}
+
+  /* === WORLD mini (for #5) === */
+  .world-mini{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 56px;gap:30px;position:relative;}
+  .map{position:relative;width:540px;height:320px;}
+  .map .blob{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(47,182,140,0.10),transparent 70%);border-radius:50%;}
+  .map .ring-faint{position:absolute;inset:0;border:1.5px dashed rgba(159,174,158,0.18);border-radius:50%;}
+  .map .dot{position:absolute;width:22px;height:22px;border-radius:50%;background:var(--brass);box-shadow:0 0 24px var(--brass-gl);}
+  .map .dot.pulse{animation:p 2s infinite;}
+  @keyframes p{0%{box-shadow:0 0 0 0 rgba(227,185,100,0.55);} 70%{box-shadow:0 0 0 18px rgba(227,185,100,0);} 100%{box-shadow:0 0 0 0 rgba(227,185,100,0);}}
+  .map .lbl{position:absolute;font-size:18px;color:var(--sage);letter-spacing:0.5px;font-weight:600;text-transform:uppercase;}
+  .world-mini .head{font-size:46px;font-weight:800;color:var(--cream);text-align:center;line-height:1.1;}
+  .world-mini .head .ac{font-family:var(--serif);font-style:italic;color:var(--brass);font-weight:400;}
+  .world-mini .countries{font-size:22px;color:var(--sage);letter-spacing:2.5px;text-transform:uppercase;font-weight:600;margin-top:6px;}
+
+  /* === Big inline phone overlay variants for shots that show partial phone === */
+
+  /* === FEATURE GRAPHIC (1024×500) === */
+  .fg-grid{display:flex;gap:22px;flex-wrap:wrap;}
+  .fg-slot{width:512px;height:250px;overflow:hidden;border-radius:14px;box-shadow:0 18px 40px rgba(0,0,0,0.55);}
+  .fg{width:1024px;height:500px;transform:scale(0.5);transform-origin:top left;position:relative;display:flex;align-items:center;}
+
+  .fg.bg1{background:radial-gradient(ellipse 50% 80% at 80% 50%,rgba(47,182,140,0.22),transparent 60%),radial-gradient(ellipse 40% 60% at 15% 30%,rgba(227,185,100,0.10),transparent 60%),linear-gradient(135deg,#0A1410,#0C1A14);}
+  .fg.bg2{background:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(227,185,100,0.18),transparent 60%),linear-gradient(180deg,#0C1A14,#0A1410);}
+  .fg.bg3{background:radial-gradient(ellipse 50% 70% at 50% 50%,rgba(31,107,79,0.25),transparent 60%),linear-gradient(135deg,#0C1A14,#0A1410);}
+
+  .fg .left{flex:1;padding:60px 30px 60px 80px;display:flex;flex-direction:column;justify-content:center;gap:24px;}
+  .fg .left .brand{display:flex;align-items:center;gap:20px;}
+  .fg .left .brand .wm{font-size:42px;font-weight:900;letter-spacing:-1px;}
+  .fg .left .brand .wm .r{color:var(--green);} .fg .left .brand .wm .m{color:var(--cream);}
+  .fg .left .h{font-size:72px;font-weight:900;line-height:1.0;letter-spacing:-1.6px;color:var(--cream);}
+  .fg .left .h .ac{font-family:var(--serif);font-style:italic;color:var(--brass);font-weight:400;}
+  .fg .left .h .br{color:var(--brass);}
+  .fg .left .sub{font-size:26px;color:var(--sage);line-height:1.4;font-weight:500;}
+  .fg .right{width:440px;display:flex;align-items:center;justify-content:center;padding-right:60px;}
+
+  /* mini-phone inside FG */
+  .mini-phn{width:280px;height:560px;border-radius:36px;border:6px solid #14201A;background:var(--bg);position:relative;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.6),inset 0 0 0 1px rgba(255,255,255,0.04);}
+  .mini-phn::before{content:"";position:absolute;top:7px;left:50%;transform:translateX(-50%);width:70px;height:14px;background:#000;border-radius:10px;z-index:50;}
+
+  /* Numbers FG */
+  .fg.center{flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:50px 60px;gap:18px;}
+  .fg.center .n{font-size:170px;font-weight:900;color:var(--green);letter-spacing:-5px;line-height:1;text-shadow:0 0 70px rgba(47,182,140,0.45);}
+  .fg.center .nl{font-size:26px;color:var(--sage);letter-spacing:5px;text-transform:uppercase;font-weight:700;}
+  .fg.center .tg{font-size:42px;color:var(--cream);font-weight:800;letter-spacing:-0.5px;line-height:1.1;margin-top:8px;}
+  .fg.center .tg .ac{font-family:var(--serif);font-style:italic;color:var(--brass);font-weight:400;}
+
+  /* World FG */
+  .fg-world{display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:50px;gap:18px;}
+  .fg-world .map{width:540px;height:300px;}
+
+  footer{max-width:1500px;margin:24px auto 0;color:var(--muted);font-size:13px;line-height:1.7;padding:24px 0;border-top:1px solid #0e1a14;}
+  footer b{color:var(--brass);}
+  footer code{font-family:ui-monospace,monospace;background:#0e1a14;padding:2px 6px;border-radius:4px;color:var(--green);font-size:12px;}
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1>Random Malayali — Play Store assets <span class="ml">റാൻഡം മലയാളി</span></h1>
+  <p>
+    <b>13 screenshot variants + 3 feature graphics</b> at exact Play sizes (1080×1920 / 1024×500), shown scaled. Pick one per slot.
+    First screenshot drives ~80% of store CTR — that's why #1 has 3 variants.
+  </p>
+  <div class="note">
+    <b>Export later:</b> Chrome DevTools → device mode → set viewport <code>1080×1920</code> → "Capture screenshot." Or use Puppeteer
+    (<code>page.setViewport({width:1080,height:1920}); page.screenshot()</code>) to batch-export all <code>.shot-slot</code> elements at full resolution.
+    Feature graphic = same flow at <code>1024×500</code>.
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     SCREENSHOT #1 — HERO (3 variants)
+     ════════════════════════════════════════════════════════════════════════ -->
+<section class="block">
+  <h2>Screenshot #1 — Hero (3 variants · pick one)</h2>
+  <p class="lead">This is the biggest CTR lever. All three show the redesigned Home screen — only the headline framing differs: <b>A</b> curiosity, <b>B</b> social proof, <b>C</b> diaspora.</p>
+  <div class="grid">
+
+    <!-- #1A -->
+    <div class="item">
+      <div class="lbl"><b>#1A · Curiosity</b>"Talk to a Malayali"</div>
+      <div class="shot-slot"><div class="shot bg-green">
+        <div class="strip-top"><div class="h">Talk to a<br><span class="ac">random Malayali</span></div></div>
+        <div class="phn"><div class="phn-screen">
+          <div class="statusbar"><span>9:41</span><span>5G&nbsp; 100</span></div>
+          <div class="home-mini">
+            <div class="top"><span class="premium-pill">✦ Premium</span><span class="gear">⚙</span></div>
+            <div class="hero">
+              <div class="mark s lamp"><span>മ</span></div>
+              <div class="welcome">Talk to a</div>
+              <div class="accent">random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="presence"><span class="dot"></span> 1,284 Malayalis online</div>
+              <div class="diaspora">Kerala · Gulf · US · UK · 40+ Countries</div>
+              <div class="cta"><span class="ic">💬</span> Start chatting</div>
+            </div>
+          </div>
+        </div></div>
+        <div class="strip-bot"><div class="sub">Anywhere in the world.</div></div>
+      </div></div>
+    </div>
+
+    <!-- #1B -->
+    <div class="item">
+      <div class="lbl"><b>#1B · Social proof</b>"1,284 Malayalis online"</div>
+      <div class="shot-slot"><div class="shot bg-deep">
+        <div class="num-strip">
+          <div class="n">1,284</div>
+          <div class="nl">Malayalis online now</div>
+        </div>
+        <div class="phn"><div class="phn-screen">
+          <div class="statusbar"><span>9:41</span><span>5G&nbsp; 100</span></div>
+          <div class="home-mini">
+            <div class="top"><span class="premium-pill">✦ Premium</span><span class="gear">⚙</span></div>
+            <div class="hero">
+              <div class="mark s lamp"><span>മ</span></div>
+              <div class="welcome">Talk to a</div>
+              <div class="accent">random Malayali</div>
+              <div class="presence lg"><span class="dot"></span> 1,284 Malayalis online</div>
+              <div class="diaspora">Kerala · Gulf · US · UK · 40+ Countries</div>
+              <div class="cta"><span class="ic">💬</span> Start chatting</div>
+            </div>
+          </div>
+        </div></div>
+        <div class="strip-bot"><div class="sub">There's <span class="br">always</span> a Malayali to talk to.</div></div>
+      </div></div>
+    </div>
+
+    <!-- #1C -->
+    <div class="item">
+      <div class="lbl"><b>#1C · Diaspora</b>"Wherever you are…"</div>
+      <div class="shot-slot"><div class="shot bg-brass">
+        <div class="strip-top"><div class="h sm">Wherever you are,<br><span class="ac">a Malayali's online</span></div></div>
+        <div class="phn"><div class="phn-screen">
+          <div class="statusbar"><span>9:41</span><span>5G&nbsp; 100</span></div>
+          <div class="home-mini">
+            <div class="top"><span class="premium-pill">✦ Premium</span><span class="gear">⚙</span></div>
+            <div class="hero">
+              <div class="mark s lamp"><span>മ</span></div>
+              <div class="welcome">Talk to a</div>
+              <div class="accent">random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="presence"><span class="dot"></span> 1,284 Malayalis online</div>
+              <div class="diaspora">Kerala · Gulf · US · UK · 40+ Countries</div>
+              <div class="cta"><span class="ic">💬</span> Start chatting</div>
+            </div>
+          </div>
+        </div></div>
+        <div class="strip-bot"><div class="sub">From Kochi to Dubai to London.</div></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     SCREENSHOT #2 — Match speed (2 variants)
+     ════════════════════════════════════════════════════════════════════════ -->
+<section class="block">
+  <h2>Screenshot #2 — Match speed (2 variants)</h2>
+  <p class="lead">Speed + zero-friction. Kills the signup objection.</p>
+  <div class="grid">
+
+    <!-- #2A -->
+    <div class="item">
+      <div class="lbl"><b>#2A</b>"Match in seconds"</div>
+      <div class="shot-slot"><div class="shot bg-green">
+        <div class="strip-top"><div class="h">Match in<br><span class="ac">seconds</span></div></div>
+        <div class="phn"><div class="phn-screen">
+          <div class="statusbar"><span>9:41</span><span>5G&nbsp; 100</span></div>
+          <div class="match-mini">
+            <div class="core-wrap">
+              <div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div>
+              <div class="core-glow-l"></div>
+              <div class="core"><span>മ</span></div>
+              <div class="orbit-av a">🌊</div>
+              <div class="orbit-av b">☕</div>
+              <div class="orbit-av c">🎬</div>
+            </div>
+            <div class="head">Finding a Malayali</div>
+            <div class="head-ac">near you, or across the world</div>
+            <div class="safe">🔒 No name, no number — fully anonymous</div>
+          </div>
+        </div></div>
+        <div class="strip-bot"><div class="sub">No signup. No name. No number.</div></div>
+      </div></div>
+    </div>
+
+    <!-- #2B -->
+    <div class="item">
+      <div class="lbl"><b>#2B</b>"From tap to talking in 10s"</div>
+      <div class="shot-slot"><div class="shot bg-deep">
+        <div class="strip-top"><div class="h sm">From tap to<br><span class="ac">talking in 10s</span></div></div>
+        <div class="phn"><div class="phn-screen">
+          <div class="statusbar"><span>9:41</span><span>5G&nbsp; 100</span></div>
+          <div class="match-mini">
+            <div class="core-wrap">
+              <div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div>
+              <div class="core-glow-l"></div>
+              <div class="core"><span>മ</span></div>
+              <div class="orbit-av a">🌴</div>
+              <div class="orbit-av b">☕</div>
+              <div class="orbit-av c">😄</div>
+            </div>
+            <div class="head">Finding a Malayali</div>
+            <div class="head-ac">near you, or across the world</div>
+            <div class="safe">🔒 No name, no number — fully anonymous</div>
+          </div>
+        </div></div>
+        <div class="strip-bot"><div class="sub">No registration. Ever.</div></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     SCREENSHOT #3 — Manglish chat (2 variants)
+     ════════════════════════════════════════════════════════════════════════ -->
+<section class="block">
+  <h2>Screenshot #3 — In-language chat (2 variants)</h2>
+  <p class="lead">Identity hook. "This app gets me." Manglish convo on screen.</p>
+  <div class="grid">
+
+    <!-- #3A -->
+    <div class="item">
+      <div class="lbl"><b>#3A</b>"Talk like a Malayali"</div>
+      <div class="shot-slot"><div class="shot bg-green">
+        <div class="strip-top"><div class="h">Talk like<br><span class="ac">a Malayali</span></div></div>
+        <div class="phn"><div class="phn-screen">
+          <div class="statusbar"><span>9:41</span><span>5G&nbsp; 100</span></div>
+          <div class="chat-mini">
+            <div class="cbar">
+              <span class="back">‹</span>
+              <div class="who"><div class="nm">A Malayali <span class="badge">✦ PREMIUM</span></div><div class="st">Online</div></div>
+              <span class="more">⋮</span>
+            </div>
+            <div class="conn-strip">👋 Connected to a fellow Malayali — say hi!</div>
+            <div class="msgs">
+              <div class="b in">Hai 🙂 evideyaa?<div class="t">10:24</div></div>
+              <div class="b out">Thrissur! ningalo?<div class="t">10:24 ✓✓</div></div>
+              <div class="b in">Kochi 😄 but joli Gulf-l<div class="t">10:25</div></div>
+              <div class="b out">Pravasi alle, namuk സുഖം 😎<div class="t">10:25 ✓✓</div></div>
+            </div>
+            <div class="composer"><span class="plus">+</span><span class="field">Message…</span><span class="send">➤</span></div>
+          </div>
+        </div></div>
+        <div class="strip-bot"><div class="sub">Manglish, English or Malayalam — <span class="br">your call</span>.</div></div>
+      </div></div>
+    </div>
+
+    <!-- #3B -->
+    <div class="item">
+      <div class="lbl"><b>#3B</b>"Same humour. Same vibe."</div>
+      <div class="shot-slot"><div class="shot bg-brass">
+        <div class="strip-top"><div class="h">Same humour.<br><span class="ac">Same vibe.</span></div></div>
+        <div class="phn"><div class="phn-screen">
+          <div class="statusbar"><span>9:41</span><span>5G&nbsp; 100</span></div>
+          <div class="chat-mini">
+            <div class="cbar">
+              <span class="back">‹</span>
+              <div class="who"><div class="nm">A Malayali</div><div class="st">Online</div></div>
+              <span class="more">⋮</span>
+            </div>
+            <div class="conn-strip">👋 Connected to a fellow Malayali — say hi!</div>
+            <div class="msgs">
+              <div class="b in">Helloo 👋 enthu paripadi?<div class="t">2:10</div></div>
+              <div class="b out">Verute timepass 😅<div class="t">2:10 ✓✓</div></div>
+              <div class="b in">Bored aano? Adipoli, namukk parayam<div class="t">2:11</div></div>
+              <div class="b out">Vaa! Evide ninn?<div class="t">2:11 ✓✓</div></div>
+            </div>
+            <div class="composer"><span class="plus">+</span><span class="field">Message…</span><span class="send">➤</span></div>
+          </div>
+        </div></div>
+        <div class="strip-bot"><div class="sub">Made for Mallus, by Mallus.</div></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     SCREENSHOT #4 — Trust / anonymity (2 variants)
+     ════════════════════════════════════════════════════════════════════════ -->
+<section class="block">
+  <h2>Screenshot #4 — Trust &amp; anonymity (2 variants)</h2>
+  <p class="lead">Pulls the cautious users in (women + conservative). Surfaces the truthful "we collect nothing" claim.</p>
+  <div class="grid">
+
+    <!-- #4A -->
+    <div class="item">
+      <div class="lbl"><b>#4A</b>"Your number stays yours"</div>
+      <div class="shot-slot"><div class="shot bg-deep">
+        <div class="strip-top"><div class="h sm">Your number<br><span class="ac">stays yours</span></div></div>
+        <div class="phn"><div class="phn-screen">
+          <div class="statusbar"><span>9:41</span><span>5G&nbsp; 100</span></div>
+          <div class="match-mini">
+            <div class="core-wrap">
+              <div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div>
+              <div class="core-glow-l"></div>
+              <div class="core"><span>മ</span></div>
+            </div>
+            <div class="head">Anonymous</div>
+            <div class="head-ac">by design</div>
+            <div class="safe" style="font-size:28px;padding:18px 36px;">🔒 No name, no number — fully anonymous</div>
+          </div>
+        </div></div>
+        <div class="strip-bot"><div class="sub">We never ask. We never collect.</div></div>
+      </div></div>
+    </div>
+
+    <!-- #4B -->
+    <div class="item">
+      <div class="lbl"><b>#4B</b>"No name. No number. No signup."</div>
+      <div class="shot-slot"><div class="shot bg-green">
+        <div class="strip-top"><div class="h">No name.<br>No number.<br><span class="ac">No signup.</span></div></div>
+        <div class="phn"><div class="phn-screen">
+          <div class="statusbar"><span>9:41</span><span>5G&nbsp; 100</span></div>
+          <div class="match-mini">
+            <div class="core-wrap">
+              <div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div>
+              <div class="core-glow-l"></div>
+              <div class="core"><span>മ</span></div>
+            </div>
+            <div class="head">Just talk.</div>
+            <div class="safe" style="margin-top:24px;font-size:28px;padding:18px 36px;">🔒 Personal info auto-blocked in chat</div>
+          </div>
+        </div></div>
+        <div class="strip-bot"><div class="sub">Just talk.</div></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     SCREENSHOT #5 — Diaspora (1 variant)
+     ════════════════════════════════════════════════════════════════════════ -->
+<section class="block">
+  <h2>Screenshot #5 — Diaspora reach</h2>
+  <p class="lead">Pravasi pull. World map dots + cities. "Made for everyone, everywhere."</p>
+  <div class="grid">
+
+    <div class="item">
+      <div class="lbl"><b>#5</b>"Malayalis worldwide"</div>
+      <div class="shot-slot"><div class="shot bg-brass">
+        <div class="strip-top"><div class="h">Malayalis<br><span class="ac">worldwide</span></div></div>
+        <div class="phn"><div class="phn-screen">
+          <div class="statusbar"><span>9:41</span><span>5G&nbsp; 100</span></div>
+          <div class="world-mini">
+            <div class="map">
+              <div class="blob"></div>
+              <div class="ring-faint"></div>
+              <div class="dot pulse" style="top:46%;left:62%;"></div>
+              <div class="dot pulse" style="top:38%;left:68%;"></div>
+              <div class="dot pulse" style="top:30%;left:22%;"></div>
+              <div class="dot pulse" style="top:18%;left:46%;"></div>
+              <div class="dot pulse" style="top:74%;left:80%;"></div>
+              <div class="dot pulse" style="top:30%;left:50%;"></div>
+              <div class="lbl" style="top:50%;left:50%;color:var(--brass);font-size:22px;">KERALA</div>
+              <div class="lbl" style="top:42%;left:56%;">GULF</div>
+              <div class="lbl" style="top:22%;left:12%;">USA</div>
+              <div class="lbl" style="top:8%;left:36%;">UK</div>
+              <div class="lbl" style="top:78%;left:68%;">AUS</div>
+            </div>
+            <div class="head">From Kerala<br><span class="ac" style="font-family:var(--serif);font-style:italic;color:var(--brass);">to anywhere</span></div>
+            <div class="countries">40+ Countries · Always online</div>
+          </div>
+        </div></div>
+        <div class="strip-bot"><div class="sub">Naadan or pravasi — there's a Malayali waiting.</div></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     SCREENSHOT #6 — Premium (1 variant)
+     ════════════════════════════════════════════════════════════════════════ -->
+<section class="block">
+  <h2>Screenshot #6 — Premium upsell</h2>
+  <p class="lead">Aspirational, soft. Shows what unlock buys.</p>
+  <div class="grid">
+
+    <div class="item">
+      <div class="lbl"><b>#6</b>"Unlock it all"</div>
+      <div class="shot-slot"><div class="shot bg-green">
+        <div class="strip-top"><div class="h">Unlock<br><span class="ac">it all</span></div></div>
+        <div class="phn"><div class="phn-screen">
+          <div class="statusbar"><span>9:41</span><span>5G&nbsp; 100</span></div>
+          <div class="home-mini">
+            <div class="top"><span class="premium-pill">✦ Premium</span><span class="gear">⚙</span></div>
+            <div class="hero">
+              <div class="mark m"><span>മ</span></div>
+              <div class="welcome" style="margin-top:24px;">Random Malayali</div>
+              <div class="accent" style="font-size:54px;">Premium</div>
+              <div class="pcard" style="margin-top:36px;">
+                <div class="pt">✦ Random Malayali Premium</div>
+                <div class="pd">Unlock it all — photos, voice notes, live typing preview, saved chats &amp; zero ads.</div>
+                <div class="pr"><span class="price">$4.99 / month</span><span class="upg">Upgrade</span></div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+        <div class="strip-bot"><div class="sub">Photos · Voice · React · Save · <span class="br">Zero ads</span>.</div></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     SCREENSHOT #7 — Safety (1 variant)
+     ════════════════════════════════════════════════════════════════════════ -->
+<section class="block">
+  <h2>Screenshot #7 — Safety (women-safety signal, Play-friendly)</h2>
+  <p class="lead">Surfaces report/block. Critical for Play Store policy + female-user trust.</p>
+  <div class="grid">
+
+    <div class="item">
+      <div class="lbl"><b>#7</b>"Bad vibe? One tap."</div>
+      <div class="shot-slot"><div class="shot bg-coral">
+        <div class="strip-top"><div class="h sm">Bad vibe?<br><span class="ac" style="color:var(--coral);">One tap to end.</span></div></div>
+        <div class="phn"><div class="phn-screen">
+          <div class="statusbar"><span>9:41</span><span>5G&nbsp; 100</span></div>
+          <div class="safe-mini">
+            <div class="icon-c"><span>🚩</span></div>
+            <div class="title">Report this Malayali</div>
+            <div class="desc">Select a reason. They'll be flagged and removed if needed.</div>
+            <div class="acts">
+              <div class="act r">Report</div>
+              <div class="act b">Cancel</div>
+            </div>
+            <div style="margin-top:30px;font-size:22px;color:var(--sage);text-align:center;line-height:1.5;">🔒 Personal info auto-blocked<br>👁 End any chat, anytime</div>
+          </div>
+        </div></div>
+        <div class="strip-bot"><div class="sub">Report. Block. Done.</div></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     SCREENSHOT #8 — Brand (1 variant)
+     ════════════════════════════════════════════════════════════════════════ -->
+<section class="block">
+  <h2>Screenshot #8 — Brand recall</h2>
+  <p class="lead">Closer. Anchors the brand for store-scroll recall.</p>
+  <div class="grid">
+
+    <div class="item">
+      <div class="lbl"><b>#8</b>Brand anchor</div>
+      <div class="shot-slot"><div class="shot bg-green">
+        <div class="phn"><div class="phn-screen">
+          <div class="statusbar"><span>9:41</span><span>5G&nbsp; 100</span></div>
+          <div class="splash-mini">
+            <div class="mark xl"><span>മ</span></div>
+            <div class="wm"><span class="r">Random</span> <span class="m">Malayali</span></div>
+            <div class="tag">Talk to Malayalis worldwide, anytime.</div>
+          </div>
+        </div></div>
+        <div class="strip-bot" style="padding-top:80px;"><div class="sub">By Malayalis, for Malayalis. <span class="br">Free forever.</span></div></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     FEATURE GRAPHIC — 3 variants (1024×500)
+     ════════════════════════════════════════════════════════════════════════ -->
+<section class="block">
+  <h2>Feature graphic — 3 variants (1024×500 · pick one)</h2>
+  <p class="lead">Plays above your screenshots on the store. No transparency, no critical text on edges (Play crops).</p>
+  <div class="fg-grid">
+
+    <!-- FG-A: product hero -->
+    <div class="item">
+      <div class="lbl"><b>FG-A · Product hero</b>Brand + tagline + phone</div>
+      <div class="fg-slot"><div class="fg bg1">
+        <div class="left">
+          <div class="brand">
+            <div class="mark s" style="width:78px;height:78px;border-radius:24px 24px 24px 8px;"><span style="font-size:44px;">മ</span></div>
+            <div class="wm"><span class="r">Random</span> <span class="m">Malayali</span></div>
+          </div>
+          <div class="h">Talk to a<br><span class="ac">Malayali</span></div>
+          <div class="sub">Anywhere in the world. No signup, ever.</div>
+        </div>
+        <div class="right">
+          <div class="mini-phn">
+            <div class="phn-screen" style="padding-top:30px;">
+              <div class="statusbar" style="height:26px;padding:10px 18px 0;font-size:9px;"><span>9:41</span><span>100</span></div>
+              <div class="home-mini" style="padding:0 18px 14px;">
+                <div class="hero">
+                  <div class="mark" style="width:52px;height:52px;border-radius:16px 16px 16px 5px;"><span style="font-size:28px;">മ</span></div>
+                  <div class="welcome" style="font-size:22px;margin-top:10px;">Talk to a</div>
+                  <div class="accent" style="font-size:32px;">random Malayali</div>
+                  <div class="presence" style="font-size:11px;padding:5px 12px;margin-top:10px;"><span class="dot" style="width:6px;height:6px;"></span> 1,284 Malayalis online</div>
+                  <div class="cta" style="font-size:14px;padding:12px;margin-top:14px;border-radius:24px;"><span class="ic" style="font-size:13px;">💬</span> Start chatting</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- FG-B: numbers proof -->
+    <div class="item">
+      <div class="lbl"><b>FG-B · Numbers proof</b>Big online count + tagline</div>
+      <div class="fg-slot"><div class="fg bg2 center">
+        <div class="n">1,284</div>
+        <div class="nl">Malayalis online now</div>
+        <div class="tg">Talk to one. <span class="ac">Anywhere.</span></div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:14px;">
+          <div class="mark s" style="width:60px;height:60px;border-radius:20px 20px 20px 7px;"><span style="font-size:34px;">മ</span></div>
+          <div class="wm" style="font-size:30px;font-weight:900;letter-spacing:-1px;"><span style="color:var(--green);">Random</span> <span style="color:var(--cream);">Malayali</span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- FG-C: world map -->
+    <div class="item">
+      <div class="lbl"><b>FG-C · World map</b>Diaspora reach + brand</div>
+      <div class="fg-slot"><div class="fg bg3 fg-world">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="mark s" style="width:60px;height:60px;border-radius:20px 20px 20px 7px;"><span style="font-size:34px;">മ</span></div>
+          <div class="wm" style="font-size:32px;font-weight:900;letter-spacing:-1px;"><span style="color:var(--green);">Random</span> <span style="color:var(--cream);">Malayali</span></div>
+        </div>
+        <div class="map" style="width:540px;height:260px;">
+          <div class="blob"></div>
+          <div class="ring-faint"></div>
+          <div class="dot pulse" style="top:46%;left:62%;"></div>
+          <div class="dot pulse" style="top:38%;left:68%;"></div>
+          <div class="dot pulse" style="top:30%;left:22%;"></div>
+          <div class="dot pulse" style="top:18%;left:46%;"></div>
+          <div class="dot pulse" style="top:74%;left:80%;"></div>
+          <div class="dot pulse" style="top:30%;left:50%;"></div>
+        </div>
+        <div style="font-size:36px;color:var(--cream);font-weight:800;letter-spacing:-0.5px;">Malayalis <span style="font-family:var(--serif);font-style:italic;color:var(--brass);font-weight:400;">worldwide</span>. Always online.</div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <b>Pick:</b> 1 from Screenshot #1 (A/B/C), 1 from #2 (A/B), 1 from #3 (A/B), 1 from #4 (A/B), 1 feature graphic (A/B/C). Other shots have a single variant.<br>
+  <b>Export PNG:</b> open in Chrome → DevTools → Toggle device mode → custom viewport <code>1080 × 1920</code> → scroll one <code>.shot</code> into the viewport (toggle scale to 100%) → "Capture node screenshot." Or run Puppeteer to batch-export all <code>.shot</code> nodes.<br>
+  <b>Tablet shots:</b> reuse the same designs, set viewport <code>1600×2560</code> in DevTools. I can produce a tablet HTML next round if needed.
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Random Malayali — Logo Concepts</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@1,500&family=Noto+Sans+Malayalam:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0F14; --panel:#121821; --panel2:#171F2A; --line:#1F2A38;
+    --tp:#ECEFF4; --ts:#9AA5B5; --tm:#5D6878;
+    --accent:#FFD700;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:radial-gradient(1200px 700px at 10% -10%, #1A2331 0%, transparent 60%),
+               radial-gradient(900px 500px at 100% 100%, #1A1A2B 0%, transparent 55%),
+               var(--bg);
+    color:var(--tp);
+    font-family:'Inter',-apple-system,system-ui,sans-serif;
+    line-height:1.5;
+    padding:64px 32px 96px;
+    min-height:100vh;
+  }
+  .container{max-width:1280px;margin:0 auto}
+  .eyebrow{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--ts);margin-bottom:8px}
+  h1{font-size:42px;font-weight:800;letter-spacing:-.8px;margin-bottom:8px}
+  .lede{color:var(--ts);font-size:15.5px;max-width:680px;margin-bottom:48px}
+
+  /* ── At-a-glance grid ───────────────────────────────────────── */
+  .glance-grid{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:18px;
+    margin-bottom:80px;
+  }
+  .glance-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:18px;
+    padding:18px 14px;text-align:center;
+    transition:transform .25s ease, border-color .25s ease;
+  }
+  .glance-card:hover{transform:translateY(-3px);border-color:#2D3A4D}
+  .glance-card svg{width:100%;max-width:130px;height:auto;display:block;margin:0 auto 12px}
+  .glance-num{
+    display:inline-block;font-size:10px;font-weight:700;color:var(--tm);
+    letter-spacing:1.5px;margin-bottom:6px
+  }
+  .glance-name{font-size:13.5px;font-weight:600;letter-spacing:-.2px}
+
+  /* ── Detail cards ──────────────────────────────────────────── */
+  h2{font-size:24px;font-weight:700;margin:0 0 24px;letter-spacing:-.4px}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:64px}
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:22px;
+    padding:24px;display:flex;gap:22px;align-items:flex-start;
+  }
+  .card .icons{flex:0 0 auto;display:flex;flex-direction:column;gap:14px;align-items:center}
+  .card .icons svg.lg{width:96px;height:96px;display:block}
+  .card .icons svg.sm{width:40px;height:40px;display:block;opacity:.95}
+  .card .icons .sm-label{font-size:9px;color:var(--tm);letter-spacing:1px;text-transform:uppercase}
+  .card .body{flex:1;min-width:0}
+  .card .tag{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:6px}
+  .card .title{font-size:18px;font-weight:700;letter-spacing:-.3px;margin-bottom:8px}
+  .card .desc{font-size:13px;color:var(--ts);margin-bottom:14px;line-height:1.55}
+  .swatches{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+  .sw{width:22px;height:22px;border-radius:5px;border:1px solid rgba(255,255,255,.08)}
+  .meta{font-size:11.5px;color:var(--tm);line-height:1.5}
+  .meta b{color:var(--ts);font-weight:600}
+
+  /* ── Top picks ──────────────────────────────────────────── */
+  .picks{
+    background:linear-gradient(135deg,#1B1F2E 0%,#0F1419 100%);
+    border:1px solid var(--line);border-radius:24px;padding:36px;margin-bottom:32px;
+  }
+  .picks h2{margin-bottom:8px;font-size:22px}
+  .picks .sub{color:var(--ts);font-size:13.5px;margin-bottom:28px}
+  .picks-row{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .pick{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:20px}
+  .pick svg{width:64px;height:64px;display:block;margin-bottom:14px}
+  .pick .rank{font-size:10px;letter-spacing:2px;color:var(--accent);font-weight:700;margin-bottom:4px}
+  .pick .name{font-size:16px;font-weight:700;margin-bottom:10px;letter-spacing:-.2px}
+  .pick .tradeoff{font-size:12.5px;color:var(--ts);line-height:1.6}
+  .pick .tradeoff b{color:var(--tp);font-weight:600}
+
+  @media (max-width:1100px){
+    .glance-grid{grid-template-columns:repeat(3,1fr)}
+    .detail-grid{grid-template-columns:1fr}
+    .picks-row{grid-template-columns:1fr}
+  }
+  @media (max-width:600px){
+    body{padding:32px 16px}
+    h1{font-size:30px}
+    .glance-grid{grid-template-columns:repeat(2,1fr)}
+    .card{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="eyebrow">Logo Concept Round · 10 directions</div>
+  <h1>Random Malayali</h1>
+  <p class="lede">Ten distinct directions across typographic, illustrative, iconic and unexpected territory. Each renders cleanly at 48px and respects the cultural references it draws from.</p>
+
+  <!-- ─────────── At-a-glance grid ─────────── -->
+  <div class="glance-grid">
+
+    <!-- 1 മ Mark -->
+    <div class="glance-card">
+      <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0F4C3A"/><text x="50" y="74" font-family="'Noto Sans Malayalam',serif" font-size="62" fill="#F4E4BC" text-anchor="middle" font-weight="900">മ</text><circle cx="76" cy="26" r="5.5" fill="#FF6B35"/></svg>
+      <div class="glance-num">01</div><div class="glance-name">"മ" Mark</div>
+    </div>
+
+    <!-- 2 Coco-Die -->
+    <div class="glance-card">
+      <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#FDF6E3"/><rect x="20" y="20" width="60" height="60" rx="14" fill="#FFFFFF" stroke="#3E2723" stroke-width="2"/><circle cx="34" cy="34" r="4.5" fill="#3E2723"/><circle cx="66" cy="34" r="4.5" fill="#3E2723"/><circle cx="34" cy="66" r="4.5" fill="#3E2723"/><circle cx="66" cy="66" r="4.5" fill="#3E2723"/><g transform="translate(50,50)"><circle r="7" fill="#2D5016"/><path d="M0,-7 L-3.5,-13 M0,-7 L3.5,-13 M0,-7 L-7,-11 M0,-7 L7,-11 M0,-7 L0,-14" stroke="#2D5016" stroke-width="2" stroke-linecap="round"/></g></svg>
+      <div class="glance-num">02</div><div class="glance-name">Coco-Die</div>
+    </div>
+
+    <!-- 3 Pookalam Spin -->
+    <div class="glance-card">
+      <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0F4C3A"/><g transform="translate(50,50)"><g fill="#F4D03F"><ellipse rx="6" ry="14" cy="-30"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(45)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(90)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(135)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(180)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(225)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(270)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(315)"/></g><circle r="22" fill="#E67E22"/><g fill="#FFFFFF" opacity="0.55"><ellipse rx="4" ry="6" cy="-16"/><ellipse rx="4" ry="6" cy="-16" transform="rotate(60)"/><ellipse rx="4" ry="6" cy="-16" transform="rotate(120)"/><ellipse rx="4" ry="6" cy="-16" transform="rotate(180)"/><ellipse rx="4" ry="6" cy="-16" transform="rotate(240)"/><ellipse rx="4" ry="6" cy="-16" transform="rotate(300)"/></g><circle r="10" fill="#C0392B"/><circle r="4" fill="#FFFFFF"/></g></svg>
+      <div class="glance-num">03</div><div class="glance-name">Pookalam Spin</div>
+    </div>
+
+    <!-- 4 Kathakali Eye -->
+    <div class="glance-card">
+      <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0E7C3A"/><path d="M14,46 Q50,18 86,46 Q50,32 14,46 Z" fill="#C0392B"/><ellipse cx="50" cy="52" rx="32" ry="14" fill="#FFFFFF"/><path d="M18,52 Q50,72 82,52 Q50,62 18,52" fill="#C0392B"/><circle cx="50" cy="52" r="11" fill="#1A1A1A"/><circle cx="54" cy="49" r="3" fill="#FFFFFF"/><path d="M18,50 Q50,38 82,50" stroke="#000" stroke-width="2" fill="none"/></svg>
+      <div class="glance-num">04</div><div class="glance-name">Kathakali Eye</div>
+    </div>
+
+    <!-- 5 Kettuvallam Float -->
+    <div class="glance-card">
+      <svg viewBox="0 0 100 100"><defs><linearGradient id="sky5g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F39C12"/><stop offset="55%" stop-color="#1ABC9C"/><stop offset="100%" stop-color="#0E5C4F"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#sky5g)"/><circle cx="76" cy="30" r="9" fill="#F4D03F"/><line x1="14" y1="78" x2="14" y2="44" stroke="#3E2723" stroke-width="2"/><g transform="translate(14,44)" stroke="#3E2723" stroke-width="2" fill="none" stroke-linecap="round"><path d="M0,0 Q-6,-4 -10,-2"/><path d="M0,0 Q-4,-7 -8,-9"/><path d="M0,0 Q6,-4 10,-2"/><path d="M0,0 Q4,-7 8,-9"/></g><path d="M16,72 L84,72 Q80,82 68,82 L32,82 Q20,82 16,72 Z" fill="#5C3317"/><path d="M24,72 Q24,50 50,50 Q76,50 76,72 Z" fill="#A0522D"/><path d="M24,72 Q24,50 50,50 Q76,50 76,72" fill="none" stroke="#3E2723" stroke-width="1.5"/><g stroke="#3E2723" stroke-width="0.8" opacity="0.5"><line x1="30" y1="55" x2="30" y2="72"/><line x1="40" y1="51" x2="40" y2="72"/><line x1="50" y1="50" x2="50" y2="72"/><line x1="60" y1="51" x2="60" y2="72"/><line x1="70" y1="55" x2="70" y2="72"/></g><path d="M8,88 Q22,85 36,88 T64,88 T92,88" stroke="#FFFFFF" stroke-width="1.5" fill="none" opacity="0.55"/><path d="M8,93 Q22,90 36,93 T64,93 T92,93" stroke="#FFFFFF" stroke-width="1.2" fill="none" opacity="0.35"/></svg>
+      <div class="glance-num">05</div><div class="glance-name">Kettuvallam Float</div>
+    </div>
+
+    <!-- 6 Sadya Speech -->
+    <div class="glance-card">
+      <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#FDF6E3"/><ellipse cx="50" cy="46" rx="38" ry="24" fill="#27AE60"/><ellipse cx="50" cy="46" rx="38" ry="24" fill="none" stroke="#196F3D" stroke-width="1.5"/><line x1="12" y1="46" x2="88" y2="46" stroke="#196F3D" stroke-width="2.2"/><g stroke="#1E8449" stroke-width="1" opacity="0.65" fill="none"><path d="M22,46 L20,36"/><path d="M22,46 L20,56"/><path d="M36,46 L33,32"/><path d="M36,46 L33,60"/><path d="M50,46 L48,30"/><path d="M50,46 L48,62"/><path d="M64,46 L67,32"/><path d="M64,46 L67,60"/><path d="M78,46 L80,36"/><path d="M78,46 L80,56"/></g><path d="M30,68 L20,84 L40,72 Z" fill="#27AE60" stroke="#196F3D" stroke-width="1.5"/><circle cx="38" cy="46" r="3" fill="#F4D03F"/><circle cx="50" cy="46" r="3" fill="#FF6B35"/><circle cx="62" cy="46" r="3" fill="#FFFFFF"/></svg>
+      <div class="glance-num">06</div><div class="glance-name">Sadya Speech</div>
+    </div>
+
+    <!-- 7 Nilavilakhu -->
+    <div class="glance-card">
+      <svg viewBox="0 0 100 100"><defs><radialGradient id="halo7g" cx="50%" cy="38%" r="40%"><stop offset="0%" stop-color="#FFE066" stop-opacity="0.55"/><stop offset="100%" stop-color="#FFE066" stop-opacity="0"/></radialGradient><linearGradient id="flame7g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF3B0"/><stop offset="55%" stop-color="#FF9F1C"/><stop offset="100%" stop-color="#E63946"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="#3D0E1B"/><circle cx="50" cy="42" r="34" fill="url(#halo7g)"/><path d="M50,16 Q40,30 40,44 Q40,56 50,60 Q60,56 60,44 Q60,30 50,16 Z" fill="url(#flame7g)"/><path d="M50,24 Q46,34 46,44 Q46,52 50,55 Q54,52 54,44 Q54,34 50,24 Z" fill="#FFF3B0" opacity="0.7"/><ellipse cx="50" cy="64" rx="22" ry="5" fill="#D4AF37"/><path d="M28,64 Q28,72 50,72 Q72,72 72,64 Z" fill="#B8860B"/><rect x="45" y="72" width="10" height="5" fill="#8B6914"/><ellipse cx="50" cy="80" rx="20" ry="3" fill="#D4AF37"/><ellipse cx="50" cy="84" rx="22" ry="3" fill="#B8860B"/></svg>
+      <div class="glance-num">07</div><div class="glance-name">Nilavilakhu</div>
+    </div>
+
+    <!-- 8 Random Spotlight -->
+    <div class="glance-card">
+      <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#1E3A5F"/><g fill="#FFE066" opacity="0.5"><polygon points="50,50 24,8 76,8"/><polygon points="50,50 92,24 92,76"/><polygon points="50,50 76,92 24,92"/><polygon points="50,50 8,76 8,24"/></g><circle cx="50" cy="50" r="22" fill="#FFD700"/><circle cx="50" cy="50" r="18" fill="#F4E4BC"/><text x="50" y="60" font-family="'Noto Sans Malayalam',serif" font-size="24" fill="#1E3A5F" font-weight="900" text-anchor="middle">മ</text><circle cx="78" cy="22" r="7" fill="#FF6B35"/><path d="M73,22 L83,22 M79,18 L83,22 L79,26" stroke="#FFF" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+      <div class="glance-num">08</div><div class="glance-name">Random Spotlight</div>
+    </div>
+
+    <!-- 9 Kasavu Wink -->
+    <div class="glance-card">
+      <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#FAEFD0"/><rect x="9" y="9" width="82" height="82" rx="16" fill="none" stroke="#D4AF37" stroke-width="4"/><rect x="14" y="14" width="72" height="72" rx="12" fill="none" stroke="#D4AF37" stroke-width="1.2"/><circle cx="38" cy="44" r="4.5" fill="#3E2723"/><path d="M54,44 Q63,40 71,44" stroke="#3E2723" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M34,62 Q50,76 66,62" stroke="#3E2723" stroke-width="3.5" fill="none" stroke-linecap="round"/><circle cx="28" cy="58" r="3" fill="#FF6B35" opacity="0.55"/><circle cx="72" cy="58" r="3" fill="#FF6B35" opacity="0.55"/></svg>
+      <div class="glance-num">09</div><div class="glance-name">Kasavu Wink</div>
+    </div>
+
+    <!-- 10 Theyyam Crown -->
+    <div class="glance-card">
+      <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#7B1313"/><g transform="translate(50,58)" fill="#FFD700"><g><path d="M0,-22 L-7,-44 L0,-36 L7,-44 Z"/><path d="M0,-22 L-7,-44 L0,-36 L7,-44 Z" transform="rotate(36)"/><path d="M0,-22 L-7,-44 L0,-36 L7,-44 Z" transform="rotate(-36)"/><path d="M0,-22 L-7,-44 L0,-36 L7,-44 Z" transform="rotate(72)" opacity="0.85"/><path d="M0,-22 L-7,-44 L0,-36 L7,-44 Z" transform="rotate(-72)" opacity="0.85"/></g><path d="M-26,0 Q-26,-26 0,-26 Q26,-26 26,0" stroke="#FFD700" stroke-width="4" fill="none"/><ellipse cx="0" cy="0" rx="16" ry="20" fill="#FFD700"/><path d="M-12,0 L12,0" stroke="#7B1313" stroke-width="2"/><path d="M-10,-7 L10,-7" stroke="#7B1313" stroke-width="2"/><path d="M-10,7 L10,7" stroke="#7B1313" stroke-width="2"/><circle cx="-6" cy="-3" r="2" fill="#000"/><circle cx="6" cy="-3" r="2" fill="#000"/></g></svg>
+      <div class="glance-num">10</div><div class="glance-name">Theyyam Crown</div>
+    </div>
+
+  </div>
+
+  <!-- ─────────── Detail cards ─────────── -->
+  <h2>Concept details · with 48-px scale check</h2>
+  <div class="detail-grid">
+
+    <!-- Detail 1 -->
+    <div class="card">
+      <div class="icons">
+        <svg class="lg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0F4C3A"/><text x="50" y="74" font-family="'Noto Sans Malayalam',serif" font-size="62" fill="#F4E4BC" text-anchor="middle" font-weight="900">മ</text><circle cx="76" cy="26" r="5.5" fill="#FF6B35"/></svg>
+        <svg class="sm" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0F4C3A"/><text x="50" y="74" font-family="'Noto Sans Malayalam',serif" font-size="62" fill="#F4E4BC" text-anchor="middle" font-weight="900">മ</text><circle cx="76" cy="26" r="5.5" fill="#FF6B35"/></svg>
+        <div class="sm-label">48 px</div>
+      </div>
+      <div class="body">
+        <div class="tag">Typographic · Minimal</div>
+        <div class="title">01 · "മ" Mark</div>
+        <div class="desc">The Malayalam letter മ as the entire identity, with a single saffron dot whispering "random" — a stray spark off the corner.</div>
+        <div class="swatches">
+          <div class="sw" style="background:#0F4C3A"></div><div class="sw" style="background:#F4E4BC"></div><div class="sw" style="background:#FF6B35"></div>
+        </div>
+        <div class="meta"><b>Type:</b> Noto Sans Malayalam Black, custom-tuned · <b>Best for:</b> diaspora-pride positioning, premium feel</div>
+      </div>
+    </div>
+
+    <!-- Detail 2 -->
+    <div class="card">
+      <div class="icons">
+        <svg class="lg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#FDF6E3"/><rect x="20" y="20" width="60" height="60" rx="14" fill="#FFFFFF" stroke="#3E2723" stroke-width="2"/><circle cx="34" cy="34" r="4.5" fill="#3E2723"/><circle cx="66" cy="34" r="4.5" fill="#3E2723"/><circle cx="34" cy="66" r="4.5" fill="#3E2723"/><circle cx="66" cy="66" r="4.5" fill="#3E2723"/><g transform="translate(50,50)"><circle r="7" fill="#2D5016"/><path d="M0,-7 L-3.5,-13 M0,-7 L3.5,-13 M0,-7 L-7,-11 M0,-7 L7,-11 M0,-7 L0,-14" stroke="#2D5016" stroke-width="2" stroke-linecap="round"/></g></svg>
+        <svg class="sm" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#FDF6E3"/><rect x="20" y="20" width="60" height="60" rx="14" fill="#FFFFFF" stroke="#3E2723" stroke-width="2"/><circle cx="34" cy="34" r="4.5" fill="#3E2723"/><circle cx="66" cy="34" r="4.5" fill="#3E2723"/><circle cx="34" cy="66" r="4.5" fill="#3E2723"/><circle cx="66" cy="66" r="4.5" fill="#3E2723"/><g transform="translate(50,50)"><circle r="7" fill="#2D5016"/><path d="M0,-7 L-3.5,-13 M0,-7 L3.5,-13 M0,-7 L-7,-11 M0,-7 L7,-11 M0,-7 L0,-14" stroke="#2D5016" stroke-width="2" stroke-linecap="round"/></g></svg>
+        <div class="sm-label">48 px</div>
+      </div>
+      <div class="body">
+        <div class="tag">Playful · Witty pun</div>
+        <div class="title">02 · Coco-Die</div>
+        <div class="desc">A dice face where the center pip is a tiny coconut palm. Random + Malayali, delivered in a single visual punchline.</div>
+        <div class="swatches">
+          <div class="sw" style="background:#FDF6E3"></div><div class="sw" style="background:#FFFFFF"></div><div class="sw" style="background:#3E2723"></div><div class="sw" style="background:#2D5016"></div>
+        </div>
+        <div class="meta"><b>Type:</b> No wordmark on icon · <b>Best for:</b> meme/share-driven youth product</div>
+      </div>
+    </div>
+
+    <!-- Detail 3 -->
+    <div class="card">
+      <div class="icons">
+        <svg class="lg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0F4C3A"/><g transform="translate(50,50)"><g fill="#F4D03F"><ellipse rx="6" ry="14" cy="-30"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(45)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(90)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(135)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(180)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(225)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(270)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(315)"/></g><circle r="22" fill="#E67E22"/><g fill="#FFFFFF" opacity="0.55"><ellipse rx="4" ry="6" cy="-16"/><ellipse rx="4" ry="6" cy="-16" transform="rotate(60)"/><ellipse rx="4" ry="6" cy="-16" transform="rotate(120)"/><ellipse rx="4" ry="6" cy="-16" transform="rotate(180)"/><ellipse rx="4" ry="6" cy="-16" transform="rotate(240)"/><ellipse rx="4" ry="6" cy="-16" transform="rotate(300)"/></g><circle r="10" fill="#C0392B"/><circle r="4" fill="#FFFFFF"/></g></svg>
+        <svg class="sm" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0F4C3A"/><g transform="translate(50,50)"><g fill="#F4D03F"><ellipse rx="6" ry="14" cy="-30"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(45)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(90)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(135)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(180)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(225)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(270)"/><ellipse rx="6" ry="14" cy="-30" transform="rotate(315)"/></g><circle r="22" fill="#E67E22"/><circle r="10" fill="#C0392B"/><circle r="4" fill="#FFFFFF"/></g></svg>
+        <div class="sm-label">48 px (simplified)</div>
+      </div>
+      <div class="body">
+        <div class="tag">Cultural · Radial pattern</div>
+        <div class="title">03 · Pookalam Spin</div>
+        <div class="desc">A geometric 8-petal pookalam that doubles as a subtle spin-wheel. Onam nostalgia + serendipity in one ownable mandala.</div>
+        <div class="swatches">
+          <div class="sw" style="background:#0F4C3A"></div><div class="sw" style="background:#F4D03F"></div><div class="sw" style="background:#E67E22"></div><div class="sw" style="background:#C0392B"></div><div class="sw" style="background:#FFFFFF"></div>
+        </div>
+        <div class="meta"><b>Type:</b> No wordmark · <b>Best for:</b> community / festival / seasonal moments product</div>
+      </div>
+    </div>
+
+    <!-- Detail 4 -->
+    <div class="card">
+      <div class="icons">
+        <svg class="lg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0E7C3A"/><path d="M14,46 Q50,18 86,46 Q50,32 14,46 Z" fill="#C0392B"/><ellipse cx="50" cy="52" rx="32" ry="14" fill="#FFFFFF"/><path d="M18,52 Q50,72 82,52 Q50,62 18,52" fill="#C0392B"/><circle cx="50" cy="52" r="11" fill="#1A1A1A"/><circle cx="54" cy="49" r="3" fill="#FFFFFF"/><path d="M18,50 Q50,38 82,50" stroke="#000" stroke-width="2" fill="none"/></svg>
+        <svg class="sm" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0E7C3A"/><path d="M14,46 Q50,18 86,46 Q50,32 14,46 Z" fill="#C0392B"/><ellipse cx="50" cy="52" rx="32" ry="14" fill="#FFFFFF"/><path d="M18,52 Q50,72 82,52 Q50,62 18,52" fill="#C0392B"/><circle cx="50" cy="52" r="11" fill="#1A1A1A"/><circle cx="54" cy="49" r="3" fill="#FFFFFF"/></svg>
+        <div class="sm-label">48 px</div>
+      </div>
+      <div class="body">
+        <div class="tag">Iconic · Bold cultural</div>
+        <div class="title">04 · Kathakali Eye</div>
+        <div class="desc">The wide white almond, red liners and intense black pupil — the most recognizable Kerala image, distilled. The gaze becomes the "spotlight."</div>
+        <div class="swatches">
+          <div class="sw" style="background:#0E7C3A"></div><div class="sw" style="background:#FFFFFF"></div><div class="sw" style="background:#C0392B"></div><div class="sw" style="background:#1A1A1A"></div>
+        </div>
+        <div class="meta"><b>Type:</b> Tagline preferred over wordmark · <b>Best for:</b> highest cultural-confidence brand voice</div>
+      </div>
+    </div>
+
+    <!-- Detail 5 -->
+    <div class="card">
+      <div class="icons">
+        <svg class="lg" viewBox="0 0 100 100"><defs><linearGradient id="sky5d" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F39C12"/><stop offset="55%" stop-color="#1ABC9C"/><stop offset="100%" stop-color="#0E5C4F"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#sky5d)"/><circle cx="76" cy="30" r="9" fill="#F4D03F"/><line x1="14" y1="78" x2="14" y2="44" stroke="#3E2723" stroke-width="2"/><g transform="translate(14,44)" stroke="#3E2723" stroke-width="2" fill="none" stroke-linecap="round"><path d="M0,0 Q-6,-4 -10,-2"/><path d="M0,0 Q-4,-7 -8,-9"/><path d="M0,0 Q6,-4 10,-2"/><path d="M0,0 Q4,-7 8,-9"/></g><path d="M16,72 L84,72 Q80,82 68,82 L32,82 Q20,82 16,72 Z" fill="#5C3317"/><path d="M24,72 Q24,50 50,50 Q76,50 76,72 Z" fill="#A0522D"/><path d="M24,72 Q24,50 50,50 Q76,50 76,72" fill="none" stroke="#3E2723" stroke-width="1.5"/><path d="M8,88 Q22,85 36,88 T64,88 T92,88" stroke="#FFFFFF" stroke-width="1.5" fill="none" opacity="0.55"/></svg>
+        <svg class="sm" viewBox="0 0 100 100"><defs><linearGradient id="sky5e" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F39C12"/><stop offset="55%" stop-color="#1ABC9C"/><stop offset="100%" stop-color="#0E5C4F"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#sky5e)"/><circle cx="74" cy="28" r="10" fill="#F4D03F"/><path d="M14,72 L86,72 Q80,84 68,84 L32,84 Q20,84 14,72 Z" fill="#5C3317"/><path d="M22,72 Q22,46 50,46 Q78,46 78,72 Z" fill="#A0522D"/></svg>
+        <div class="sm-label">48 px (simplified)</div>
+      </div>
+      <div class="body">
+        <div class="tag">Illustrative · Scenic</div>
+        <div class="title">05 · Kettuvallam Float</div>
+        <div class="desc">Houseboat with palm-thatch roof on golden-hour backwaters — full Kerala in one icon. Diaspora gold; risks looking touristy if not held tight.</div>
+        <div class="swatches">
+          <div class="sw" style="background:#F39C12"></div><div class="sw" style="background:#1ABC9C"></div><div class="sw" style="background:#5C3317"></div><div class="sw" style="background:#A0522D"></div><div class="sw" style="background:#F4D03F"></div>
+        </div>
+        <div class="meta"><b>Type:</b> Pairs with serif italic wordmark · <b>Best for:</b> NRI/nostalgia-led positioning</div>
+      </div>
+    </div>
+
+    <!-- Detail 6 -->
+    <div class="card">
+      <div class="icons">
+        <svg class="lg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#FDF6E3"/><ellipse cx="50" cy="46" rx="38" ry="24" fill="#27AE60"/><ellipse cx="50" cy="46" rx="38" ry="24" fill="none" stroke="#196F3D" stroke-width="1.5"/><line x1="12" y1="46" x2="88" y2="46" stroke="#196F3D" stroke-width="2.2"/><g stroke="#1E8449" stroke-width="1" opacity="0.65" fill="none"><path d="M22,46 L20,36"/><path d="M22,46 L20,56"/><path d="M36,46 L33,32"/><path d="M36,46 L33,60"/><path d="M50,46 L48,30"/><path d="M50,46 L48,62"/><path d="M64,46 L67,32"/><path d="M64,46 L67,60"/><path d="M78,46 L80,36"/><path d="M78,46 L80,56"/></g><path d="M30,68 L20,84 L40,72 Z" fill="#27AE60" stroke="#196F3D" stroke-width="1.5"/><circle cx="38" cy="46" r="3" fill="#F4D03F"/><circle cx="50" cy="46" r="3" fill="#FF6B35"/><circle cx="62" cy="46" r="3" fill="#FFFFFF"/></svg>
+        <svg class="sm" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#FDF6E3"/><ellipse cx="50" cy="46" rx="38" ry="24" fill="#27AE60"/><line x1="12" y1="46" x2="88" y2="46" stroke="#196F3D" stroke-width="2.2"/><path d="M30,68 L20,84 L40,72 Z" fill="#27AE60" stroke="#196F3D" stroke-width="1.5"/></svg>
+        <div class="sm-label">48 px</div>
+      </div>
+      <div class="body">
+        <div class="tag">Witty · Concept-driven</div>
+        <div class="title">06 · Sadya Speech</div>
+        <div class="desc">A banana leaf shaped as a speech bubble, with three little food dots. Conversation app metaphor through Kerala's most familiar plate.</div>
+        <div class="swatches">
+          <div class="sw" style="background:#FDF6E3"></div><div class="sw" style="background:#27AE60"></div><div class="sw" style="background:#196F3D"></div><div class="sw" style="background:#F4D03F"></div><div class="sw" style="background:#FF6B35"></div>
+        </div>
+        <div class="meta"><b>Type:</b> Sans-serif companion (Inter / General Sans) · <b>Best for:</b> chat-/content-led product</div>
+      </div>
+    </div>
+
+    <!-- Detail 7 -->
+    <div class="card">
+      <div class="icons">
+        <svg class="lg" viewBox="0 0 100 100"><defs><radialGradient id="halo7d" cx="50%" cy="38%" r="40%"><stop offset="0%" stop-color="#FFE066" stop-opacity="0.55"/><stop offset="100%" stop-color="#FFE066" stop-opacity="0"/></radialGradient><linearGradient id="flame7d" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF3B0"/><stop offset="55%" stop-color="#FF9F1C"/><stop offset="100%" stop-color="#E63946"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="#3D0E1B"/><circle cx="50" cy="42" r="34" fill="url(#halo7d)"/><path d="M50,16 Q40,30 40,44 Q40,56 50,60 Q60,56 60,44 Q60,30 50,16 Z" fill="url(#flame7d)"/><path d="M50,24 Q46,34 46,44 Q46,52 50,55 Q54,52 54,44 Q54,34 50,24 Z" fill="#FFF3B0" opacity="0.7"/><ellipse cx="50" cy="64" rx="22" ry="5" fill="#D4AF37"/><path d="M28,64 Q28,72 50,72 Q72,72 72,64 Z" fill="#B8860B"/><rect x="45" y="72" width="10" height="5" fill="#8B6914"/><ellipse cx="50" cy="80" rx="20" ry="3" fill="#D4AF37"/><ellipse cx="50" cy="84" rx="22" ry="3" fill="#B8860B"/></svg>
+        <svg class="sm" viewBox="0 0 100 100"><defs><linearGradient id="flame7e" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF3B0"/><stop offset="55%" stop-color="#FF9F1C"/><stop offset="100%" stop-color="#E63946"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="#3D0E1B"/><path d="M50,14 Q38,30 38,46 Q38,60 50,64 Q62,60 62,46 Q62,30 50,14 Z" fill="url(#flame7e)"/><ellipse cx="50" cy="74" rx="24" ry="6" fill="#D4AF37"/><ellipse cx="50" cy="84" rx="22" ry="3" fill="#B8860B"/></svg>
+        <div class="sm-label">48 px (simplified)</div>
+      </div>
+      <div class="body">
+        <div class="tag">Heritage · Premium warmth</div>
+        <div class="title">07 · Nilavilakhu</div>
+        <div class="desc">A tall flame above a brass lamp on devotional maroon. The most premium-feeling, candle-lit object photograph of the set.</div>
+        <div class="swatches">
+          <div class="sw" style="background:#3D0E1B"></div><div class="sw" style="background:#FF9F1C"></div><div class="sw" style="background:#E63946"></div><div class="sw" style="background:#D4AF37"></div>
+        </div>
+        <div class="meta"><b>Type:</b> Cormorant Garamond Italic or Manjari · <b>Best for:</b> warm-elder, editorial voice</div>
+      </div>
+    </div>
+
+    <!-- Detail 8 -->
+    <div class="card">
+      <div class="icons">
+        <svg class="lg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#1E3A5F"/><g fill="#FFE066" opacity="0.5"><polygon points="50,50 24,8 76,8"/><polygon points="50,50 92,24 92,76"/><polygon points="50,50 76,92 24,92"/><polygon points="50,50 8,76 8,24"/></g><circle cx="50" cy="50" r="22" fill="#FFD700"/><circle cx="50" cy="50" r="18" fill="#F4E4BC"/><text x="50" y="60" font-family="'Noto Sans Malayalam',serif" font-size="24" fill="#1E3A5F" font-weight="900" text-anchor="middle">മ</text><circle cx="78" cy="22" r="7" fill="#FF6B35"/><path d="M73,22 L83,22 M79,18 L83,22 L79,26" stroke="#FFF" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+        <svg class="sm" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#1E3A5F"/><g fill="#FFE066" opacity="0.55"><polygon points="50,50 24,8 76,8"/><polygon points="50,50 92,24 92,76"/><polygon points="50,50 76,92 24,92"/><polygon points="50,50 8,76 8,24"/></g><circle cx="50" cy="50" r="22" fill="#FFD700"/><circle cx="50" cy="50" r="18" fill="#F4E4BC"/><text x="50" y="62" font-family="'Noto Sans Malayalam',serif" font-size="26" fill="#1E3A5F" font-weight="900" text-anchor="middle">മ</text></svg>
+        <div class="sm-label">48 px (chip dropped)</div>
+      </div>
+      <div class="body">
+        <div class="tag">Random-themed · Game-show</div>
+        <div class="title">08 · Random Spotlight</div>
+        <div class="desc">Four golden beams converge on a central spotlight framing മ, with a small shuffle-arrow chip in the corner. Most explicitly "random."</div>
+        <div class="swatches">
+          <div class="sw" style="background:#1E3A5F"></div><div class="sw" style="background:#FFD700"></div><div class="sw" style="background:#F4E4BC"></div><div class="sw" style="background:#FF6B35"></div>
+        </div>
+        <div class="meta"><b>Type:</b> Noto Sans Malayalam Black inside spotlight · <b>Best for:</b> shuffle/spin/discover mechanic</div>
+      </div>
+    </div>
+
+    <!-- Detail 9 -->
+    <div class="card">
+      <div class="icons">
+        <svg class="lg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#FAEFD0"/><rect x="9" y="9" width="82" height="82" rx="16" fill="none" stroke="#D4AF37" stroke-width="4"/><rect x="14" y="14" width="72" height="72" rx="12" fill="none" stroke="#D4AF37" stroke-width="1.2"/><circle cx="38" cy="44" r="4.5" fill="#3E2723"/><path d="M54,44 Q63,40 71,44" stroke="#3E2723" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M34,62 Q50,76 66,62" stroke="#3E2723" stroke-width="3.5" fill="none" stroke-linecap="round"/><circle cx="28" cy="58" r="3" fill="#FF6B35" opacity="0.55"/><circle cx="72" cy="58" r="3" fill="#FF6B35" opacity="0.55"/></svg>
+        <svg class="sm" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#FAEFD0"/><rect x="9" y="9" width="82" height="82" rx="16" fill="none" stroke="#D4AF37" stroke-width="4.5"/><circle cx="38" cy="44" r="5" fill="#3E2723"/><path d="M54,44 Q63,40 71,44" stroke="#3E2723" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M34,62 Q50,76 66,62" stroke="#3E2723" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+        <div class="sm-label">48 px</div>
+      </div>
+      <div class="body">
+        <div class="tag">Modern face · Premium minimal</div>
+        <div class="title">09 · Kasavu Wink</div>
+        <div class="desc">A winking friendly face inside a rounded square with the iconic kasavu double-gold border. Mundu/saree as the literal frame of the brand.</div>
+        <div class="swatches">
+          <div class="sw" style="background:#FAEFD0"></div><div class="sw" style="background:#D4AF37"></div><div class="sw" style="background:#3E2723"></div><div class="sw" style="background:#FF6B35"></div>
+        </div>
+        <div class="meta"><b>Type:</b> Pairs with confident sans (General Sans / Inter Bold) · <b>Best for:</b> global-modern positioning, NRI-friendly</div>
+      </div>
+    </div>
+
+    <!-- Detail 10 -->
+    <div class="card">
+      <div class="icons">
+        <svg class="lg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#7B1313"/><g transform="translate(50,58)" fill="#FFD700"><g><path d="M0,-22 L-7,-44 L0,-36 L7,-44 Z"/><path d="M0,-22 L-7,-44 L0,-36 L7,-44 Z" transform="rotate(36)"/><path d="M0,-22 L-7,-44 L0,-36 L7,-44 Z" transform="rotate(-36)"/><path d="M0,-22 L-7,-44 L0,-36 L7,-44 Z" transform="rotate(72)" opacity="0.85"/><path d="M0,-22 L-7,-44 L0,-36 L7,-44 Z" transform="rotate(-72)" opacity="0.85"/></g><path d="M-26,0 Q-26,-26 0,-26 Q26,-26 26,0" stroke="#FFD700" stroke-width="4" fill="none"/><ellipse cx="0" cy="0" rx="16" ry="20" fill="#FFD700"/><path d="M-12,0 L12,0" stroke="#7B1313" stroke-width="2"/><path d="M-10,-7 L10,-7" stroke="#7B1313" stroke-width="2"/><path d="M-10,7 L10,7" stroke="#7B1313" stroke-width="2"/><circle cx="-6" cy="-3" r="2" fill="#000"/><circle cx="6" cy="-3" r="2" fill="#000"/></g></svg>
+        <svg class="sm" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#7B1313"/><g transform="translate(50,60)" fill="#FFD700"><g><path d="M0,-22 L-7,-44 L0,-36 L7,-44 Z"/><path d="M0,-22 L-7,-44 L0,-36 L7,-44 Z" transform="rotate(45)"/><path d="M0,-22 L-7,-44 L0,-36 L7,-44 Z" transform="rotate(-45)"/></g><ellipse cx="0" cy="0" rx="16" ry="20" fill="#FFD700"/><circle cx="-6" cy="-3" r="2.5" fill="#000"/><circle cx="6" cy="-3" r="2.5" fill="#000"/></g></svg>
+        <div class="sm-label">48 px (3 petals)</div>
+      </div>
+      <div class="body">
+        <div class="tag">Unexpected · Striking</div>
+        <div class="title">10 · Theyyam Crown</div>
+        <div class="desc">An abstracted Theyyam crown — radial gold flame-petals around a striped gold face on ritual red. Most differentiated mark on any app store shelf.</div>
+        <div class="swatches">
+          <div class="sw" style="background:#7B1313"></div><div class="sw" style="background:#FFD700"></div><div class="sw" style="background:#000000"></div>
+        </div>
+        <div class="meta"><b>Type:</b> Wordmark essential below icon · <b>Best for:</b> "surprise me," cultural-curious brand</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─────────── Top 3 picks ─────────── -->
+  <div class="picks">
+    <h2>Top 3 picks · with trade-offs</h2>
+    <p class="sub">Three I'd take into refinement first, each optimizing for a different brand direction.</p>
+    <div class="picks-row">
+
+      <div class="pick">
+        <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#0F4C3A"/><text x="50" y="74" font-family="'Noto Sans Malayalam',serif" font-size="62" fill="#F4E4BC" text-anchor="middle" font-weight="900">മ</text><circle cx="76" cy="26" r="5.5" fill="#FF6B35"/></svg>
+        <div class="rank">PICK 1 · Safest premium bet</div>
+        <div class="name">01 · "മ" Mark</div>
+        <div class="tradeoff"><b>Win:</b> highest scalability, ownable, instantly Malayali, works across every surface (icon, splash, merch). <b>Trade:</b> needs the saffron dot + a strong wordmark to feel "random" — pure letter alone reads serious.</div>
+      </div>
+
+      <div class="pick">
+        <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#FDF6E3"/><rect x="20" y="20" width="60" height="60" rx="14" fill="#FFFFFF" stroke="#3E2723" stroke-width="2"/><circle cx="34" cy="34" r="4.5" fill="#3E2723"/><circle cx="66" cy="34" r="4.5" fill="#3E2723"/><circle cx="34" cy="66" r="4.5" fill="#3E2723"/><circle cx="66" cy="66" r="4.5" fill="#3E2723"/><g transform="translate(50,50)"><circle r="7" fill="#2D5016"/><path d="M0,-7 L-3.5,-13 M0,-7 L3.5,-13 M0,-7 L-7,-11 M0,-7 L7,-11 M0,-7 L0,-14" stroke="#2D5016" stroke-width="2" stroke-linecap="round"/></g></svg>
+        <div class="rank">PICK 2 · Most "Gen-Z share"</div>
+        <div class="name">02 · Coco-Die</div>
+        <div class="tradeoff"><b>Win:</b> the cleanest pun in the set — "random + Malayali" lands in one second, screenshots well, meme-able. <b>Trade:</b> light-on-cream isn't as bold as dark backgrounds in a crowded home screen; may need a dark variant for app-icon visibility.</div>
+      </div>
+
+      <div class="pick">
+        <svg viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#FAEFD0"/><rect x="9" y="9" width="82" height="82" rx="16" fill="none" stroke="#D4AF37" stroke-width="4"/><rect x="14" y="14" width="72" height="72" rx="12" fill="none" stroke="#D4AF37" stroke-width="1.2"/><circle cx="38" cy="44" r="4.5" fill="#3E2723"/><path d="M54,44 Q63,40 71,44" stroke="#3E2723" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M34,62 Q50,76 66,62" stroke="#3E2723" stroke-width="3.5" fill="none" stroke-linecap="round"/><circle cx="28" cy="58" r="3" fill="#FF6B35" opacity="0.55"/><circle cx="72" cy="58" r="3" fill="#FF6B35" opacity="0.55"/></svg>
+        <div class="rank">PICK 3 · Best NRI / diaspora</div>
+        <div class="name">09 · Kasavu Wink</div>
+        <div class="tradeoff"><b>Win:</b> the most "looks at home next to global apps" while staying unmistakably Malayali via kasavu. The wink carries the cheeky tone. <b>Trade:</b> cream background can disappear on white app-store cards — needs a tested dark variant.</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

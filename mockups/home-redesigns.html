@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Home redesign — 4 directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&family=Manjari:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0A1410;
+    --bg2:      #0C1A14;
+    --surface:  #11201A;
+    --elev:     #18281F;
+    --border:   rgba(238,236,222,0.09);
+    --border-d: rgba(238,236,222,0.05);
+
+    --green:    #2FB68C;
+    --green-dp: #1C6B4F;
+    --green-dim:#268E6E;
+    --brass:    #E3B964;
+    --brass-dp: #C99C48;
+    --brass-soft: rgba(227,185,100,0.10);
+    --brass-bd: rgba(227,185,100,0.40);
+    --coral:    #E8765A;
+
+    --cream:    #F1EDDD;
+    --sage:     #9FAE9E;
+    --muted:    #66766A;
+
+    --grad:     linear-gradient(135deg,var(--green),var(--green-dp));
+    --grad-brass: linear-gradient(135deg,#F4D89B,var(--brass) 55%,var(--brass-dp));
+    --serif:    'Instrument Serif', Georgia, serif;
+    --ml:       'Manjari','Noto Sans Malayalam',sans-serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    background: radial-gradient(ellipse 70% 40% at 15% 0%, rgba(31,107,79,0.12), transparent 60%),
+                radial-gradient(ellipse 60% 30% at 90% 4%, rgba(227,185,100,0.06), transparent 55%),
+                #05100B;
+    color: var(--cream);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 60px;
+  }
+  header.page { padding: 44px 40px 24px; max-width:1480px; margin:0 auto; }
+  .eyebrow { font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--brass); display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .eyebrow::after { content:""; flex:1; height:1px; background:linear-gradient(90deg,rgba(227,185,100,0.26),transparent); }
+  header.page h1 { font-size:38px; font-weight:900; letter-spacing:-1.2px; line-height:1; }
+  header.page p.lead { color:var(--sage); font-size:15px; line-height:1.65; max-width:780px; margin-top:14px; }
+  header.page p.lead b { color:var(--cream); font-weight:600; }
+
+  section.block { max-width:1480px; margin:0 auto; padding:18px 40px; }
+  .rail { display:flex; gap:28px; flex-wrap:wrap; }
+  .device { width:296px; }
+  .device .cap { font-size:12px; color:var(--sage); margin-top:14px; line-height:1.5; }
+  .device .cap b { color:var(--cream); display:block; font-size:14px; font-weight:800; margin-bottom:4px; }
+  .device .cap .ph { color:var(--brass); font-size:11.5px; font-style:italic; margin-top:4px; display:block; }
+  .device .cap .tr { color:var(--muted); font-size:11px; margin-top:6px; }
+  .device .cap .tr b { color:var(--coral); font-weight:700; display:inline; font-size:11px; }
+
+  .phone { width:296px; height:640px; border-radius:38px; overflow:hidden; border:7px solid #141815; position:relative;
+    box-shadow:0 28px 56px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.03); display:flex; flex-direction:column; background:var(--bg); }
+  .phone::before { content:""; position:absolute; top:9px; left:50%; transform:translateX(-50%); width:86px; height:21px; background:#000; border-radius:14px; z-index:50; }
+  .statusbar { height:38px; padding:12px 22px 0; display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; color:var(--cream); flex-shrink:0; }
+  .screen { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; }
+
+  /* common atoms */
+  .logo-mark { width:44px; height:44px; border-radius:14px 14px 14px 5px; background:var(--grad);
+    display:grid; place-items:center; border:1px solid rgba(255,255,255,0.14); box-shadow:0 5px 16px rgba(47,182,140,0.30); }
+  .logo-mark span { font-family:var(--ml); font-size:22px; font-weight:700; color:var(--cream); line-height:1; }
+  .logo-mark.lg { width:60px; height:60px; border-radius:18px 18px 18px 7px; }
+  .logo-mark.lg span { font-size:30px; }
+  .logo-mark.xl { width:80px; height:80px; border-radius:22px 22px 22px 8px; }
+  .logo-mark.xl span { font-size:40px; }
+
+  .topbar { display:flex; justify-content:space-between; align-items:center; padding:8px 20px 0; flex-shrink:0; }
+  .topbar .gear { color:var(--muted); font-size:18px; }
+
+  /* gender pills */
+  .gender { display:flex; gap:8px; width:100%; }
+  .pill {
+    flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+    padding:11px 0; border-radius:22px; font-size:13px; font-weight:600;
+    color:var(--sage); border:1px solid var(--border); background:transparent;
+  }
+  .pill.on { background:var(--grad); color:#fff; border:1px solid transparent; }
+  .pill .ic { font-size:14px; }
+
+  /* CTA */
+  .cta {
+    width:100%; padding:14px 18px; border-radius:26px; text-align:center;
+    font-size:14.5px; font-weight:800; color:#06140E;
+    background:var(--grad); box-shadow:0 8px 20px rgba(47,182,140,0.28);
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .cta.disabled { opacity:0.45; }
+
+  /* premium variants */
+  .premium-strip {
+    width:100%; display:flex; align-items:center; gap:11px;
+    padding:11px 14px; border-radius:16px;
+    background:var(--brass-soft); border:1px solid var(--brass-bd);
+  }
+  .premium-strip .ic { width:32px; height:32px; border-radius:50%; background:rgba(227,185,100,0.14); display:grid; place-items:center; font-size:14px; color:var(--brass); flex-shrink:0; }
+  .premium-strip .tx { flex:1; }
+  .premium-strip .tx .h { font-size:13px; color:var(--brass); font-weight:800; }
+  .premium-strip .tx .s { font-size:10.5px; color:var(--sage); }
+  .premium-strip .arr { color:var(--brass); font-size:18px; }
+
+  .premium-link { color:var(--brass); font-size:12px; font-weight:600; text-align:center; padding:8px; letter-spacing:0.3px; }
+  .premium-link::after { content:" ›"; }
+
+  .presence {
+    display:inline-flex; align-items:center; gap:7px;
+    font-size:12px; color:var(--sage);
+  }
+  .presence .dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation: ping 2s infinite; box-shadow:0 0 0 0 rgba(47,182,140,0.5); }
+  @keyframes ping { 0%{box-shadow:0 0 0 0 rgba(47,182,140,0.5);} 70%{box-shadow:0 0 0 7px rgba(47,182,140,0);} 100%{box-shadow:0 0 0 0 rgba(47,182,140,0);} }
+
+  /* ===========================================================================
+     OPTION A — EDITORIAL WHITESPACE
+     Magazine feel. Big serif headline dominates. Everything else whispers.
+     =========================================================================== */
+  .opt-a { flex:1; display:flex; flex-direction:column; padding:0 24px 18px; }
+  .opt-a .head-block { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+  .opt-a .logo-mark { margin-bottom:24px; }
+  .opt-a .h1 { font-size:24px; font-weight:700; color:var(--cream); line-height:1.05; letter-spacing:-0.4px; }
+  .opt-a .h2 { font-family:var(--serif); font-style:italic; font-size:46px; color:var(--brass); line-height:1.0; letter-spacing:-0.8px; margin-top:2px; }
+  .opt-a .presence { margin-top:24px; }
+  .opt-a .actions { display:flex; flex-direction:column; gap:11px; padding-bottom:8px; }
+  .opt-a .gender { margin-bottom:4px; }
+  .opt-a .premium-link { margin-top:2px; }
+
+  /* ===========================================================================
+     OPTION B — BIG COUNTER HERO
+     Live count is the visual. FOMO-driven. Everything serves the number.
+     =========================================================================== */
+  .opt-b { flex:1; display:flex; flex-direction:column; padding:0 22px 18px; }
+  .opt-b .brand-row { display:flex; align-items:center; gap:10px; padding-top:8px; }
+  .opt-b .brand-row .wm { font-size:15px; font-weight:800; letter-spacing:-0.3px; color:var(--cream); }
+  .opt-b .brand-row .wm i { font-family:var(--serif); font-style:italic; color:var(--brass); font-weight:400; font-size:17px; }
+  .opt-b .counter-block { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; }
+  .opt-b .counter-ring {
+    width:200px; height:200px; border-radius:50%; display:grid; place-items:center;
+    border:1px solid rgba(47,182,140,0.20);
+    background: radial-gradient(circle, rgba(47,182,140,0.12), transparent 70%);
+    position:relative;
+  }
+  .opt-b .counter-ring::before {
+    content:""; position:absolute; inset:-8px; border-radius:50%;
+    border:1px solid rgba(47,182,140,0.10);
+  }
+  .opt-b .counter-ring::after {
+    content:""; position:absolute; inset:-16px; border-radius:50%;
+    border:1px solid rgba(47,182,140,0.05);
+  }
+  .opt-b .count-num { font-size:58px; font-weight:800; color:var(--green); letter-spacing:-2px; line-height:1; }
+  .opt-b .count-sub { font-size:11px; color:var(--sage); text-transform:uppercase; letter-spacing:2px; margin-top:4px; }
+  .opt-b .count-live { font-size:9px; color:var(--green); font-weight:800; letter-spacing:2px; padding:3px 8px; border:1px solid rgba(47,182,140,0.4); border-radius:10px; margin-top:8px; }
+  .opt-b .tag { font-family:var(--serif); font-style:italic; font-size:18px; color:var(--brass); margin-top:14px; text-align:center; }
+  .opt-b .actions { display:flex; flex-direction:column; gap:11px; padding-bottom:8px; }
+
+  /* ===========================================================================
+     OPTION C — VIBE-FIRST  (adds vibe pick — small feature change)
+     User picks a mood/vibe → pairs with someone in same vibe. Identity-lite.
+     =========================================================================== */
+  .opt-c { flex:1; display:flex; flex-direction:column; padding:0 20px 18px; }
+  .opt-c .head { display:flex; align-items:center; gap:10px; padding-top:8px; }
+  .opt-c .head .wm { font-size:15px; font-weight:800; letter-spacing:-0.3px; color:var(--cream); }
+  .opt-c .ask { font-size:19px; font-weight:800; color:var(--cream); letter-spacing:-0.4px; margin:20px 0 12px; line-height:1.2; }
+  .opt-c .ask i { font-family:var(--serif); font-style:italic; color:var(--brass); font-weight:400; font-size:22px; }
+  .opt-c .vibes { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+  .opt-c .vibe { padding:14px 12px; border-radius:14px; border:1px solid var(--border); background:var(--surface); }
+  .opt-c .vibe.on { border-color:rgba(47,182,140,0.55); background:rgba(47,182,140,0.10); }
+  .opt-c .vibe .e { font-size:20px; }
+  .opt-c .vibe .n { font-size:13px; color:var(--cream); font-weight:700; margin-top:4px; }
+  .opt-c .vibe .ml { font-family:var(--ml); font-size:11px; color:var(--sage); margin-top:1px; }
+  .opt-c .presence { margin-bottom:12px; }
+  .opt-c .actions { display:flex; flex-direction:column; gap:10px; margin-top:auto; padding-bottom:6px; }
+
+  /* ===========================================================================
+     OPTION D — SINGLE CARD HERO
+     Action card centered on screen. Self-contained. Tinder-stack feel.
+     =========================================================================== */
+  .opt-d { flex:1; display:flex; flex-direction:column; padding:0 20px 18px; align-items:center; }
+  .opt-d .brand-mini { display:flex; align-items:center; gap:8px; padding-top:14px; }
+  .opt-d .brand-mini .nm { font-size:13px; color:var(--cream); font-weight:800; letter-spacing:-0.2px; }
+  .opt-d .brand-mini .nm i { font-family:var(--serif); font-style:italic; color:var(--brass); font-weight:400; font-size:14px; }
+  .opt-d .stack-wrap { flex:1; display:flex; align-items:center; justify-content:center; width:100%; }
+  .opt-d .card-stack { width:100%; position:relative; }
+  .opt-d .card-stack .back1 {
+    position:absolute; left:8px; right:8px; top:14px; height:90%; border-radius:22px;
+    background:var(--surface); border:1px solid var(--border-d); opacity:0.5;
+  }
+  .opt-d .card-stack .back2 {
+    position:absolute; left:16px; right:16px; top:28px; height:80%; border-radius:22px;
+    background:var(--surface); border:1px solid var(--border-d); opacity:0.25;
+  }
+  .opt-d .card {
+    position:relative; background:var(--surface); border-radius:22px; padding:22px 18px;
+    border:1px solid var(--border);
+    display:flex; flex-direction:column; gap:12px; align-items:center;
+  }
+  .opt-d .card .logo-mark { margin-bottom:4px; }
+  .opt-d .card .h { font-family:var(--serif); font-style:italic; font-size:24px; color:var(--brass); line-height:1.05; text-align:center; }
+  .opt-d .card .gender { margin-top:4px; }
+  .opt-d .card .presence { font-size:11px; }
+  .opt-d .premium-link { margin-top:14px; }
+
+  /* explanation/decision card */
+  .legend { padding:18px; border-radius:14px; background:var(--surface); border:1px solid var(--border); margin-top:20px; }
+  .legend h3 { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--brass); margin-bottom:12px; }
+  .legend table { width:100%; border-collapse:collapse; font-size:13px; }
+  .legend th { text-align:left; padding:9px 10px; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border); font-weight:700; }
+  .legend td { padding:11px 10px; border-bottom:1px solid var(--border-d); color:var(--sage); vertical-align:top; line-height:1.5; }
+  .legend td b { color:var(--cream); }
+  .legend td .green { color:var(--green); font-weight:600; }
+  .legend td .coral { color:var(--coral); font-weight:600; }
+
+  .foot { max-width:1480px; margin:6px auto 0; padding:20px 40px; color:var(--muted); font-size:13px; line-height:1.7; }
+  .foot b { color:var(--brass); }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <div class="eyebrow">Home redesign · 4 directions · pick one</div>
+  <h1>Random Malayali — Home, 4 ways</h1>
+  <p class="lead">Each phone below = a <b>distinct philosophy</b>, not a color tweak. Same content (gender pills, online count, CTA, premium upsell) — different layouts of attention. Pick one, I implement. Animations on B's counter rings + presence dot are simulated.</p>
+</header>
+
+<section class="block">
+  <div class="rail">
+
+    <!-- OPTION A -->
+    <div class="device">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><span></span><span class="gear">⚙</span></div>
+          <div class="opt-a">
+            <div class="head-block">
+              <div class="logo-mark lg"><span>മ</span></div>
+              <div class="h1">Talk to a</div>
+              <div class="h2">Random Malayali</div>
+              <div class="presence"><span class="dot"></span> 1,284 Malayalis online · worldwide</div>
+            </div>
+            <div class="actions">
+              <div class="gender">
+                <div class="pill on"><span class="ic">♂</span>Male</div>
+                <div class="pill"><span class="ic">♀</span>Female</div>
+              </div>
+              <div class="cta">💬 &nbsp; Start chatting</div>
+              <div class="premium-link">Go Premium — no ads, more features</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap">
+        <b>A · Editorial whitespace</b>
+        Magazine feel. Big serif italic headline dominates. Actions = quiet utility cluster at the bottom. Premium = text link only.
+        <span class="ph">Calm, premium, confident.</span>
+        <span class="tr"><b>Strength:</b> least cluttered, most "designed." <b>Risk:</b> CTA might feel under-emphasized.</span>
+      </div>
+    </div>
+
+    <!-- OPTION B -->
+    <div class="device">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><span></span><span class="gear">⚙</span></div>
+          <div class="opt-b">
+            <div class="brand-row">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="wm">Random <i>Malayali</i></div>
+            </div>
+            <div class="counter-block">
+              <div class="counter-ring">
+                <div style="display:flex;flex-direction:column;align-items:center;">
+                  <div class="count-num">1,284</div>
+                  <div class="count-sub">Malayalis online</div>
+                </div>
+              </div>
+              <div class="count-live">● LIVE NOW</div>
+              <div class="tag">someone's waiting</div>
+            </div>
+            <div class="actions">
+              <div class="gender">
+                <div class="pill on"><span class="ic">♂</span>Male</div>
+                <div class="pill"><span class="ic">♀</span>Female</div>
+              </div>
+              <div class="cta">💬 &nbsp; Start chatting</div>
+              <div class="premium-link">Go Premium</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap">
+        <b>B · Big counter hero</b>
+        Live count is the centerpiece. FOMO-driven. "1,284 LIVE NOW" reads instantly as proof the app isn't dead.
+        <span class="ph">Punchy, social-proof-led, modern.</span>
+        <span class="tr"><b>Strength:</b> instant credibility, dopamine. <b>Risk:</b> exposes the count loudly — if it ever reads low, hurts more.</span>
+      </div>
+    </div>
+
+    <!-- OPTION C -->
+    <div class="device">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><span></span><span class="gear">⚙</span></div>
+          <div class="opt-c">
+            <div class="head">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="wm">Random <span style="font-family:var(--serif);font-style:italic;color:var(--brass);font-weight:400;font-size:17px;">Malayali</span></div>
+            </div>
+            <div class="ask">How do you feel like <i>talking?</i></div>
+            <div class="vibes">
+              <div class="vibe on"><div class="e">☕</div><div class="n">Timepass</div><div class="ml">വെറുതേ</div></div>
+              <div class="vibe"><div class="e">🌧️</div><div class="n">Vent</div><div class="ml">മനസ്സ് തുറക്കാം</div></div>
+              <div class="vibe"><div class="e">😄</div><div class="n">Just fun</div><div class="ml">ചിരിക്കാം</div></div>
+              <div class="vibe"><div class="e">🌴</div><div class="n">Naadu</div><div class="ml">നാട്ടുകാര്യം</div></div>
+            </div>
+            <div class="presence"><span class="dot"></span> 1,284 Malayalis online</div>
+            <div class="actions">
+              <div class="gender">
+                <div class="pill on"><span class="ic">♂</span>Male</div>
+                <div class="pill"><span class="ic">♀</span>Female</div>
+              </div>
+              <div class="cta">💬 &nbsp; Start chatting</div>
+              <div class="premium-link">Go Premium</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap">
+        <b>C · Vibe-first</b>
+        Adds a vibe / mood pick above gender. Gives the chat intent. Filters horny, matches like minds.
+        <span class="ph">Modern, identity-lite, retention-positive.</span>
+        <span class="tr"><b>Strength:</b> the biggest retention lever you can add; sets expectations. <b>Risk:</b> <span class="coral">small feature change</span> — needs vibe field in match queue + matcher tweak.</span>
+      </div>
+    </div>
+
+    <!-- OPTION D -->
+    <div class="device">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><span></span><span class="gear">⚙</span></div>
+          <div class="opt-d">
+            <div class="brand-mini">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="nm">Random <i>Malayali</i></div>
+            </div>
+            <div class="stack-wrap">
+              <div class="card-stack">
+                <div class="back2"></div>
+                <div class="back1"></div>
+                <div class="card">
+                  <div class="logo-mark lg"><span>മ</span></div>
+                  <div class="h">Talk to a<br>Malayali</div>
+                  <div class="presence"><span class="dot"></span> 1,284 online · worldwide</div>
+                  <div class="gender">
+                    <div class="pill on"><span class="ic">♂</span>Male</div>
+                    <div class="pill"><span class="ic">♀</span>Female</div>
+                  </div>
+                  <div class="cta">💬 &nbsp; Start chatting</div>
+                </div>
+              </div>
+            </div>
+            <div class="premium-link">Go Premium</div>
+          </div>
+        </div>
+      </div>
+      <div class="cap">
+        <b>D · Single card hero</b>
+        Self-contained action card centered on the screen. Tinder-stack feel. Two faded cards behind hint at "next match."
+        <span class="ph">Focused, intentional, app-like (not website-like).</span>
+        <span class="tr"><b>Strength:</b> one clear focal target — eye can't go anywhere else. <b>Risk:</b> card stack metaphor implies swiping, which you don't have.</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="legend">
+    <h3>Decision matrix</h3>
+    <table>
+      <thead>
+        <tr><th>Option</th><th>Personality</th><th>Best when</th><th>Tradeoff</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>A</b> Editorial</td>
+          <td>Calm, premium</td>
+          <td>You want the app to <b>feel like a magazine</b>, not a tool</td>
+          <td>CTA softer than B</td>
+        </tr>
+        <tr>
+          <td><b>B</b> Counter hero</td>
+          <td>FOMO, energetic</td>
+          <td>You want <b>instant credibility</b> ("not dead") to fight ghost-town suspicion</td>
+          <td>Count is everywhere — bad day = worse look</td>
+        </tr>
+        <tr>
+          <td><b>C</b> Vibe-first</td>
+          <td>Modern, intent-led</td>
+          <td>You're <b>open to one small feature add</b> for big retention upside</td>
+          <td><span class="coral">Feature change</span> — needs vibe field server-side</td>
+        </tr>
+        <tr>
+          <td><b>D</b> Single card</td>
+          <td>Focused, app-like</td>
+          <td>You want <b>one obvious focal target</b> with everything else removed</td>
+          <td>Card stack implies swipe (you don't have it)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="foot">
+  Reply with <b>A / B / C / D</b> (or a mix — e.g. "B's counter + A's editorial type") and I implement it cleanly into HomeScreen.kt. None implemented yet — pure mockup.
+</div>
+
+</body>
+</html>

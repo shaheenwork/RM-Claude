@@ -1,0 +1,561 @@
+package com.randomchat.shnapp
+
+import android.Manifest
+import android.app.KeyguardManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.Surface
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.NavType
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.randomchat.shnapp.ads.AdMobManager
+import com.randomchat.shnapp.billing.PaywallSource
+import com.randomchat.shnapp.firebase.FcmManager
+import com.randomchat.shnapp.ui.components.AdFreeUpsellSheet
+import com.randomchat.shnapp.theme.DeepSpace
+import com.randomchat.shnapp.theme.StrangerChatTheme
+import com.randomchat.shnapp.ui.dialogs.MatchmakingDialog
+import com.randomchat.shnapp.ui.screens.ChatScreen
+import com.randomchat.shnapp.ui.screens.HomeScreen
+import com.randomchat.shnapp.ui.screens.LockScreen
+import com.randomchat.shnapp.ui.screens.PremiumScreen
+import com.randomchat.shnapp.ui.screens.SavedChatsScreen
+import com.randomchat.shnapp.ui.screens.OnboardingScreen
+import com.randomchat.shnapp.ui.screens.SettingsScreen
+import com.randomchat.shnapp.ui.components.GenderPickSheet
+import com.randomchat.shnapp.ui.screens.SplashScreen
+import com.randomchat.shnapp.ui.screens.TutorialScreen
+import com.randomchat.shnapp.utils.Constants
+import com.randomchat.shnapp.utils.SessionManager
+import com.randomchat.shnapp.viewmodel.ChatViewModel
+import com.randomchat.shnapp.viewmodel.HomeViewModel
+import kotlinx.coroutines.flow.first
+import com.randomchat.shnapp.viewmodel.PremiumViewModel
+import com.randomchat.shnapp.viewmodel.SavedChatsViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+object Routes {
+    const val SPLASH = "splash"
+    const val ONBOARDING = "onboarding"
+    const val TUTORIAL = "tutorial"
+    const val HOME = "home"
+    const val CHAT = "chat"
+    /** Route pattern — navigate via [premium] so the paywall knows its entry point. */
+    const val PREMIUM = "premium?source={source}"
+    fun premium(source: String) = "premium?source=$source"
+    const val SETTINGS = "settings"
+    const val SAVED_CHATS = "saved_chats"
+}
+
+class MainActivity : ComponentActivity() {
+
+    private val homeViewModel: HomeViewModel by viewModels()
+    private val chatViewModel: ChatViewModel by viewModels()
+    private val premiumViewModel: PremiumViewModel by viewModels()
+    private val savedChatsViewModel: SavedChatsViewModel by viewModels()
+
+    private var isFirstStart = true   // skip lock check on cold start
+
+    // Handles result from system credential screen
+    private val unlockLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) homeViewModel.setLocked(false)
+        // cancelled/failed: stay on LockScreen — user taps Unlock to retry
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (homeViewModel.appLockEnabled.value && homeViewModel.isPremium.value) {
+            homeViewModel.setLocked(true)
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (isFirstStart) { isFirstStart = false; return }
+        if (homeViewModel.isLocked.value) showLockPrompt()
+    }
+
+    fun showLockPrompt() {
+        val km = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        if (!km.isDeviceSecure) {
+            homeViewModel.setAppLockEnabled(false)
+            homeViewModel.setLocked(false)
+            Toast.makeText(
+                this,
+                "No device screen lock found. App Lock has been disabled.",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+        @Suppress("DEPRECATION")
+        val intent = km.createConfirmDeviceCredentialIntent(
+            "Random Malayali",
+            "Verify your identity to continue"
+        )
+        if (intent != null) unlockLauncher.launch(intent)
+        else { homeViewModel.setAppLockEnabled(false); homeViewModel.setLocked(false) }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        // No system splash — go straight to the branded Compose SplashScreen.
+        // Activity theme windowBackground is splash_bg (dark green) so the
+        // ~50ms window before first Compose frame matches the brand bg seamlessly.
+        installSplashScreen()
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+
+        // Detect launch-from-push so AppNavHost can auto-start matchmaking after splash.
+        val launchedFromPush = intent?.getStringExtra("src") == "push"
+        // Paywall reminder push → open the paywall after splash. Fresh starts only,
+        // so a rotation doesn't reopen it.
+        val openPaywallFromPush = savedInstanceState == null && launchedFromPush &&
+            intent?.getStringExtra("type") == "paywall_reminder"
+
+        setContent {
+            StrangerChatTheme {
+                val haptics = com.randomchat.shnapp.utils.rememberHaptics()
+                androidx.compose.runtime.CompositionLocalProvider(
+                    com.randomchat.shnapp.utils.LocalHaptics provides haptics
+                ) {
+                    Surface(modifier = Modifier.fillMaxSize(), color = DeepSpace) {
+                        AppNavHost(
+                            homeViewModel = homeViewModel,
+                            chatViewModel = chatViewModel,
+                            premiumViewModel = premiumViewModel,
+                            savedChatsViewModel = savedChatsViewModel,
+                            launchedFromPush = launchedFromPush,
+                            openPaywallFromPush = openPaywallFromPush,
+                            onTryUnlock = { showLockPrompt() }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AppNavHost(
+    homeViewModel: HomeViewModel,
+    chatViewModel: ChatViewModel,
+    premiumViewModel: PremiumViewModel,
+    savedChatsViewModel: SavedChatsViewModel,
+    launchedFromPush: Boolean = false,
+    openPaywallFromPush: Boolean = false,
+    onTryUnlock: () -> Unit = {}
+) {
+    val navController = rememberNavController()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    // ── App Lock gate ──────────────────────────────────────────────────────────
+    val isLocked by homeViewModel.isLocked.collectAsState()
+    if (isLocked) {
+        LockScreen(onUnlock = onTryUnlock)
+        return
+    }
+
+    // Matchmaking overlay state
+    var showMatchmakingDialog by remember { mutableStateOf(false) }
+    // Gender prompt — shown before every matchmaking start (per-chat selection)
+    var pendingGenderPrompt by remember { mutableStateOf(false) }
+
+    val scope = rememberCoroutineScope()
+
+    // Interstitial ad trigger
+    val triggerInterstitial by chatViewModel.triggerInterstitial.collectAsState()
+    // "Tired of ads?" sheet — follows a shown interstitial, rate-limited in SessionManager.
+    var showAdFreeSheet by remember { mutableStateOf(false) }
+    LaunchedEffect(triggerInterstitial) {
+        if (triggerInterstitial) {
+            AdMobManager.getInstance(context).showInterstitialIfReady(
+                context as android.app.Activity
+            ) { shown ->
+                chatViewModel.interstitialShown()
+                if (shown) scope.launch {
+                    val sm = SessionManager.getInstance(context)
+                    if (!sm.isPremiumFlow.first() && sm.recordInterstitialShown()) {
+                        delay(350) // let the ad's exit transition finish
+                        showAdFreeSheet = true
+                        com.randomchat.shnapp.utils.Telemetry.upsellShown("ad_free_sheet")
+                    }
+                }
+            }
+        }
+    }
+
+    // ── Notification permission ask (Android 13+) ─────────────────────────────
+    // Two-stage ask for non-interruptive UX:
+    //   1. On chat-end (>4 real msgs, perm not granted) → set "pending" flag.
+    //      Do NOT show the dialog here — user is still reading the chat-ended
+    //      panel and the prompt would feel intrusive / hide that they ended.
+    //   2. Next time user lands on Home (after a small settle delay), surface
+    //      the rationale. Calm moment, no context to process.
+    var showNotifRationale by remember { mutableStateOf(false) }
+    val notifPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            scope.launch {
+                SessionManager.getInstance(context).setNotifsEnabled(true)
+                FcmManager.subscribeAll() // receive pushes now, not only after the next launch
+            }
+        }
+    }
+
+    // Stage 1 — mark pending on qualifying chat-end.
+    val chatEnded by chatViewModel.chatEnded.collectAsState()
+    LaunchedEffect(chatEnded) {
+        if (!chatEnded) return@LaunchedEffect
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return@LaunchedEffect
+        val sm = SessionManager.getInstance(context)
+        if (sm.notifPermAskedFlow.first()) return@LaunchedEffect
+        val realMsgs = chatViewModel.messages.value.count {
+            it.type != com.randomchat.shnapp.model.MessageType.SYSTEM
+        }
+        if (realMsgs <= 4) return@LaunchedEffect
+        val granted = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+        if (granted) { sm.markNotifPermAsked(); return@LaunchedEffect }
+        sm.setPendingNotifAsk(true)
+    }
+
+    // Stage 2 — when user is back on Home with a pending ask, surface rationale.
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
+    LaunchedEffect(currentRoute) {
+        if (currentRoute != Routes.HOME) return@LaunchedEffect
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return@LaunchedEffect
+        val sm = SessionManager.getInstance(context)
+        if (!sm.pendingNotifAskFlow.first()) return@LaunchedEffect
+        if (sm.notifPermAskedFlow.first()) {
+            sm.setPendingNotifAsk(false); return@LaunchedEffect
+        }
+        // Settle delay — let Home finish entering, user orient themselves.
+        delay(900)
+        // Re-check we're still on Home (user could navigate fast).
+        if (navController.currentDestination?.route == Routes.HOME) {
+            showNotifRationale = true
+        }
+    }
+
+    if (showNotifRationale) {
+        NotifRationaleDialog(
+            onAllow = {
+                showNotifRationale = false
+                scope.launch {
+                    val sm = SessionManager.getInstance(context)
+                    sm.markNotifPermAsked()
+                    sm.setPendingNotifAsk(false)
+                }
+                notifPermLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            },
+            onDismiss = {
+                showNotifRationale = false
+                scope.launch {
+                    val sm = SessionManager.getInstance(context)
+                    sm.markNotifPermAsked()
+                    sm.setPendingNotifAsk(false)
+                }
+            }
+        )
+    }
+
+    NavHost(
+        navController = navController,
+        startDestination = Routes.SPLASH,
+        enterTransition = { fadeIn(tween(300)) },
+        exitTransition = { fadeOut(tween(200)) }
+    ) {
+        composable(Routes.SPLASH) {
+            // State flip triggers an async LaunchedEffect that reads DataStore
+            // before deciding which destination to open.
+            var splashDone by remember { mutableStateOf(false) }
+
+            LaunchedEffect(splashDone) {
+                if (!splashDone) return@LaunchedEffect
+                val sm = SessionManager.getInstance(context)
+                val accepted = sm.termsAcceptedFlow.first()
+                if (accepted) {
+                    // TUTORIAL DISABLED — skip regardless of tutorialSeen flag.
+                    // Re-enable: restore tutorialSeen check and navigate to Routes.TUTORIAL.
+                    if (false) {
+                        navController.navigate(Routes.TUTORIAL) {
+                            popUpTo(Routes.SPLASH) { inclusive = true }
+                        }
+                    } else {
+                        // Notification tap (and normal launch) land on Home.
+                        // Matchmaking only starts when the user taps "Start chatting".
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.SPLASH) { inclusive = true }
+                        }
+                        // Paywall reminder push → paywall on top of Home (back returns Home).
+                        if (openPaywallFromPush && !sm.isPremiumFlow.first()) {
+                            navController.navigate(Routes.premium(PaywallSource.PUSH_REMINDER))
+                        }
+                    }
+                } else {
+                    // First launch — must accept policies before entering the app.
+                    navController.navigate(Routes.ONBOARDING) {
+                        popUpTo(Routes.SPLASH) { inclusive = true }
+                    }
+                }
+            }
+
+            SplashScreen(onReady = { splashDone = true })
+        }
+
+        composable(
+            Routes.ONBOARDING,
+            enterTransition = { fadeIn(tween(400)) },
+            exitTransition = { fadeOut(tween(250)) }
+        ) {
+            OnboardingScreen(
+                onAccepted = {
+                    // TUTORIAL DISABLED — go straight to HOME.
+                    // Re-enable: navigate to Routes.TUTORIAL instead.
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.ONBOARDING) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(
+            Routes.TUTORIAL,
+            enterTransition = { fadeIn(tween(400)) },
+            exitTransition = { fadeOut(tween(250)) }
+        ) {
+            val scope = rememberCoroutineScope()
+            TutorialScreen(
+                onComplete = {
+                    scope.launch {
+                        SessionManager.getInstance(context).markTutorialSeen()
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.TUTORIAL) { inclusive = true }
+                        }
+                    }
+                }
+            )
+        }
+
+        composable(
+            Routes.HOME,
+            enterTransition = { fadeIn(tween(400)) },
+            exitTransition = { fadeOut(tween(200)) }
+        ) {
+            HomeScreen(
+                viewModel = homeViewModel,
+                onStartChat = { gender ->
+                    chatViewModel.startSearch(gender)
+                    showMatchmakingDialog = true
+                },
+                onOpenPremium = { source -> navController.navigate(Routes.premium(source)) },
+                onOpenSettings = { navController.navigate(Routes.SETTINGS) }
+            )
+        }
+
+        composable(
+            Routes.CHAT,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { it } }
+        ) {
+            ChatScreen(
+                viewModel = chatViewModel,
+                onNavigateBack = {
+                    navController.popBackStack(Routes.HOME, false)
+                },
+                onNavigateToPremium = { source -> navController.navigate(Routes.premium(source)) }
+            )
+        }
+
+        composable(
+            Routes.PREMIUM,
+            arguments = listOf(
+                navArgument("source") {
+                    type = NavType.StringType
+                    defaultValue = PaywallSource.UNKNOWN
+                }
+            ),
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { it } }
+        ) { entry ->
+            PremiumScreen(
+                viewModel = premiumViewModel,
+                source = entry.arguments?.getString("source") ?: PaywallSource.UNKNOWN,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            Routes.SETTINGS,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { it } }
+        ) {
+            SettingsScreen(
+                viewModel = homeViewModel,
+                premiumViewModel = premiumViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onOpenPremium = { source -> navController.navigate(Routes.premium(source)) },
+                onOpenSavedChats = { navController.navigate(Routes.SAVED_CHATS) }
+            )
+        }
+
+        composable(
+            Routes.SAVED_CHATS,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { it } }
+        ) {
+            SavedChatsScreen(
+                viewModel = savedChatsViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+    }
+
+    // Matchmaking dialog — full-screen overlay on HomeScreen.
+    // Observes matchmakingState so it can flip to an error UI on network failure.
+    val mmState by chatViewModel.matchmakingState.collectAsState()
+    val mmError = (mmState as? com.randomchat.shnapp.realtime.MatchmakingState.Error)?.msg
+    MatchmakingDialog(
+        visible = showMatchmakingDialog,
+        errorMessage = mmError,
+        onCancel = {
+            showMatchmakingDialog = false
+            chatViewModel.newChat()
+        }
+    )
+
+    // Gender pick — gates every startSearch entry (home tap + push auto-start).
+    // Selection is sent to the matchmaker (soft F-F bias). Never shown in chat.
+    GenderPickSheet(
+        visible = pendingGenderPrompt,
+        onSelect = { gender ->
+            pendingGenderPrompt = false
+            // Persist so Home's inline selector reflects this choice next time.
+            homeViewModel.setGender(gender)
+            chatViewModel.startSearch(gender)
+            showMatchmakingDialog = true
+        },
+        onDismiss = { pendingGenderPrompt = false }
+    )
+
+    AdFreeUpsellSheet(
+        visible = showAdFreeSheet,
+        onDismiss = { showAdFreeSheet = false },
+        onUpgrade = {
+            showAdFreeSheet = false
+            navController.navigate(Routes.premium(PaywallSource.ADS))
+        }
+    )
+
+    // 2-4 s random delay for believability, then navigate to chat.
+    // Matchmaking runs in parallel; if not yet matched, pending messages queue
+    // in ChatManager and flush automatically when stranger connects.
+    LaunchedEffect(showMatchmakingDialog) {
+        if (!showMatchmakingDialog) return@LaunchedEffect
+        val waitMs = Constants.MIN_MATCH_DELAY_MS +
+            (Math.random() * (Constants.MAX_MATCH_DELAY_MS - Constants.MIN_MATCH_DELAY_MS)).toLong()
+        delay(waitMs)
+        if (showMatchmakingDialog) {
+            showMatchmakingDialog = false
+            navController.navigate(Routes.CHAT)
+        }
+    }
+}
+
+/**
+ * Pre-permission rationale shown after the user's first real chat, just before
+ * the OS notification-permission dialog. Explains the value so the system prompt
+ * converts better. (Android's own dialog text can't be customised.)
+ */
+@Composable
+private fun NotifRationaleDialog(
+    onAllow: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(dismissOnClickOutside = false),
+        containerColor = com.randomchat.shnapp.theme.CardSurface,
+        icon = {
+            androidx.compose.material3.Icon(
+                androidx.compose.material.icons.Icons.Default.Notifications,
+                contentDescription = null,
+                tint = com.randomchat.shnapp.theme.AccentCyan,
+                modifier = Modifier.size(28.dp)
+            )
+        },
+        title = {
+            androidx.compose.material3.Text(
+                "Don't miss the good ones",
+                color = com.randomchat.shnapp.theme.TextPrimary,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                fontSize = 18.sp
+            )
+        },
+        text = {
+            androidx.compose.material3.Text(
+                "Get notified when interesting Malayalis are online and ready to chat.",
+                color = com.randomchat.shnapp.theme.TextSecondary,
+                fontSize = 14.sp,
+                lineHeight = 20.sp
+            )
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = onAllow) {
+                androidx.compose.material3.Text(
+                    "Turn on",
+                    color = com.randomchat.shnapp.theme.AccentCyan,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                )
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                androidx.compose.material3.Text(
+                    "Not now",
+                    color = com.randomchat.shnapp.theme.TextMuted
+                )
+            }
+        }
+    )
+}

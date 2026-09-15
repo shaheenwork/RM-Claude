@@ -1,0 +1,974 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>StrangerChat — Redesign Preview</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  /* ── Tokens (mirror of proposed Tokens.kt) ────────────────────────────── */
+  :root {
+    --bg:           #0A0E18;
+    --surface:      #111827;
+    --elevated:     #1A2236;
+    --overlay:      #1F2A40;
+    --border-sub:   rgba(255,255,255,0.10);
+    --border:       rgba(255,255,255,0.15);
+    --border-stg:   rgba(255,255,255,0.25);
+    --brand:        #00C7E6;
+    --brand-dim:    #0098B8;
+    --premium:      #E6B800;
+    --premium-dim:  #B8960C;
+    --green:        #00C779;
+    --red:          #FF5252;
+    --text-1:       #F0F4FF;
+    --text-2:       #A0AABF;
+    --text-3:       #6B7790;
+    --text-disabled:#4A5568;
+    --bubble-out:   #134568;
+    --bubble-in:    #1A2236;
+
+    /* radius */
+    --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 24px; --r-pill: 999px;
+
+    --font: 'Inter', -apple-system, system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    background: #050810;
+    color: var(--text-1);
+    font-family: var(--font);
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page-header {
+    padding: 24px 32px 8px;
+    border-bottom: 1px solid #11161f;
+    background: #07090f;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .page-header h1 { font-size: 22px; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.5px; }
+  .page-header p { font-size: 13px; color: var(--text-2); margin: 0; }
+  .legend { display:flex; gap:14px; margin-top:8px; font-size:11px; color:var(--text-3); }
+  .legend span::before { content:""; display:inline-block; width:8px; height:8px; border-radius:99px; margin-right:5px; vertical-align:middle; }
+  .legend .new::before { background:var(--brand); }
+  .legend .anim::before { background:var(--premium); }
+
+  /* phone grid */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 380px));
+    gap: 56px 32px;
+    padding: 32px;
+    justify-content: center;
+  }
+  .frame {
+    position: relative;
+    width: 360px;
+    height: 740px;
+    background: var(--bg);
+    border-radius: 38px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 0 8px #181b22, 0 0 0 10px #2c303a;
+    display: flex;
+    flex-direction: column;
+  }
+  .frame::before {
+    content: "";
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 100px; height: 24px; background: #050810; border-radius: 14px; z-index: 999;
+  }
+  .frame-label { text-align: center; font-size: 13px; font-weight: 600; color: var(--text-2); margin-top: -42px; margin-bottom: 14px; }
+  .frame-sub { text-align: center; font-size: 11px; color: var(--text-3); margin-top: -10px; margin-bottom: 10px; line-height: 1.4; padding: 0 12px; }
+
+  /* status bar */
+  .status {
+    height: 44px;
+    padding: 14px 24px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; font-weight: 600;
+  }
+  .status .right { display: flex; gap: 6px; align-items: center; }
+  .status .right svg { width: 14px; height: 14px; }
+
+  /* re-usable atoms */
+  .btn-cta {
+    width: 100%;
+    height: 56px;
+    border-radius: var(--r-pill);
+    background: linear-gradient(180deg, var(--brand) 0%, var(--brand-dim) 100%);
+    color: #001620;
+    font-weight: 800;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+    letter-spacing: -0.2px;
+  }
+  .btn-gold {
+    background: linear-gradient(180deg, var(--premium) 0%, var(--premium-dim) 100%);
+    color: #1a1100;
+    font-weight: 800;
+    border-radius: var(--r-pill);
+    padding: 10px 20px;
+    font-size: 13px;
+    letter-spacing: 0.2px;
+  }
+  .pill {
+    background: rgba(0, 199, 121, 0.10);
+    color: var(--green);
+    padding: 4px 10px;
+    border-radius: var(--r-pill);
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pill::before { content:""; width:6px; height:6px; border-radius:99px; background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+  .hairline { height: 1px; background: var(--border-sub); }
+
+  /* Cards (grouped list pattern) */
+  .group {
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+  }
+  .row {
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer;
+  }
+  .row + .row { border-top: 1px solid var(--border-sub); }
+  .row-icon {
+    width: 28px; height: 28px;
+    background: rgba(0,199,230,0.10);
+    border-radius: 8px;
+    display: grid; place-items: center;
+    color: var(--brand);
+    font-size: 14px;
+  }
+  .row-text { flex: 1; }
+  .row-title { font-size: 15px; font-weight: 500; }
+  .row-sub { font-size: 12px; color: var(--text-2); margin-top: 2px; line-height: 1.4; }
+  .row-chev { color: var(--text-3); font-size: 16px; }
+
+  .section-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin: 20px 4px 8px;
+  }
+
+  /* annotation overlays */
+  .anim-dot {
+    position: absolute;
+    width: 18px; height: 18px; border-radius: 99px;
+    background: var(--premium);
+    color: #1a1100;
+    font-size: 10px;
+    font-weight: 800;
+    display: grid; place-items: center;
+    box-shadow: 0 0 0 4px rgba(230, 184, 0, 0.2);
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     SCREEN-SPECIFIC STYLES
+     ───────────────────────────────────────────────────────────────────────── */
+
+  /* Home */
+  .home {
+    flex: 1;
+    padding: 0 24px 24px;
+    display: flex; flex-direction: column;
+    background:
+      radial-gradient(ellipse 70% 40% at 80% 5%, rgba(0,199,230,0.06), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 20% 100%, rgba(0,80,170,0.06), transparent 70%);
+  }
+  .home .topbar { display: flex; justify-content: flex-end; padding: 6px 0; }
+  .home .topbar svg { color: var(--text-2); width: 20px; height: 20px; }
+  .home .hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding-bottom: 12px; }
+  .home .logo {
+    width: 64px; height: 64px;
+    background: rgba(0,199,230,0.10);
+    border: 1px solid var(--border-sub);
+    border-radius: 18px;
+    display: grid; place-items: center;
+    color: var(--brand);
+    font-size: 28px;
+  }
+  .home .title { font-size: 28px; font-weight: 900; letter-spacing: -0.5px; margin-top: 6px; }
+  .home .subtitle { font-size: 13px; color: var(--text-2); margin-top: -4px; }
+  .home .online { font-size: 12px; color: rgba(0,199,121,0.85); display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+  .home .online::before { content:""; width:6px; height:6px; border-radius:99px; background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .home .premium-card {
+    margin-top: 16px;
+    background: linear-gradient(135deg, var(--elevated), #1c1810);
+    border: 1px solid rgba(230, 184, 0, 0.25);
+    border-radius: var(--r-lg);
+    padding: 16px;
+  }
+  .home .premium-card .premium-title { color: var(--premium); font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.2px; }
+  .home .premium-card .premium-features { font-size: 12px; color: var(--text-2); margin-top: 8px; line-height: 1.6; }
+  .home .premium-card .premium-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+  .home .premium-card .price { font-size: 14px; font-weight: 600; }
+  .home .credits-link {
+    margin-top: 14px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--brand);
+    cursor: pointer;
+  }
+
+  /* Tutorial */
+  .tutorial {
+    flex: 1; display: flex; flex-direction: column;
+    padding: 20px 24px;
+    background:
+      radial-gradient(circle 200px at 80% 20%, rgba(230, 184, 0, 0.08), transparent 70%);
+  }
+  .tutorial .skip { align-self: flex-end; color: var(--text-3); font-size: 13px; }
+  .tutorial .hero {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  }
+  .tutorial .icon-circle {
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    background: rgba(230, 184, 0, 0.12);
+    border: 1px solid rgba(230, 184, 0, 0.30);
+    display: grid; place-items: center;
+    color: var(--premium); font-size: 38px;
+    position: relative;
+  }
+  .tutorial .icon-circle::after {
+    content:""; position: absolute; inset: -20px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(230, 184, 0, 0.18) 0%, transparent 70%);
+    z-index: -1;
+  }
+  .tutorial h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; text-align: center; margin: 0; }
+  .tutorial .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; margin-top: 8px; }
+  .tutorial .feature-tile {
+    background: linear-gradient(135deg, var(--surface), #1c1810);
+    border: 1px solid rgba(230, 184, 0, 0.25);
+    border-radius: var(--r-md);
+    padding: 12px 10px;
+    text-align: center;
+  }
+  .tutorial .feature-tile .ti { font-size: 20px; color: var(--premium); }
+  .tutorial .feature-tile .tt { font-size: 12px; font-weight: 600; margin-top: 4px; }
+  .tutorial .feature-tile .ts { font-size: 10px; color: var(--text-2); margin-top: 2px; line-height: 1.3; }
+  .tutorial .dots { display: flex; justify-content: center; gap: 6px; padding: 16px 0 8px; }
+  .tutorial .dot { width: 8px; height: 8px; border-radius: 99px; background: var(--border); transition: all .3s; }
+  .tutorial .dot.active { width: 24px; background: var(--brand); }
+
+  /* Chat */
+  .chat { flex: 1; display: flex; flex-direction: column; background: var(--bg); }
+  .chat-topbar {
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(17, 24, 39, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-sub);
+  }
+  .chat-topbar .back { padding: 6px; color: var(--text-2); }
+  .chat-topbar .meta { flex: 1; }
+  .chat-topbar .name { font-size: 15px; font-weight: 600; }
+  .chat-topbar .typing { font-size: 11px; color: var(--brand); }
+  .chat-topbar .more { padding: 6px; color: var(--text-2); }
+  .chat-topbar .premium-pill {
+    background: rgba(230,184,0,0.14);
+    color: var(--premium);
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin-left: 6px;
+  }
+  .chat-msgs {
+    flex: 1; padding: 12px 14px; overflow-y: auto;
+    display: flex; flex-direction: column;
+    gap: 2px;
+  }
+  .msg-group { margin-bottom: 10px; }
+  .msg {
+    max-width: 78%;
+    padding: 7px 11px;
+    border-radius: 18px;
+    font-size: 14px; line-height: 1.35;
+    word-break: break-word;
+  }
+  .msg.in { background: var(--bubble-in); align-self: flex-start; border-bottom-left-radius: 6px; }
+  .msg.in.mid { border-bottom-left-radius: 18px; border-top-left-radius: 18px; }
+  .msg.in.first { border-top-left-radius: 18px; }
+  .msg.in.last { border-bottom-left-radius: 6px; }
+  .msg.out { background: var(--bubble-out); align-self: flex-end; border-bottom-right-radius: 6px; }
+  .msg.out.mid { border-bottom-right-radius: 18px; border-top-right-radius: 18px; }
+  .msg.out.first { border-top-right-radius: 18px; }
+  .msg.out.last { border-bottom-right-radius: 6px; }
+  .msg + .msg { margin-top: 2px; }
+  .meta-row { font-size: 10px; color: var(--text-3); margin-top: 4px; }
+  .meta-row.out { text-align: right; }
+  .typing-indicator { background: var(--bubble-in); padding: 10px 14px; border-radius: 18px; border-bottom-left-radius: 6px; align-self: flex-start; display: flex; gap: 4px; }
+  .typing-indicator span { width: 6px; height: 6px; background: var(--text-2); border-radius: 99px; opacity: .5; }
+  .reaction-chip {
+    background: var(--elevated);
+    border: 1px solid var(--border-sub);
+    border-radius: 99px;
+    font-size: 11px;
+    padding: 2px 8px;
+    margin-top: 4px;
+    display: inline-flex; gap: 4px; align-items: center;
+    align-self: flex-start;
+  }
+  .chat-composer {
+    padding: 8px 12px 12px;
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(17, 24, 39, 0.85);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border-sub);
+  }
+  .composer-input {
+    flex: 1;
+    background: var(--elevated);
+    border-radius: 24px;
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid var(--border-sub);
+  }
+  .composer-input .icon-btn { color: var(--text-2); font-size: 18px; }
+  .composer-input .text-field { flex: 1; font-size: 14px; color: var(--text-3); }
+  .composer-input .field-cursor { color: var(--text-1); }
+  .send-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--brand);
+    display: grid; place-items: center;
+    color: #001620; font-size: 18px;
+    box-shadow: 0 4px 16px rgba(0, 199, 230, 0.3);
+  }
+
+  /* Settings */
+  .settings { flex:1; display:flex; flex-direction:column; padding: 0 16px 16px; }
+  .settings .top {
+    padding: 8px 0 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .settings .top h1 { font-size: 18px; font-weight: 700; margin: 0; }
+  .settings .scroll { flex:1; overflow-y:auto; padding-top: 4px; }
+
+  /* Premium */
+  .premium-screen {
+    flex: 1; padding: 18px 20px;
+    background:
+      radial-gradient(ellipse 80% 30% at 50% 0%, rgba(230, 184, 0, 0.10), transparent 70%);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .premium-hero { text-align: center; margin: 12px 0 8px; }
+  .premium-hero .award { font-size: 40px; color: var(--premium); }
+  .premium-hero h1 { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; margin: 8px 0 4px; }
+  .premium-hero p { color: var(--text-2); font-size: 13px; margin: 0; }
+  .feat { display:flex; align-items:flex-start; gap:12px; padding: 10px 0; }
+  .feat-ico { width:32px; height:32px; border-radius:10px; background:rgba(230,184,0,0.12); color:var(--premium); display:grid; place-items:center; font-size:14px; flex-shrink:0; }
+  .feat-text .ft { font-size:14px; font-weight:600; }
+  .feat-text .fs { font-size:12px; color:var(--text-2); margin-top:1px; }
+  .plans { display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+  .plan {
+    background: var(--surface);
+    border: 1px solid var(--border-sub);
+    border-radius: var(--r-md);
+    padding: 12px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    position: relative;
+  }
+  .plan.active { border-color: var(--brand); background: rgba(0,199,230,0.06); }
+  .plan.popular::before {
+    content: "BEST VALUE";
+    position: absolute; top: -8px; left: 12px;
+    background: var(--premium); color: #1a1100;
+    font-size: 9px; font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.4px;
+  }
+  .plan .pn { font-size:14px; font-weight:600; }
+  .plan .pp { font-size:14px; font-weight:600; color: var(--brand); }
+
+  /* SavedChats */
+  .saved { flex:1; padding: 0 16px 16px; }
+  .saved-top { padding: 12px 0; display:flex; align-items:center; gap:8px; }
+  .saved-top h1 { font-size: 18px; font-weight: 700; margin:0; }
+  .saved-empty { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding: 40px 24px; text-align: center; }
+  .saved-empty .ico { width:64px; height:64px; border-radius:50%; background: rgba(0,199,230,0.08); display:grid; place-items:center; font-size:26px; color:var(--brand); }
+  .saved-empty h2 { font-size: 17px; font-weight: 700; margin: 0; }
+  .saved-empty p { font-size: 12px; color: var(--text-2); margin:0; line-height: 1.5; }
+  .saved-list { display:flex; flex-direction:column; gap:0; }
+  .saved-item { padding: 12px 14px; display:flex; gap:12px; }
+  .saved-item + .saved-item { border-top: 1px solid var(--border-sub); }
+  .saved-item .savatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(0,199,230,0.10); color: var(--brand); display:grid; place-items:center; flex-shrink:0; }
+  .saved-item .smeta { flex:1; min-width:0; }
+  .saved-item .sname { font-size: 14px; font-weight: 600; }
+  .saved-item .spreview { font-size: 12px; color: var(--text-2); margin-top: 2px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+  .saved-item .stime { font-size: 11px; color: var(--text-3); flex-shrink:0; }
+
+  /* Matchmaking dialog overlay */
+  .matchmaking {
+    position: absolute; inset: 0;
+    backdrop-filter: blur(16px);
+    background: rgba(8, 11, 20, 0.7);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px 24px;
+  }
+  .mm-avatars {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin-bottom: 30px;
+  }
+  .mm-avatar {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: rgba(0,199,230,0.12);
+    border: 1px solid var(--border-sub);
+    display: grid; place-items: center;
+    font-size: 26px;
+  }
+  .mm-avatar:nth-child(2) { background: rgba(230,184,0,0.10); }
+  .mm-avatar:nth-child(5) { background: rgba(0,199,121,0.10); }
+  .mm-text { font-size: 16px; font-weight: 700; }
+  .mm-sub { font-size: 12px; color: var(--text-2); margin-top: 6px; }
+  .mm-cancel { color: var(--text-3); font-size: 13px; margin-top: 50px; }
+
+  /* Lock screen */
+  .lockscreen {
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding: 40px 24px;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 30%, rgba(230,184,0,0.10), transparent 70%);
+    gap: 14px;
+  }
+  .lockscreen .lock-ico {
+    width: 84px; height: 84px; border-radius: 50%;
+    background: rgba(230,184,0,0.10);
+    border: 1px solid rgba(230,184,0,0.25);
+    display:grid; place-items:center;
+    color: var(--premium); font-size: 38px;
+  }
+  .lockscreen h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
+  .lockscreen p { font-size: 13px; color: var(--text-2); margin: 0 0 26px; }
+
+  /* Onboarding */
+  .onboarding { flex:1; padding: 30px 24px 24px; display:flex; flex-direction:column; gap: 14px; }
+  .onboarding .badge { width:64px; height:64px; border-radius: 50%; background: rgba(0,199,230,0.10); display: grid; place-items:center; font-size: 30px; color: var(--brand); margin-bottom: 8px; }
+  .onboarding h1 { font-size: 26px; font-weight: 900; margin: 0; letter-spacing: -0.5px; line-height: 1.2; }
+  .onboarding p { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+  .onboarding ul { padding-left: 18px; color: var(--text-2); font-size: 13px; line-height: 1.7; margin: 0; }
+  .onboarding ul li::marker { color: var(--brand); }
+  .onboarding .check-row { display:flex; align-items:center; gap:10px; font-size: 13px; }
+  .onboarding .check-row .checkbox { width:18px; height:18px; border-radius: 4px; border: 1px solid var(--border); background: rgba(0,199,230,0.06); display:grid; place-items:center; color: var(--brand); font-size:11px; }
+  .onboarding .legal { font-size: 11px; color: var(--text-3); line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>StrangerChat — Redesign Preview</h1>
+  <p>Mockup of all screens after applying tokens, motion system, message grouping, composer redesign, hierarchy fixes, removing ambient anim, etc.</p>
+  <div class="legend">
+    <span class="new">Changed vs current</span>
+    <span class="anim">Animated interaction (hover the dot)</span>
+  </div>
+</div>
+
+<div class="board">
+
+  <!-- ───────── Onboarding ───────── -->
+  <div>
+    <div class="frame">
+      <div class="status">9:41<div class="right">●●●● 5G ■</div></div>
+      <div class="onboarding">
+        <div class="badge">🛡️</div>
+        <h1>Welcome to<br/>StrangerChat</h1>
+        <p>Talk to a random stranger. Completely anonymous. No phone or email needed.</p>
+        <div style="margin-top: 6px; display:flex; flex-direction:column; gap: 10px;">
+          <div class="check-row"><span class="checkbox">✓</span><span>No personal data collected</span></div>
+          <div class="check-row"><span class="checkbox">✓</span><span>Chats auto-expire</span></div>
+          <div class="check-row"><span class="checkbox">✓</span><span>Report any user with one tap</span></div>
+        </div>
+        <div style="flex:1"></div>
+        <p class="legal">By continuing you agree to our <span style="color:var(--brand)">Terms</span> and <span style="color:var(--brand)">Privacy Policy</span>.</p>
+        <button class="btn-cta">Continue</button>
+      </div>
+    </div>
+    <p class="frame-label">Onboarding · TOS</p>
+    <p class="frame-sub">Calmer hierarchy. Trust signals upfront.</p>
+  </div>
+
+  <!-- ───────── Tutorial Page 2 ───────── -->
+  <div>
+    <div class="frame">
+      <div class="status">9:41<div class="right">●●●● 5G ■</div></div>
+      <div class="tutorial">
+        <div class="skip">Skip</div>
+        <div class="hero">
+          <div class="icon-circle">✨</div>
+          <h2>Go further with Premium</h2>
+          <div class="feature-grid">
+            <div class="feature-tile"><div class="ti">📷</div><div class="tt">Photos</div><div class="ts">Send images</div></div>
+            <div class="feature-tile"><div class="ti">🎤</div><div class="tt">Voice</div><div class="ts">Record audio</div></div>
+            <div class="feature-tile"><div class="ti">❤️</div><div class="tt">Reactions</div><div class="ts">React to msgs</div></div>
+            <div class="feature-tile"><div class="ti">👁️</div><div class="tt">Live Preview</div><div class="ts">See typing</div></div>
+            <div class="feature-tile"><div class="ti">🔖</div><div class="tt">Save</div><div class="ts">Keep moments</div></div>
+            <div class="feature-tile"><div class="ti">🚫</div><div class="tt">No Ads</div><div class="ts">Ad-free</div></div>
+          </div>
+          <p style="font-size:12px; color: var(--text-3); margin-top: 8px; text-align: center;">Or earn free credits by watching short ads</p>
+        </div>
+        <div class="dots">
+          <div class="dot"></div>
+          <div class="dot active"></div>
+          <div class="dot"></div>
+        </div>
+        <button class="btn-cta">Next →</button>
+      </div>
+    </div>
+    <p class="frame-label">Tutorial · Premium Showcase</p>
+    <p class="frame-sub">Single hero anim. Cleaner grid. Parallax on swipe.</p>
+  </div>
+
+  <!-- ───────── Home ───────── -->
+  <div>
+    <div class="frame">
+      <div class="status">9:41<div class="right">●●●● 5G ■</div></div>
+      <div class="home">
+        <div class="topbar"><div style="font-size:22px; color: var(--text-2);">⚙</div></div>
+        <div class="hero">
+          <div class="logo">💬</div>
+          <div class="title">StrangerChat</div>
+          <div class="subtitle">Anonymous · Private · Free</div>
+          <div class="online">1,247 online</div>
+          <button class="btn-cta" style="margin-top: 22px;">⚡ Start Anonymous Chat</button>
+          <div class="premium-card">
+            <div class="premium-title">✨ StrangerChat Premium</div>
+            <div class="premium-features">Photos · Voice notes · Reactions · Live preview · Save chats · No ads</div>
+            <div class="premium-bottom">
+              <div class="price">$4.99 <span style="color: var(--text-2); font-weight: 400; font-size: 13px;">/month</span></div>
+              <button class="btn-gold">Upgrade</button>
+            </div>
+          </div>
+          <div class="credits-link">📺 Earn free media credits →</div>
+        </div>
+      </div>
+      <div class="anim-dot" style="top: 250px; left: 38px;">A</div>
+      <div class="anim-dot" style="top: 405px; left: 290px;">B</div>
+    </div>
+    <p class="frame-label">Home</p>
+    <p class="frame-sub">Static gradients. No infinite animation. Online count odometer-style (A). Press scale (B).</p>
+  </div>
+
+  <!-- ───────── Matchmaking Dialog ───────── -->
+  <div>
+    <div class="frame">
+      <div class="status">9:41<div class="right">●●●● 5G ■</div></div>
+      <div class="home" style="filter: blur(2px); opacity: .4;">
+        <div class="topbar"><div>⚙</div></div>
+        <div class="hero">
+          <div class="logo">💬</div>
+          <div class="title">StrangerChat</div>
+        </div>
+      </div>
+      <div class="matchmaking">
+        <div class="mm-avatars">
+          <div class="mm-avatar">😎</div>
+          <div class="mm-avatar">🎨</div>
+          <div class="mm-avatar">🌍</div>
+          <div class="mm-avatar">🎮</div>
+          <div class="mm-avatar">🎵</div>
+          <div class="mm-avatar">📚</div>
+        </div>
+        <div class="mm-text">Looking for a stranger…</div>
+        <div class="mm-sub">Connecting around the world</div>
+        <div class="mm-cancel">Cancel</div>
+      </div>
+      <div class="anim-dot" style="top: 270px; left: 230px;">A</div>
+    </div>
+    <p class="frame-label">Matchmaking Dialog</p>
+    <p class="frame-sub">Backdrop blur. Avatars cycle with spring physics (A).</p>
+  </div>
+
+  <!-- ───────── Chat ───────── -->
+  <div>
+    <div class="frame">
+      <div class="status">9:41<div class="right">●●●● 5G ■</div></div>
+      <div class="chat">
+        <div class="chat-topbar">
+          <div class="back">←</div>
+          <div style="width:32px; height:32px; border-radius:50%; background: rgba(0,199,230,0.10); display:grid; place-items:center; color: var(--brand); font-size:14px;">A</div>
+          <div class="meta">
+            <div class="name">Anonymous Stranger <span class="premium-pill">✨ Premium</span></div>
+            <div class="typing">typing…</div>
+          </div>
+          <div class="more">⋮</div>
+        </div>
+        <div class="chat-msgs">
+          <div style="text-align: center; font-size: 11px; color: var(--text-3); margin: 8px 0;">Today</div>
+
+          <div style="text-align:center; margin: 6px 0;">
+            <span class="pill">You're connected — say hi!</span>
+          </div>
+
+          <!-- Grouped incoming -->
+          <div class="msg-group" style="display: flex; flex-direction: column;">
+            <div class="msg in first">Hey there 👋</div>
+            <div class="msg in mid">What's your favorite hobby?</div>
+            <div class="msg in last">I love hiking and photography</div>
+            <div class="meta-row">9:41 AM</div>
+          </div>
+
+          <!-- Grouped outgoing -->
+          <div class="msg-group" style="display: flex; flex-direction: column;">
+            <div class="msg out first">Hi! Nice to meet you</div>
+            <div class="msg out last">I'm into music production and gaming</div>
+            <div class="meta-row out">9:42 AM · Delivered ✓✓</div>
+          </div>
+
+          <!-- Single with reaction -->
+          <div class="msg-group" style="display: flex; flex-direction: column;">
+            <div class="msg in last">That's awesome! What games do you play?</div>
+            <div class="reaction-chip">❤️ 1</div>
+            <div class="meta-row">9:42 AM</div>
+          </div>
+
+          <!-- Typing -->
+          <div class="typing-indicator"><span></span><span></span><span></span></div>
+        </div>
+        <div class="chat-composer">
+          <div class="composer-input">
+            <div class="icon-btn">📷</div>
+            <div class="icon-btn">🎤</div>
+            <div class="text-field">Message<span class="field-cursor">|</span></div>
+          </div>
+          <div class="send-btn">▷</div>
+        </div>
+      </div>
+      <div class="anim-dot" style="top: 290px; left: 30px;">A</div>
+      <div class="anim-dot" style="top: 350px; left: 260px;">B</div>
+      <div class="anim-dot" style="top: 650px; left: 290px;">C</div>
+    </div>
+    <p class="frame-label">Chat (grouped + composer redesign)</p>
+    <p class="frame-sub">Message grouping (A). Reactions inline (B). Send morphs into bubble (C).</p>
+  </div>
+
+  <!-- ───────── Chat Ended state ───────── -->
+  <div>
+    <div class="frame">
+      <div class="status">9:41<div class="right">●●●● 5G ■</div></div>
+      <div class="chat">
+        <div class="chat-topbar">
+          <div class="back">←</div>
+          <div style="width:32px; height:32px; border-radius:50%; background: rgba(255,82,82,0.10); display:grid; place-items:center; color: var(--red); font-size:14px;">×</div>
+          <div class="meta">
+            <div class="name">Chat Ended</div>
+            <div style="font-size: 11px; color: var(--text-2);">12 messages · 4 min</div>
+          </div>
+          <div class="more">⋮</div>
+        </div>
+        <div class="chat-msgs" style="opacity: 0.55;">
+          <div class="msg-group"><div class="msg in last">Have a great day!</div></div>
+          <div class="msg-group"><div class="msg out last">You too 👋</div></div>
+        </div>
+        <div style="padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="text-align:center;">
+            <span class="pill" style="background: rgba(160, 170, 191, 0.10); color: var(--text-2);">Chat has ended</span>
+          </div>
+          <button class="btn-cta">⚡ New Stranger</button>
+          <div style="display:flex; gap: 8px;">
+            <div style="flex:1; background: var(--surface); padding: 10px; border-radius: var(--r-md); text-align:center; font-size:12px; color: var(--brand); border: 1px solid var(--border-sub);">📺 Save with ad</div>
+            <div style="flex:1; background: var(--surface); padding: 10px; border-radius: var(--r-md); text-align:center; font-size:12px; color: var(--text-2); border: 1px solid var(--border-sub);">Report</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="frame-label">Chat Ended</p>
+    <p class="frame-sub">Soft fade to past chat. Quiet action row, not loud strip.</p>
+  </div>
+
+  <!-- ───────── Settings ───────── -->
+  <div>
+    <div class="frame">
+      <div class="status">9:41<div class="right">●●●● 5G ■</div></div>
+      <div class="settings">
+        <div class="top">
+          <div style="font-size:18px; color: var(--text-2);">←</div>
+          <h1>Settings</h1>
+        </div>
+        <div class="scroll">
+          <div class="section-header">ACCOUNT</div>
+          <div class="group">
+            <div class="row">
+              <div class="row-icon" style="background: rgba(0,199,230,0.12);">👤</div>
+              <div class="row-text">
+                <div class="row-title">Anonymous Session</div>
+                <div class="row-sub">a8f2e9c3d4b5...</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-header">SUBSCRIPTION</div>
+          <div class="group">
+            <div class="row">
+              <div class="row-icon" style="background: rgba(230,184,0,0.12); color: var(--premium);">✨</div>
+              <div class="row-text">
+                <div class="row-title">Upgrade to Premium</div>
+                <div class="row-sub">Photos, voice, reactions & more</div>
+              </div>
+              <div class="row-chev">›</div>
+            </div>
+            <div class="row">
+              <div class="row-icon" style="background: rgba(230,184,0,0.12); color: var(--premium);">🔒</div>
+              <div class="row-text">
+                <div class="row-title">App Lock</div>
+                <div class="row-sub">Premium feature</div>
+              </div>
+              <div style="font-size:11px; color:var(--premium); background: rgba(230,184,0,0.10); padding: 3px 8px; border-radius: 99px; font-weight:700;">Premium</div>
+            </div>
+          </div>
+
+          <div class="section-header">NOTIFICATIONS</div>
+          <div class="group">
+            <div class="row">
+              <div class="row-icon">🔔</div>
+              <div class="row-text">
+                <div class="row-title">Daily activity ping</div>
+                <div class="row-sub">One reminder per day</div>
+              </div>
+              <div style="width:36px; height:20px; background: var(--brand); border-radius:99px; position: relative;">
+                <div style="position:absolute; right:2px; top:2px; width:16px; height:16px; background: white; border-radius:99px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-header">ABOUT</div>
+          <div class="group">
+            <div class="row"><div class="row-icon">🛡️</div><div class="row-text"><div class="row-title">Privacy Policy</div></div><div class="row-chev">›</div></div>
+            <div class="row"><div class="row-icon">📄</div><div class="row-text"><div class="row-title">Terms of Service</div></div><div class="row-chev">›</div></div>
+            <div class="row"><div class="row-icon">ⓘ</div><div class="row-text"><div class="row-title">Version 1.0.1234</div></div></div>
+          </div>
+
+          <div class="section-header" style="color: rgba(255,82,82,0.7);">DANGER ZONE</div>
+          <div class="group" style="background: rgba(255,82,82,0.06); border: 1px solid rgba(255,82,82,0.20);">
+            <div class="row">
+              <div class="row-icon" style="background: rgba(255,82,82,0.12); color: var(--red);">🗑️</div>
+              <div class="row-text">
+                <div class="row-title" style="color: var(--red);">Delete Account</div>
+                <div class="row-sub">Permanently erase all your data</div>
+              </div>
+              <div class="row-chev" style="color: rgba(255,82,82,0.5);">›</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="frame-label">Settings (grouped list)</p>
+    <p class="frame-sub">iOS-style groups. Hairline dividers. Calmer Danger Zone.</p>
+  </div>
+
+  <!-- ───────── Premium ───────── -->
+  <div>
+    <div class="frame">
+      <div class="status">9:41<div class="right">●●●● 5G ■</div></div>
+      <div class="premium-screen">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div style="font-size:18px; color: var(--text-2);">←</div>
+        </div>
+        <div class="premium-hero">
+          <div class="award">✨</div>
+          <h1>StrangerChat<br/>Premium</h1>
+          <p>Unlock the full experience</p>
+        </div>
+
+        <div style="margin-top: 6px;">
+          <div class="feat"><div class="feat-ico">📷</div><div class="feat-text"><div class="ft">Send photos</div><div class="fs">Share images directly</div></div></div>
+          <div class="feat"><div class="feat-ico">🎤</div><div class="feat-text"><div class="ft">Voice notes</div><div class="fs">Record and send audio</div></div></div>
+          <div class="feat"><div class="feat-ico">❤️</div><div class="feat-text"><div class="ft">Message reactions</div><div class="fs">React with custom emojis</div></div></div>
+          <div class="feat"><div class="feat-ico">👁️</div><div class="feat-text"><div class="ft">Live typing preview</div><div class="fs">See drafts in real-time</div></div></div>
+          <div class="feat"><div class="feat-ico">🔖</div><div class="feat-text"><div class="ft">Save conversations</div><div class="fs">Keep your best chats</div></div></div>
+          <div class="feat"><div class="feat-ico">🚫</div><div class="feat-text"><div class="ft">Ad-free experience</div><div class="fs">Zero ads, always</div></div></div>
+        </div>
+
+        <div class="plans">
+          <div class="plan">
+            <div><div class="pn">Weekly</div><div style="font-size:11px; color:var(--text-2);">Try it out</div></div>
+            <div class="pp">$2.99</div>
+          </div>
+          <div class="plan active popular">
+            <div><div class="pn">Yearly</div><div style="font-size:11px; color:var(--text-2);">Save 40%</div></div>
+            <div class="pp">$29.99</div>
+          </div>
+          <div class="plan">
+            <div><div class="pn">Monthly</div><div style="font-size:11px; color:var(--text-2);">Most flexible</div></div>
+            <div class="pp">$4.99</div>
+          </div>
+        </div>
+        <button class="btn-gold" style="width: 100%; height: 52px; font-size: 15px; margin-top: 6px;">Continue with Yearly</button>
+        <p style="text-align:center; font-size: 11px; color: var(--text-3); margin: 0;">Cancel anytime. Join 50,000+ premium users.</p>
+      </div>
+    </div>
+    <p class="frame-label">Premium</p>
+    <p class="frame-sub">Best Value tag. Static gold (no infinite glow). Trust line below CTA.</p>
+  </div>
+
+  <!-- ───────── Saved Chats (empty) ───────── -->
+  <div>
+    <div class="frame">
+      <div class="status">9:41<div class="right">●●●● 5G ■</div></div>
+      <div class="saved">
+        <div class="saved-top">
+          <div style="font-size:18px; color: var(--text-2);">←</div>
+          <h1>Saved Chats</h1>
+        </div>
+        <div class="saved-empty">
+          <div class="ico">🔖</div>
+          <h2>No saved chats yet</h2>
+          <p>Save a chat from the menu to keep it forever — works with photos and voice notes too.</p>
+          <button class="btn-cta" style="margin-top: 18px; height: 44px; font-size: 14px; max-width: 200px;">Find a stranger</button>
+        </div>
+      </div>
+    </div>
+    <p class="frame-label">Saved Chats · Empty</p>
+    <p class="frame-sub">Designed empty state with action.</p>
+  </div>
+
+  <!-- ───────── Saved Chats (with items) ───────── -->
+  <div>
+    <div class="frame">
+      <div class="status">9:41<div class="right">●●●● 5G ■</div></div>
+      <div class="saved">
+        <div class="saved-top">
+          <div style="font-size:18px; color: var(--text-2);">←</div>
+          <h1>Saved Chats</h1>
+          <div style="flex:1"></div>
+          <div style="color: var(--text-2);">🔍</div>
+        </div>
+        <div class="saved-list">
+          <div class="saved-item">
+            <div class="savatar">🎨</div>
+            <div class="smeta">
+              <div class="sname">Anonymous</div>
+              <div class="spreview">That's awesome! What games do you play?</div>
+            </div>
+            <div class="stime">2h</div>
+          </div>
+          <div class="saved-item">
+            <div class="savatar">🌍</div>
+            <div class="smeta">
+              <div class="sname">Anonymous</div>
+              <div class="spreview">🎤 Voice note · 0:42</div>
+            </div>
+            <div class="stime">Yesterday</div>
+          </div>
+          <div class="saved-item">
+            <div class="savatar">🎵</div>
+            <div class="smeta">
+              <div class="sname">Anonymous</div>
+              <div class="spreview">📷 Photo</div>
+            </div>
+            <div class="stime">3d</div>
+          </div>
+          <div class="saved-item">
+            <div class="savatar">📚</div>
+            <div class="smeta">
+              <div class="sname">Anonymous</div>
+              <div class="spreview">Thanks for the chat — really enjoyed talking to you</div>
+            </div>
+            <div class="stime">1w</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="frame-label">Saved Chats · Populated</p>
+    <p class="frame-sub">Hairline dividers. Preview + avatar emoji. Swipe to delete.</p>
+  </div>
+
+  <!-- ───────── Lock Screen ───────── -->
+  <div>
+    <div class="frame">
+      <div class="status">9:41<div class="right">●●●● 5G ■</div></div>
+      <div class="lockscreen">
+        <div class="lock-ico">🔒</div>
+        <h1>StrangerChat Locked</h1>
+        <p>Verify your identity to continue</p>
+        <button class="btn-cta" style="max-width: 240px;">🔓 Unlock</button>
+      </div>
+    </div>
+    <p class="frame-label">Lock Screen</p>
+    <p class="frame-sub">Auto-triggers biometric on resume. Manual unlock fallback.</p>
+  </div>
+
+  <!-- ───────── Reaction Picker (overlay) ───────── -->
+  <div>
+    <div class="frame">
+      <div class="status">9:41<div class="right">●●●● 5G ■</div></div>
+      <div class="chat" style="filter: blur(8px); opacity:.5;">
+        <div class="chat-topbar"><div class="back">←</div><div class="meta"><div class="name">Anonymous Stranger</div></div></div>
+        <div class="chat-msgs"></div>
+      </div>
+      <div style="position:absolute; inset:0; background: rgba(8,11,20,0.6); backdrop-filter: blur(14px); display:flex; align-items:center; justify-content:center;">
+        <div style="position:absolute; top:38%; left: 14px; right: 14px;">
+          <div style="background: var(--bubble-in); padding: 8px 12px; border-radius: 18px; border-bottom-left-radius: 6px; max-width: 78%; font-size: 14px;">That's awesome! What games do you play?</div>
+          <div style="background: var(--elevated); padding: 12px 14px; margin-top: 10px; border-radius: 28px; display:flex; gap: 6px; justify-content:center; border: 1px solid var(--border-sub); box-shadow: 0 12px 32px rgba(0,0,0,0.4);">
+            <div style="font-size: 26px; padding: 4px;">❤️</div>
+            <div style="font-size: 26px; padding: 4px;">😂</div>
+            <div style="font-size: 26px; padding: 4px;">😮</div>
+            <div style="font-size: 26px; padding: 4px;">😢</div>
+            <div style="font-size: 26px; padding: 4px;">👍</div>
+            <div style="font-size: 26px; padding: 4px;">👎</div>
+          </div>
+          <div style="background: var(--elevated); margin-top: 8px; padding: 10px 14px; border-radius: 16px; border: 1px solid var(--border-sub); font-size: 13px; display:flex; flex-direction: column; gap: 6px;">
+            <div style="display:flex; align-items:center; gap:10px;"><span>↩️</span><span>Reply</span></div>
+            <div style="height:1px; background: var(--border-sub);"></div>
+            <div style="display:flex; align-items:center; gap:10px;"><span>📋</span><span>Copy</span></div>
+            <div style="height:1px; background: var(--border-sub);"></div>
+            <div style="display:flex; align-items:center; gap:10px; color: var(--red);"><span>🚩</span><span>Report</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="anim-dot" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">A</div>
+    </div>
+    <p class="frame-label">Long-press Context Menu</p>
+    <p class="frame-sub">Backdrop blur. Bubble lifts up. Reactions + actions (A).</p>
+  </div>
+
+  <!-- ───────── PII blocked dialog ───────── -->
+  <div>
+    <div class="frame">
+      <div class="status">9:41<div class="right">●●●● 5G ■</div></div>
+      <div class="chat" style="filter: blur(4px); opacity:.5;">
+        <div class="chat-topbar"><div class="back">←</div><div class="meta"><div class="name">Anonymous Stranger</div></div></div>
+        <div class="chat-msgs"></div>
+      </div>
+      <div style="position:absolute; inset:0; background: rgba(8,11,20,0.6); backdrop-filter: blur(8px); display:flex; align-items:center; justify-content:center; padding: 24px;">
+        <div style="background: var(--surface); border-radius: var(--r-xl); padding: 24px; width: 100%; border: 1px solid var(--border-sub);">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom: 12px;">
+            <div style="width:40px; height:40px; border-radius:12px; background: rgba(255,82,82,0.12); display:grid; place-items:center; font-size:18px; color: var(--red);">🛡️</div>
+            <div style="font-size:17px; font-weight:700;">Personal info blocked</div>
+          </div>
+          <div style="font-size: 13px; color: var(--text-2); line-height: 1.6;">To keep everyone safe, sharing a phone number isn't allowed in anonymous chat.</div>
+          <div style="font-size: 12px; color: var(--text-3); margin-top: 8px;">Edit your message to remove the number.</div>
+          <div style="display:flex; justify-content:flex-end; margin-top: 18px;">
+            <button style="background: var(--brand); color: #001620; font-weight: 700; padding: 10px 18px; border-radius: 99px; border: 0; font-size: 13px;">Got it</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="frame-label">PII Blocked Dialog</p>
+    <p class="frame-sub">Modern card. Backdrop blur. Friendly tone.</p>
+  </div>
+
+</div>
+
+<div style="text-align:center; padding: 40px; color: var(--text-3); font-size: 12px; max-width: 800px; margin: 0 auto;">
+  <p>This HTML preview approximates the redesigned Compose UI. Final implementation in Android may differ slightly in shadow rendering, blur quality (depends on API level), and font rendering. Open this file in Chrome/Edge/Firefox.</p>
+</div>
+
+</body>
+</html>

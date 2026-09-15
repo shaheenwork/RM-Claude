@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Random Malayali — redesign mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&family=Manjari:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ─────────────────────────────────────────────────────────────────────────
+     RANDOM MALAYALI — trust-coded palette.
+     Green = safety/trust/live/your-messages. Brass = warmth/premium/the lamp.
+     Cream = text. Coral = hearts only.
+     COSMETIC ONLY: every frame maps 1:1 to an existing Compose screen.
+     No new features — only colors, copy, branding.
+     ───────────────────────────────────────────────────────────────────────── */
+  :root {
+    --bg:#0A1410; --bg2:#0C1A14; --surface:#11201A; --elev:#18281F;
+    --border:rgba(238,236,222,0.09); --border-d:rgba(238,236,222,0.05);
+    --green:#2FB68C; --green-dp:#1C6B4F; --green-dim:#268E6E;
+    --brass:#E3B964; --brass-dp:#C99C48; --brass-gl:rgba(227,185,100,0.26);
+    --coral:#E8765A; --cream:#F1EDDD; --sage:#9FAE9E; --muted:#66766A;
+    --safe-bg:rgba(47,182,140,0.12);
+    --grad:linear-gradient(135deg,var(--green),var(--green-dp));
+    --grad-brass:linear-gradient(135deg,#F4D89B,var(--brass) 55%,var(--brass-dp));
+    --ml:'Manjari','Noto Sans Malayalam',sans-serif;
+    --serif:'Instrument Serif',Georgia,serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:radial-gradient(ellipse 70% 40% at 15% 0%,rgba(31,107,79,0.12),transparent 60%),radial-gradient(ellipse 60% 30% at 90% 4%,rgba(227,185,100,0.06),transparent 55%),#05100B;
+    color:var(--cream); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; padding-bottom:70px; }
+  header.page { padding:44px 40px 24px; max-width:1380px; margin:0 auto; }
+  .eyebrow { font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--brass); display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .eyebrow::after { content:""; flex:1; height:1px; background:linear-gradient(90deg,var(--brass-gl),transparent); }
+  header.page h1 { font-size:42px; font-weight:900; letter-spacing:-1.2px; line-height:1; }
+  header.page h1 .ml { font-family:var(--ml); font-weight:700; color:var(--brass); font-size:0.62em; margin-left:8px; }
+  header.page .tag { font-family:var(--serif); font-style:italic; font-size:23px; color:var(--brass); margin-top:6px; }
+  header.page p.lead { color:var(--sage); font-size:15px; line-height:1.65; max-width:800px; margin-top:16px; }
+  header.page p.lead b { color:var(--cream); font-weight:600; }
+  .note { margin-top:18px; max-width:800px; background:var(--safe-bg); border:1px solid rgba(47,182,140,0.22); border-left:3px solid var(--green); border-radius:12px; padding:13px 18px; font-size:13.5px; color:var(--sage); line-height:1.6; }
+  .note b { color:var(--green); }
+
+  section.block { max-width:1380px; margin:0 auto; padding:24px 40px; }
+  .sec-title { display:flex; align-items:baseline; gap:12px; margin:26px 0 8px; }
+  .sec-title h2 { font-size:21px; font-weight:800; letter-spacing:-0.4px; }
+  .sec-title .num { font-family:var(--serif); font-style:italic; font-size:19px; color:var(--brass); }
+  .sec-desc { color:var(--sage); font-size:14px; line-height:1.6; max-width:860px; margin-bottom:24px; }
+  .sec-desc b { color:var(--cream); }
+
+  .rail { display:flex; gap:26px; flex-wrap:wrap; }
+  .device { width:286px; }
+  .device .cap { font-size:12px; color:var(--sage); margin-top:13px; text-align:center; line-height:1.5; }
+  .device .cap b { color:var(--cream); display:block; font-size:13px; font-weight:700; }
+  .device .cap .maps { color:var(--green); font-family:ui-monospace,monospace; font-size:10.5px; }
+
+  .phone { width:286px; height:620px; border-radius:38px; overflow:hidden; border:7px solid #141815; position:relative;
+    box-shadow:0 28px 56px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.03); display:flex; flex-direction:column; background:var(--bg); }
+  .phone::before { content:""; position:absolute; top:9px; left:50%; transform:translateX(-50%); width:86px; height:21px; background:#000; border-radius:14px; z-index:50; }
+  .statusbar { height:38px; padding:12px 22px 0; display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; color:var(--cream); flex-shrink:0; }
+  .screen { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; }
+
+  .lamp { width:52px; height:52px; position:relative; display:grid; place-items:center; }
+  .lamp .glow { position:absolute; inset:-6px; border-radius:50%; background:radial-gradient(circle,rgba(47,182,140,0.32),transparent 68%); filter:blur(6px); }
+  .lamp .disc { width:46px; height:46px; border-radius:15px 15px 15px 5px; background:linear-gradient(135deg,var(--green),var(--green-dp)); display:grid; place-items:center; box-shadow:0 5px 16px rgba(47,182,140,0.35); border:1px solid rgba(255,255,255,0.14); }
+  .lamp .disc span { font-family:var(--ml); font-size:25px; font-weight:700; color:var(--cream); line-height:1; }
+
+  .wm { font-weight:900; letter-spacing:-0.5px; }
+  .wm .r { color:var(--green); } .wm .m { color:var(--cream); }
+
+  /* ===== SPLASH ========================================================== */
+  .splash { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; text-align:center;
+    background:radial-gradient(circle 240px at 50% 42%,rgba(47,182,140,0.12),transparent 70%),linear-gradient(180deg,var(--bg),var(--bg2)); }
+  .splash .big-lamp { width:84px; height:84px; }
+  .splash .big-lamp .disc { width:74px; height:74px; border-radius:24px 24px 24px 8px; } .splash .big-lamp .disc span { font-size:40px; }
+  .splash .wm { font-size:30px; margin-top:6px; }
+  .splash .tagline { font-size:12px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--sage); max-width:210px; line-height:1.5; }
+
+  /* ===== ONBOARDING (consent gate — real screen) ========================= */
+  .ob { flex:1; display:flex; flex-direction:column; align-items:center; padding:18px 22px 16px; text-align:center; background:linear-gradient(180deg,var(--bg),var(--bg2)); overflow:hidden; }
+  .ob .lamp { margin-top:8px; }
+  .ob .wm { font-size:25px; margin-top:14px; }
+  .ob .sub { font-size:11.5px; letter-spacing:0.4px; color:var(--sage); margin-top:7px; }
+  .ob .label { font-size:10px; letter-spacing:1.2px; font-weight:700; color:var(--muted); align-self:flex-start; margin:26px 0 10px; }
+  .consent { width:100%; display:flex; flex-direction:column; gap:8px; }
+  .crow { display:flex; align-items:center; gap:12px; text-align:left; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:13px 14px; }
+  .crow.on { border-color:rgba(47,182,140,0.55); }
+  .cbox { width:22px; height:22px; border-radius:7px; border:1.5px solid var(--muted); display:grid; place-items:center; flex-shrink:0; font-size:13px; }
+  .cbox.on { background:var(--green); border-color:var(--green); color:#06140E; }
+  .crow .ct b { font-size:13px; font-weight:700; color:var(--cream); }
+  .crow .ct.lk b { color:var(--green); }
+  .crow .ct span { font-size:11px; color:var(--sage); display:block; margin-top:1px; }
+  .crow .ext { margin-left:auto; color:var(--muted); font-size:13px; }
+  .ob .cont { margin-top:24px; width:100%; padding:15px; border-radius:16px; font-size:14px; font-weight:800; color:#06140E; background:var(--grad); }
+  .ob .fine { font-size:10.5px; color:var(--muted); margin-top:12px; }
+
+  /* ===== HOME ============================================================ */
+  .home { flex:1; display:flex; flex-direction:column; padding:4px 20px 14px; position:relative;
+    background:radial-gradient(circle 200px at 50% 14%,rgba(47,182,140,0.10),transparent 70%),linear-gradient(180deg,var(--bg),var(--bg2)); }
+  .home .top { display:flex; justify-content:space-between; align-items:center; padding:4px 0; }
+  .premium-pill { display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:700; color:var(--brass); background:rgba(227,185,100,0.15); padding:5px 10px; border-radius:18px; }
+  .gear { color:var(--muted); font-size:17px; }
+  .home .hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+  .namaskaram { font-family:var(--ml); color:var(--brass); font-size:16px; }
+  .home .welcome { font-size:25px; font-weight:800; letter-spacing:-0.5px; margin-top:2px; }
+  .home .accent { font-family:var(--serif); font-style:italic; font-size:31px; color:var(--green); line-height:1.05; }
+  .home .subline { font-size:12.5px; color:var(--sage); margin-top:6px; }
+  .presence { display:inline-flex; align-items:center; gap:7px; margin-top:11px; padding:5px 12px; border-radius:18px; background:var(--safe-bg); font-size:11px; font-weight:600; color:var(--green); }
+  .presence .ld { width:6px; height:6px; border-radius:50%; background:var(--green); animation:ping 2s infinite; }
+  @keyframes ping { 0%{box-shadow:0 0 0 0 rgba(47,182,140,0.5);} 70%{box-shadow:0 0 0 7px rgba(47,182,140,0);} 100%{box-shadow:0 0 0 0 rgba(47,182,140,0);} }
+  .diaspora { font-size:9.5px; letter-spacing:1.4px; text-transform:uppercase; color:var(--muted); margin-top:11px; }
+  .home .cta { margin-top:15px; width:100%; padding:15px; border-radius:26px; text-align:center; font-size:15px; font-weight:800; color:#06140E; background:var(--grad); box-shadow:0 8px 22px rgba(47,182,140,0.3); }
+  .home .cta .ml { font-weight:700; }
+  .pcard { width:100%; margin-top:13px; border-radius:18px; padding:15px; text-align:left; background:linear-gradient(135deg,var(--elev),#1A2A1A 50%,var(--elev)); border:1px solid rgba(227,185,100,0.42); }
+  .pcard .pt { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:800; color:var(--brass); }
+  .pcard .pd { font-size:11px; line-height:1.5; color:var(--sage); margin-top:6px; }
+  .pcard .pr { display:flex; justify-content:space-between; align-items:center; margin-top:11px; }
+  .pcard .price { font-size:12.5px; font-weight:700; color:var(--cream); }
+  .pcard .upg { font-size:11.5px; font-weight:800; color:#3a2a00; background:var(--grad-brass); padding:7px 15px; border-radius:18px; }
+
+  /* ===== CONNECTING ====================================================== */
+  .connect { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden;
+    background:radial-gradient(ellipse 70% 50% at 50% 40%,rgba(31,107,79,0.18),transparent 70%); }
+  .corewrap { position:relative; width:210px; height:210px; display:grid; place-items:center; }
+  .ring { position:absolute; width:104px; height:104px; border-radius:50%; border:1px solid rgba(47,182,140,0.45); top:50%; left:50%; margin:-52px 0 0 -52px; animation:expand 2.6s linear infinite; }
+  .ring.r2{animation-delay:.86s;} .ring.r3{animation-delay:1.73s;}
+  @keyframes expand { 0%{transform:scale(1);opacity:.55;} 100%{transform:scale(2.1);opacity:0;} }
+  .cglow { position:absolute; width:160px; height:160px; border-radius:50%; background:radial-gradient(circle,rgba(47,182,140,0.32),transparent 66%); filter:blur(14px); animation:breathe 1.4s ease-in-out infinite alternate; }
+  @keyframes breathe { from{opacity:.45;transform:scale(.96);} to{opacity:.8;transform:scale(1.06);} }
+  .core { width:96px; height:96px; border-radius:28px 28px 28px 9px; display:grid; place-items:center; position:relative; background:var(--grad); border:2px solid rgba(255,255,255,0.16); box-shadow:0 10px 28px rgba(47,182,140,0.42); animation:breathe2 1.4s ease-in-out infinite alternate; }
+  @keyframes breathe2 { from{transform:scale(.95);} to{transform:scale(1.06);} }
+  .core span { font-family:var(--ml); font-size:42px; font-weight:700; color:var(--cream); }
+  .orbit { position:absolute; width:192px; height:192px; animation:spin 9s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg);} }
+  .av { position:absolute; width:36px; height:36px; border-radius:50%; display:grid; place-items:center; font-size:15px; border:1.5px solid; animation:upr 9s linear infinite; }
+  .av.a{top:-4px;left:50%;margin-left:-18px;background:var(--safe-bg);border-color:rgba(47,182,140,0.5);}
+  .av.b{bottom:8px;right:6px;background:rgba(227,185,100,0.16);border-color:rgba(227,185,100,0.5);}
+  .av.c{bottom:8px;left:6px;background:rgba(232,118,90,0.16);border-color:rgba(232,118,90,0.5);}
+  @keyframes upr { to{transform:rotate(-360deg);} }
+  .connect .head { margin-top:26px; font-size:19px; font-weight:800; color:var(--cream); z-index:2; }
+  .connect .head-ac { font-family:var(--serif); font-style:italic; font-size:22px; color:var(--brass); z-index:2; }
+  .connect .status { margin-top:10px; font-size:12.5px; color:var(--sage); z-index:2; }
+  .connect .status .typed { border-right:2px solid var(--green); padding-right:3px; animation:blink 1s step-end infinite; }
+  @keyframes blink { 50%{border-color:transparent;} }
+  .connect .safe { margin-top:16px; font-size:11px; color:var(--green); background:var(--safe-bg); padding:5px 13px; border-radius:16px; z-index:2; }
+  .connect .cancel { margin-top:28px; font-size:12.5px; color:var(--muted); border:1px solid var(--border); border-radius:20px; padding:7px 22px; z-index:2; }
+
+  /* ===== CHAT ============================================================ */
+  .chat { flex:1; display:flex; flex-direction:column; min-height:0; background:linear-gradient(180deg,var(--bg),var(--bg2)); }
+  .cbar { display:flex; align-items:center; gap:8px; padding:8px 10px; background:rgba(17,32,26,0.96); border-bottom:1px solid var(--border-d); flex-shrink:0; }
+  .cbar .back { font-size:19px; color:var(--sage); }
+  .cbar .who { flex:1; }
+  .cbar .who .nm { font-size:14px; font-weight:700; color:var(--cream); display:flex; align-items:center; gap:6px; }
+  .cbar .who .badge { font-size:8px; font-weight:800; color:var(--brass); background:rgba(227,185,100,0.15); padding:2px 5px; border-radius:5px; }
+  .cbar .who .st { font-size:10.5px; color:var(--green); display:flex; align-items:center; gap:5px; margin-top:1px; }
+  .cbar .who .st::before { content:"●"; font-size:7px; }
+  .cbar .more { font-size:19px; color:var(--sage); }
+  .conn-strip { text-align:center; font-size:11px; padding:7px 14px; background:var(--safe-bg); color:var(--green); }
+  .msgs { flex:1; overflow:hidden; padding:10px 12px; display:flex; flex-direction:column; gap:6px; min-height:0; }
+  .b { max-width:78%; padding:8px 12px; font-size:13px; line-height:1.45; border-radius:17px; position:relative; }
+  .b .t { font-size:9px; margin-top:4px; opacity:.7; text-align:right; }
+  .b.in { align-self:flex-start; border-bottom-left-radius:5px; background:rgba(241,237,221,0.07); border:1px solid rgba(241,237,221,0.08); color:var(--cream); }
+  .b.in .t { color:var(--muted); }
+  .b.out { align-self:flex-end; border-bottom-right-radius:5px; background:var(--grad); color:#EAF7F0; }
+  .b.out .t { color:rgba(234,247,240,0.8); }
+  .react { position:absolute; bottom:-10px; right:8px; background:var(--elev); border:1px solid var(--border); border-radius:11px; font-size:10px; padding:1px 6px; }
+  .ghost { align-self:flex-start; max-width:78%; border-radius:17px; border-bottom-left-radius:5px; padding:8px 11px; background:rgba(241,237,221,0.05); border:1px solid rgba(47,182,140,0.3); }
+  .ghost .lv { font-size:8px; font-weight:800; letter-spacing:1px; color:var(--green); display:flex; align-items:center; gap:4px; }
+  .ghost .lv::before { content:""; width:5px; height:5px; border-radius:50%; background:var(--green); animation:breathe 1s infinite alternate; }
+  .ghost .gt { font-size:12.5px; font-style:italic; color:rgba(241,237,221,0.8); margin-top:3px; }
+  .composer { display:flex; align-items:center; gap:8px; padding:8px 10px; background:var(--surface); border-top:1px solid var(--border-d); flex-shrink:0; }
+  .composer .plus,.composer .send { width:36px; height:36px; border-radius:50%; display:grid; place-items:center; flex-shrink:0; font-size:17px; }
+  .composer .plus { background:var(--elev); border:1px solid var(--border); color:var(--sage); }
+  .composer .field { flex:1; height:36px; border-radius:19px; display:flex; align-items:center; padding:0 14px; font-size:12.5px; background:var(--elev); color:var(--muted); }
+  .composer .send { background:var(--grad); color:#06140E; }
+  .ended { padding:15px; display:flex; flex-direction:column; align-items:center; gap:11px; background:var(--surface); border-top:1px solid var(--border-d); flex-shrink:0; }
+  .ended .sys { font-size:11px; padding:5px 13px; border-radius:14px; background:var(--safe-bg); color:var(--sage); border:1px solid rgba(47,182,140,0.2); }
+  .ended .again { width:100%; text-align:center; padding:13px; border-radius:26px; font-size:14px; font-weight:800; color:#06140E; background:var(--grad); box-shadow:0 8px 20px rgba(47,182,140,0.28); }
+
+  table.copy { width:100%; border-collapse:collapse; font-size:13.5px; max-width:1040px; }
+  table.copy th { text-align:left; padding:11px 16px; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border); }
+  table.copy td { padding:12px 16px; border-bottom:1px solid var(--border-d); vertical-align:top; line-height:1.5; }
+  table.copy .loc { color:var(--muted); font-family:ui-monospace,monospace; font-size:11.5px; }
+  table.copy .old s { color:#E08A7A; opacity:.8; }
+  table.copy .new { color:var(--green); font-weight:600; }
+  .foot { max-width:1380px; margin:6px auto 0; padding:22px 40px; color:var(--muted); font-size:13px; line-height:1.7; }
+  .foot b { color:var(--brass); }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <div class="eyebrow">Random Malayali · redesign mockup for approval</div>
+  <h1>Random Malayali <span class="ml">റാൻഡം മലയാളി</span></h1>
+  <div class="tag">Anonymous. Private. Made for Malayalis.</div>
+  <p class="lead">
+    Same app, same features — <b>cosmetic pass only</b>. Trust-coded <b>green + brass</b> palette (green reads safe,
+    not hookup), the gold <i>nilavilakku</i> lamp as the logo, and warm time-neutral Malayali copy. Every frame
+    below maps 1:1 to an existing Compose screen, so implementation is colors + strings — <b>no logic, routing, or
+    component changes</b>.
+  </p>
+  <div class="note">
+    <b>Why green, not your pink-violet:</b> pink→violet reads dating/hookup and quietly repels the women + conservative
+    users you need for a healthy mix. Green = trust/safety. This is the one deliberate departure from "keep current
+    theme" — judge it side by side with <code>current-theme-new-copy.html</code>.
+  </div>
+</header>
+
+<section class="block">
+  <div class="sec-title"><span class="num">★</span><h2>Every screen, restyled</h2></div>
+  <p class="sec-desc">Splash → consent gate → home → connecting → chat → chat-ended. The two states you first asked for (connecting + chat) plus the first-impression screens, since those decide whether a Malayali stays past 5 seconds. Connecting state is animated.</p>
+
+  <div class="rail">
+
+    <!-- SPLASH -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen"><div class="splash">
+          <div class="lamp big-lamp"><div class="glow"></div><div class="disc"><span>മ</span></div></div>
+          <div class="wm"><span class="r">Random</span> <span class="m">Malayali</span></div>
+          <div class="tagline">Talk to Malayalis worldwide, anytime.</div>
+        </div></div>
+      </div>
+      <div class="cap"><b>Splash</b><span class="maps">SplashScreen.kt</span></div>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen"><div class="ob">
+          <div class="lamp"><div class="glow"></div><div class="disc"><span>മ</span></div></div>
+          <div class="wm"><span class="r">Random</span> <span class="m">Malayali</span></div>
+          <div class="sub">No email · No phone · No signup — just talk</div>
+          <div class="label">TO CONTINUE, PLEASE CONFIRM</div>
+          <div class="consent">
+            <div class="crow on"><div class="cbox on">✓</div><div class="ct"><b>I am 18 years or older</b></div></div>
+            <div class="crow on"><div class="cbox on">✓</div><div class="ct lk"><b>Privacy Policy</b><span>I have read and agree</span></div><span class="ext">↗</span></div>
+            <div class="crow"><div class="cbox"></div><div class="ct lk"><b>Terms of Service</b><span>I accept the terms of use</span></div><span class="ext">↗</span></div>
+          </div>
+          <div class="cont">Continue</div>
+          <div class="fine">All three confirmations required</div>
+        </div></div>
+      </div>
+      <div class="cap"><b>Consent gate</b><span class="maps">OnboardingScreen.kt</span></div>
+    </div>
+
+    <!-- HOME -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen"><div class="home">
+          <div class="top"><span class="premium-pill">✦ Premium</span><span class="gear">⚙</span></div>
+          <div class="hero">
+            <div class="lamp" style="margin-bottom:6px;"><div class="glow"></div><div class="disc"><span>മ</span></div></div>
+            <div class="welcome">Talk to a</div>
+            <div class="accent">random Malayali</div>
+            <div class="subline">Someone interesting is online right now</div>
+            <div class="presence"><span class="ld"></span> 1,284 Malayalis online</div>
+            <div class="diaspora">Kerala · Gulf · US · UK · 40+ countries</div>
+            <div class="cta">Connect now &nbsp;·&nbsp; <span class="ml">ഇപ്പോൾ</span></div>
+            <div class="pcard">
+              <div class="pt">✦ Random Malayali Premium</div>
+              <div class="pd">Photos &amp; voice notes · React · Live typing preview · Save chats · No ads</div>
+              <div class="pr"><span class="price">$4.99 / month</span><span class="upg">Upgrade</span></div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="cap"><b>Home</b><span class="maps">HomeScreen.kt</span></div>
+    </div>
+
+    <!-- CONNECTING -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen"><div class="connect">
+          <div class="corewrap">
+            <div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div>
+            <div class="cglow"></div><div class="core"><span>മ</span></div>
+            <div class="orbit"><div class="av a">🌊</div><div class="av b">☕</div><div class="av c">🎬</div></div>
+          </div>
+          <div class="head">Finding a Malayali</div>
+          <div class="head-ac">near you, or across the world</div>
+          <div class="status"><span class="typed">Finding a Malayali for you</span></div>
+          <div class="safe">🔒 No name, no number — fully anonymous</div>
+          <div class="cancel">Cancel</div>
+        </div></div>
+      </div>
+      <div class="cap"><b>Connecting / waiting</b><span class="maps">MatchmakingDialog.kt</span></div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen"><div class="chat">
+          <div class="cbar">
+            <span class="back">‹</span>
+            <div class="who"><div class="nm">A Malayali <span class="badge">✦ PREMIUM</span></div><div class="st">Online</div></div>
+            <span class="more">⋮</span>
+          </div>
+          <div class="conn-strip">👋 Connected to a fellow Malayali — say hi!</div>
+          <div class="msgs">
+            <div class="b in">Hai 🙂 evideyaa?<div class="t">10:24</div></div>
+            <div class="b out">Thrissur! ningalo?<div class="t">10:24 ✓✓</div></div>
+            <div class="b in">Kochi 😄 but joli Gulf-l<div class="t">10:25</div><div class="react">❤️</div></div>
+            <div class="b out" style="margin-top:6px;">Pravasi alle, namuk സുഖം 😎<div class="t">10:25 ✓✓</div></div>
+            <div class="ghost"><div class="lv">TYPING</div><div class="gt">Adipoli, ente cousin um avide…</div></div>
+          </div>
+          <div class="composer"><span class="plus">+</span><span class="field">Message…</span><span class="send">➤</span></div>
+        </div></div>
+      </div>
+      <div class="cap"><b>Chat</b><span class="maps">ChatScreen.kt · MessageBubble.kt</span></div>
+    </div>
+
+    <!-- CHAT ENDED -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen"><div class="chat">
+          <div class="cbar">
+            <span class="back">‹</span>
+            <div class="who"><div class="nm">A Malayali</div><div class="st" style="color:var(--muted);">Chat ended</div></div>
+            <span class="more">⋮</span>
+          </div>
+          <div class="msgs">
+            <div class="b in">Pinne kaanaam, take care! 🙏<div class="t">10:31</div></div>
+            <div class="b out">Sherikkum nannayi 😄<div class="t">10:31 ✓✓</div></div>
+          </div>
+          <div class="ended"><span class="sys">Chat has ended</span><div class="again">Meet another Malayali</div></div>
+        </div></div>
+      </div>
+      <div class="cap"><b>Chat ended</b><span class="maps">ChatScreen.kt (ended state)</span></div>
+    </div>
+
+  </div>
+</section>
+
+<section class="block">
+  <div class="sec-title"><span class="num">★</span><h2>Copy — string-only swaps</h2></div>
+  <p class="sec-desc">Time-neutral + Malayali voice. All string edits, mapped to exact lines. No logic touched.</p>
+  <table class="copy">
+    <thead><tr><th style="width:24%">Location</th><th style="width:36%">Now</th><th>New</th></tr></thead>
+    <tbody>
+      <tr><td class="loc">app_name / Splash / Onboarding</td><td class="old">“StrangerChat”</td><td class="new">“Random Malayali”</td></tr>
+      <tr><td class="loc">HomeScreen.kt:208</td><td class="old"><s>“Someone interesting is online tonight”</s></td><td class="new">“Someone interesting is online right now”</td></tr>
+      <tr><td class="loc">HomeScreen.kt:192–199</td><td class="old">“Welcome back,” / “stranger”</td><td class="new">“Talk to a” / “random Malayali” (serif accent)</td></tr>
+      <tr><td class="loc">MatchmakingDialog.kt:67</td><td class="old"><s>“Scanning the night”</s></td><td class="new">“Finding a Malayali for you”</td></tr>
+      <tr><td class="loc">MatchmakingDialog.kt:232–239</td><td class="old">“Searching for someone” / “interesting…”</td><td class="new">“Finding a Malayali” / “near you, or across the world”</td></tr>
+      <tr><td class="loc">MatchmakingDialog (sub line)</td><td class="old">—</td><td class="new">“No name, no number — fully anonymous” (you collect nothing — accurate)</td></tr>
+      <tr><td class="loc">ChatScreen.kt:491</td><td class="old">“connected to a random stranger — say Hi!”</td><td class="new">“👋 Connected to a fellow Malayali — say hi!”</td></tr>
+      <tr><td class="loc">ChatScreen.kt:355</td><td class="old">“Anonymous Stranger”</td><td class="new">“A Malayali”</td></tr>
+      <tr><td class="loc">ChatScreen.kt:666</td><td class="old">“New Stranger”</td><td class="new">“Meet another Malayali”</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="foot">
+  <b>No code touched.</b> Cosmetic only — palette swap lives mostly in <code>theme/Color.kt</code> + <code>Brushes.kt</code>,
+  the rest is per-screen strings. Features, flow, logic all stay. The 🔒 line states the literal truth — <i>no signup,
+  no name, no number is collected</i>. Nothing claimed that isn't real. Approve and I map this onto the components.
+</div>
+
+</body>
+</html>

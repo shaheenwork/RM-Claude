@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Home — 10 design options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&family=Manjari:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0A1410; --bg2:#0C1A14; --surface:#11201A; --elev:#18281F;
+    --border:rgba(238,236,222,0.09); --border-d:rgba(238,236,222,0.05);
+    --green:#2FB68C; --green-dp:#1C6B4F; --green-dim:#268E6E;
+    --brass:#E3B964; --brass-dp:#C99C48;
+    --brass-soft:rgba(227,185,100,0.08); --brass-bd:rgba(227,185,100,0.40);
+    --coral:#E8765A; --cream:#F1EDDD; --sage:#9FAE9E; --muted:#66766A;
+    --grad:linear-gradient(135deg,var(--green),var(--green-dp));
+    --grad-brass:linear-gradient(135deg,#F4D89B,var(--brass) 55%,var(--brass-dp));
+    --serif:'Instrument Serif',Georgia,serif;
+    --ml:'Manjari','Noto Sans Malayalam',sans-serif;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    background:radial-gradient(ellipse 70% 40% at 15% 0%,rgba(31,107,79,0.12),transparent 60%),
+               radial-gradient(ellipse 60% 30% at 90% 4%,rgba(227,185,100,0.06),transparent 55%),#05100B;
+    color:var(--cream); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+    padding-bottom:60px;
+  }
+  header.page { padding:44px 40px 24px; max-width:1700px; margin:0 auto; }
+  .eyebrow { font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--brass); display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .eyebrow::after { content:""; flex:1; height:1px; background:linear-gradient(90deg,rgba(227,185,100,0.26),transparent); }
+  header.page h1 { font-size:38px; font-weight:900; letter-spacing:-1.2px; line-height:1; }
+  header.page p.lead { color:var(--sage); font-size:15px; line-height:1.65; max-width:880px; margin-top:14px; }
+  header.page p.lead b { color:var(--cream); }
+  .rules { margin-top:16px; padding:12px 16px; background:rgba(47,182,140,0.08); border:1px solid rgba(47,182,140,0.25); border-left:3px solid var(--green); border-radius:10px; max-width:880px; font-size:13px; color:var(--sage); }
+  .rules b { color:var(--green); }
+
+  section.block { max-width:1700px; margin:0 auto; padding:18px 40px; }
+  .rail { display:grid; grid-template-columns:repeat(auto-fill,minmax(296px,1fr)); gap:30px; }
+  .device .cap { font-size:12px; color:var(--sage); margin-top:13px; line-height:1.5; }
+  .device .cap b { color:var(--cream); display:block; font-size:13.5px; font-weight:800; margin-bottom:3px; }
+  .device .cap .ph { color:var(--brass); font-size:11.5px; font-style:italic; margin-top:4px; display:block; }
+
+  .phone { width:296px; height:640px; border-radius:38px; overflow:hidden; border:7px solid #141815; position:relative;
+    box-shadow:0 28px 56px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.03); display:flex; flex-direction:column; background:var(--bg); }
+  .phone::before { content:""; position:absolute; top:9px; left:50%; transform:translateX(-50%); width:86px; height:21px; background:#000; border-radius:14px; z-index:50; }
+  .statusbar { height:38px; padding:12px 22px 0; display:flex; justify-content:space-between; font-size:10.5px; font-weight:700; color:var(--cream); flex-shrink:0; }
+  .screen { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; padding:6px 18px 0; flex-shrink:0; }
+  .topbar .gear { color:var(--muted); font-size:18px; }
+
+  /* ── shared brand atoms ───────────────────────────────────────────── */
+  .logo-mark { width:48px; height:48px; border-radius:15px 15px 15px 6px; background:var(--grad);
+    display:grid; place-items:center; border:1px solid rgba(255,255,255,0.14); box-shadow:0 5px 16px rgba(47,182,140,0.30); }
+  .logo-mark span { font-family:var(--ml); font-size:25px; font-weight:700; color:var(--cream); line-height:1; }
+  .logo-mark.sm { width:36px; height:36px; border-radius:11px 11px 11px 4px; }
+  .logo-mark.sm span { font-size:18px; }
+  .logo-mark.md { width:44px; height:44px; border-radius:14px 14px 14px 5px; }
+  .logo-mark.md span { font-size:22px; }
+
+  /* headline */
+  .head1 { font-size:22px; font-weight:700; color:var(--cream); line-height:1.05; letter-spacing:-0.4px; }
+  .head2 { font-family:var(--serif); font-style:italic; font-size:32px; color:var(--brass); line-height:1.0; letter-spacing:-0.5px; margin-top:0; }
+  .sub { font-size:12.5px; color:var(--sage); line-height:1.4; margin-top:5px; }
+
+  /* presence */
+  .pres { display:inline-flex; align-items:center; gap:7px; font-size:11.5px; color:var(--green); font-weight:600; }
+  .pres .dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:ping 2s infinite; box-shadow:0 0 0 0 rgba(47,182,140,0.5); }
+  @keyframes ping { 0%{box-shadow:0 0 0 0 rgba(47,182,140,0.5);} 70%{box-shadow:0 0 0 7px rgba(47,182,140,0);} 100%{box-shadow:0 0 0 0 rgba(47,182,140,0);} }
+  .pres-chip { background:rgba(47,182,140,0.10); border:1px solid rgba(47,182,140,0.25); padding:4px 10px; border-radius:14px; }
+
+  /* gender — smaller variants */
+  .gender-sm { display:flex; gap:6px; }
+  .gender-sm .gp {
+    flex:1; display:flex; align-items:center; justify-content:center; gap:5px;
+    padding:7px 0; border-radius:18px; font-size:12px; font-weight:600;
+    color:var(--sage); border:1px solid var(--border); background:transparent;
+  }
+  .gender-sm .gp.on { background:var(--grad); color:#fff; border-color:transparent; }
+
+  /* gender segmented (iOS-like) */
+  .gender-seg { display:flex; background:var(--elev); border-radius:14px; padding:3px; gap:3px; width:fit-content; }
+  .gender-seg .seg { padding:6px 14px; font-size:12px; font-weight:600; color:var(--sage); border-radius:11px; display:flex; align-items:center; gap:5px; }
+  .gender-seg .seg.on { background:var(--grad); color:#fff; }
+
+  /* gender icon-only round */
+  .gender-icon { display:flex; gap:8px; }
+  .gender-icon .gi { width:36px; height:36px; border-radius:50%; display:grid; place-items:center; color:var(--sage); border:1px solid var(--border); font-size:14px; }
+  .gender-icon .gi.on { background:var(--grad); color:#fff; border-color:transparent; }
+
+  /* CTA */
+  .cta {
+    width:100%; padding:13px 16px; border-radius:24px; text-align:center;
+    font-size:14px; font-weight:800; color:#06140E;
+    background:var(--grad); box-shadow:0 8px 20px rgba(47,182,140,0.28);
+    display:flex; align-items:center; justify-content:center; gap:7px;
+  }
+  .cta.compact { padding:11px 16px; font-size:13.5px; border-radius:22px; }
+
+  /* ── premium sneak peek variants ──────────────────────────────────── */
+  /* P1: icon strip */
+  .p-strip { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:14px;
+    background:var(--brass-soft); border:1px solid var(--brass-bd); }
+  .p-strip .lab { font-size:11px; color:var(--brass); font-weight:800; letter-spacing:0.3px; flex-shrink:0; }
+  .p-strip .icons { display:flex; gap:10px; flex:1; justify-content:center; font-size:13px; color:var(--cream); }
+  .p-strip .icons span { opacity:0.92; }
+  .p-strip .upg { font-size:10.5px; color:#3a2a00; background:var(--grad-brass); padding:5px 10px; border-radius:12px; font-weight:800; }
+
+  /* P2: 2x2 grid mini-card */
+  .p-grid { padding:12px; border-radius:16px; background:linear-gradient(135deg,var(--elev),#1A2A1A,var(--elev)); border:1px solid var(--brass-bd); }
+  .p-grid .ph { display:flex; justify-content:space-between; align-items:center; margin-bottom:9px; }
+  .p-grid .ph .h { font-size:12px; color:var(--brass); font-weight:800; }
+  .p-grid .ph .upg { font-size:10px; color:#3a2a00; background:var(--grad-brass); padding:4px 10px; border-radius:10px; font-weight:800; }
+  .p-grid .gg { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .p-grid .gg .it { display:flex; align-items:center; gap:6px; padding:5px 7px; border-radius:9px; background:rgba(0,0,0,0.18); }
+  .p-grid .gg .it .e { font-size:13px; }
+  .p-grid .gg .it .n { font-size:10.5px; color:var(--cream); font-weight:600; }
+
+  /* P3: scrolling ribbon */
+  .p-ribbon { padding:10px 0; border-radius:14px; background:var(--brass-soft); border:1px solid var(--brass-bd); overflow:hidden; position:relative; }
+  .p-ribbon .scroll { display:flex; gap:24px; animation:scroll 14s linear infinite; white-space:nowrap; font-size:11.5px; color:var(--cream); }
+  @keyframes scroll { from{transform:translateX(0);} to{transform:translateX(-50%);} }
+  .p-ribbon .scroll span { display:inline-flex; align-items:center; gap:5px; }
+  .p-ribbon .scroll b { color:var(--brass); font-weight:800; padding-left:14px; }
+  .p-ribbon .fadeL,.p-ribbon .fadeR { position:absolute; top:0; bottom:0; width:24px; pointer-events:none; }
+  .p-ribbon .fadeL { left:0; background:linear-gradient(90deg,rgba(20,30,22,1),transparent); }
+  .p-ribbon .fadeR { right:0; background:linear-gradient(270deg,rgba(20,30,22,1),transparent); }
+
+  /* P4: locked teaser row */
+  .p-locked { display:flex; gap:6px; }
+  .p-locked .lk { flex:1; display:flex; flex-direction:column; align-items:center; padding:7px 4px; border-radius:11px;
+    background:var(--elev); border:1px solid var(--border); position:relative; }
+  .p-locked .lk .e { font-size:16px; filter:grayscale(0.35); opacity:0.85; }
+  .p-locked .lk .n { font-size:9.5px; color:var(--sage); margin-top:2px; }
+  .p-locked .lk::after { content:"🔒"; position:absolute; top:3px; right:4px; font-size:8px; color:var(--brass); }
+
+  /* P5: floating bar */
+  .p-float { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:99px;
+    background:var(--brass-soft); border:1px solid var(--brass-bd); }
+  .p-float .ic { width:24px; height:24px; border-radius:50%; background:rgba(227,185,100,0.16); display:grid; place-items:center; color:var(--brass); font-size:11px; }
+  .p-float .roll { flex:1; font-size:11.5px; color:var(--cream); overflow:hidden; height:14px; position:relative; }
+  .p-float .roll ul { list-style:none; position:absolute; animation:roll 12s steps(5) infinite; }
+  .p-float .roll li { height:14px; line-height:14px; }
+  @keyframes roll {
+    0%,20% { transform:translateY(0); }
+    20%,40% { transform:translateY(-14px); }
+    40%,60% { transform:translateY(-28px); }
+    60%,80% { transform:translateY(-42px); }
+    80%,100% { transform:translateY(-56px); }
+  }
+  .p-float .upg-arr { color:var(--brass); font-size:14px; font-weight:800; }
+
+  /* P6: vertical side strip */
+  .p-side { position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    display:flex; flex-direction:column; gap:10px; padding:10px 6px; border-radius:99px;
+    background:var(--brass-soft); border:1px solid var(--brass-bd); align-items:center; }
+  .p-side .ic { width:26px; height:26px; border-radius:50%; background:rgba(227,185,100,0.18); display:grid; place-items:center; font-size:12px; }
+  .p-side .lab { writing-mode:vertical-rl; text-orientation:mixed; transform:rotate(180deg); font-size:9px; color:var(--brass); font-weight:800; letter-spacing:2px; padding:4px 0; }
+
+  /* P7: bento card */
+  .p-bento { display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:10px; border-radius:14px;
+    background:linear-gradient(135deg,#1a2820,var(--elev)); border:1px solid var(--brass-bd); }
+  .p-bento .head { grid-column:1/3; display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
+  .p-bento .head .h { font-size:11.5px; color:var(--brass); font-weight:800; }
+  .p-bento .head .upg { font-size:9.5px; color:#3a2a00; background:var(--grad-brass); padding:3px 8px; border-radius:8px; font-weight:800; }
+  .p-bento .cell { padding:6px; border-radius:8px; background:rgba(0,0,0,0.18); display:flex; align-items:center; gap:5px; }
+  .p-bento .cell .e { font-size:11px; }
+  .p-bento .cell .n { font-size:9.5px; color:var(--cream); }
+
+  /* P8: dotted dot navigator with rotating preview */
+  .p-rotator { padding:11px 14px; border-radius:16px; background:rgba(0,0,0,0.25); border:1px solid var(--border); }
+  .p-rotator .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .p-rotator .top .h { font-size:11px; color:var(--brass); font-weight:800; letter-spacing:0.3px; }
+  .p-rotator .top .upg { font-size:9.5px; color:var(--brass); border:1px solid var(--brass-bd); padding:3px 9px; border-radius:9px; font-weight:700; }
+  .p-rotator .feat { display:flex; align-items:center; gap:8px; padding:4px 0; }
+  .p-rotator .feat .e { font-size:18px; }
+  .p-rotator .feat .nm { font-size:12.5px; color:var(--cream); font-weight:700; }
+  .p-rotator .feat .ds { font-size:10px; color:var(--sage); }
+  .p-rotator .dots { display:flex; gap:3px; justify-content:center; margin-top:4px; }
+  .p-rotator .dots i { width:5px; height:5px; border-radius:50%; background:var(--muted); }
+  .p-rotator .dots i.on { background:var(--brass); width:14px; border-radius:3px; }
+
+  /* P9: stories top strip */
+  .p-stories { display:flex; gap:10px; padding:4px 16px; }
+  .p-stories .story { display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .p-stories .ring { width:40px; height:40px; border-radius:50%; padding:2px;
+    background:conic-gradient(from 0deg, var(--brass), var(--green), var(--brass)); }
+  .p-stories .inner { width:100%; height:100%; border-radius:50%; background:var(--surface); display:grid; place-items:center; font-size:14px; }
+  .p-stories .lbl { font-size:8.5px; color:var(--sage); }
+
+  /* P10: footer band */
+  .p-band { padding:12px 14px; background:linear-gradient(180deg,transparent,var(--brass-soft));
+    border-top:1px solid var(--brass-bd); display:flex; flex-direction:column; gap:7px; flex-shrink:0; }
+  .p-band .top { display:flex; justify-content:space-between; align-items:center; }
+  .p-band .top .h { font-size:11px; color:var(--brass); font-weight:800; }
+  .p-band .top .upg { font-size:10px; color:#3a2a00; background:var(--grad-brass); padding:4px 10px; border-radius:10px; font-weight:800; }
+  .p-band .row { display:flex; justify-content:space-around; font-size:14px; color:var(--cream); }
+  .p-band .row .it { display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .p-band .row .it .lab { font-size:8.5px; color:var(--sage); }
+
+  /* ── per-option containers ───────────────────────────────────────── */
+  .hero { padding:0 22px; display:flex; flex-direction:column; gap:0; flex:1; min-height:0; }
+
+  /* OPT-1 Classic Refined */
+  .opt1 { flex:1; display:flex; flex-direction:column; padding:0 22px 14px; }
+  .opt1 .mid { flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:8px; }
+  .opt1 .actions { display:flex; flex-direction:column; gap:10px; }
+
+  /* OPT-2 Premium showcase grid */
+  .opt2 { flex:1; display:flex; flex-direction:column; padding:0 22px 14px; }
+  .opt2 .mid { flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:7px; }
+  .opt2 .actions { display:flex; flex-direction:column; gap:10px; }
+
+  /* OPT-3 Ribbon */
+  .opt3 { flex:1; display:flex; flex-direction:column; padding:0 22px 14px; }
+  .opt3 .mid { flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:8px; }
+  .opt3 .actions { display:flex; flex-direction:column; gap:10px; }
+
+  /* OPT-4 Locked teasers */
+  .opt4 { flex:1; display:flex; flex-direction:column; padding:0 22px 14px; }
+  .opt4 .mid { flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:7px; }
+  .opt4 .actions { display:flex; flex-direction:column; gap:9px; }
+  .opt4 .pre-label { font-size:10px; color:var(--brass); letter-spacing:2px; text-transform:uppercase; align-self:flex-start; }
+
+  /* OPT-5 Floating roll */
+  .opt5 { flex:1; display:flex; flex-direction:column; padding:0 22px 14px; }
+  .opt5 .mid { flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:8px; }
+  .opt5 .actions { display:flex; flex-direction:column; gap:10px; }
+
+  /* OPT-6 Side strip + hero */
+  .opt6 { flex:1; display:flex; flex-direction:column; padding:0 50px 14px 22px; position:relative; }
+  .opt6 .mid { flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:8px; }
+  .opt6 .actions { display:flex; flex-direction:column; gap:10px; }
+
+  /* OPT-7 Bento */
+  .opt7 { flex:1; display:flex; flex-direction:column; padding:0 20px 14px; }
+  .opt7 .mid { flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:7px; }
+  .opt7 .actions { display:flex; flex-direction:column; gap:10px; }
+
+  /* OPT-8 Rotator */
+  .opt8 { flex:1; display:flex; flex-direction:column; padding:0 22px 14px; }
+  .opt8 .mid { flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:8px; }
+  .opt8 .actions { display:flex; flex-direction:column; gap:10px; }
+
+  /* OPT-9 Stories on top */
+  .opt9 { flex:1; display:flex; flex-direction:column; padding:0 0 14px; }
+  .opt9 .strip-wrap { padding:6px 0; border-bottom:1px solid var(--border-d); }
+  .opt9 .strip-label { font-size:9px; color:var(--brass); letter-spacing:2px; text-transform:uppercase; padding:0 18px 4px; font-weight:800; }
+  .opt9 .mid { flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:8px; padding:0 22px; }
+  .opt9 .actions { display:flex; flex-direction:column; gap:10px; padding:0 22px; }
+
+  /* OPT-10 Footer band */
+  .opt10 { flex:1; display:flex; flex-direction:column; padding:0; }
+  .opt10 .mid { flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:8px; padding:0 22px; }
+  .opt10 .actions { display:flex; flex-direction:column; gap:10px; padding:0 22px 12px; }
+
+  .legend { padding:18px; border-radius:14px; background:var(--surface); border:1px solid var(--border); margin-top:30px; }
+  .legend h3 { font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--brass); margin-bottom:12px; }
+  .legend table { width:100%; border-collapse:collapse; font-size:13px; }
+  .legend th { text-align:left; padding:9px 10px; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border); font-weight:700; }
+  .legend td { padding:11px 10px; border-bottom:1px solid var(--border-d); color:var(--sage); vertical-align:top; line-height:1.5; }
+  .legend td b { color:var(--cream); }
+
+  .foot { max-width:1700px; margin:6px auto 0; padding:20px 40px; color:var(--muted); font-size:13px; line-height:1.7; }
+  .foot b { color:var(--brass); }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <div class="eyebrow">Home — 10 options · pick one (or mix)</div>
+  <h1>Random Malayali — Home, 10 ways</h1>
+  <p class="lead">All 10 include the 4 must-haves: <b>online counter</b>, <b>"Someone interesting…" sub line</b>, <b>smaller gender selection</b>, and a <b>premium sneak peek</b> (real features visible). What varies = how the premium sneak peek is shown (icon strip / grid / ribbon / locked teasers / floating / side / bento / rotator / stories / band), gender style, and overall composition.</p>
+  <div class="rules"><b>Constraints honored across all:</b> brand mark `മ` · headline "Talk to a / Random Malayali" · sub "Someone interesting is online right now" · live count "1,284 Malayalis online" · gender = small (compact, not full-width pills) · primary CTA = Start chatting · premium = preview the features, not just a "Go Premium" link.</div>
+</header>
+
+<section class="block">
+  <div class="rail">
+
+    <!-- ============================================================ -->
+    <!-- OPTION 1 — Classic Refined : icon strip premium               -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt1">
+            <div class="mid">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="head1" style="margin-top:8px;">Talk to a</div>
+              <div class="head2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres pres-chip" style="margin-top:6px;"><span class="dot"></span> 1,284 Malayalis online</div>
+            </div>
+            <div class="actions">
+              <div class="gender-sm">
+                <div class="gp on">♂ Male</div>
+                <div class="gp">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+              <div class="p-strip">
+                <div class="lab">✦ PREMIUM</div>
+                <div class="icons"><span title="Photos">📷</span><span title="Voice">🎙</span><span title="React">❤️</span><span title="Save">💾</span><span title="No ads">🚫</span></div>
+                <div class="upg">Upgrade</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>1 · Classic Refined</b>Compact full-width gender pills (smaller pad), CTA, then a single-row premium icon strip — features as glyphs only with Upgrade pill on the right.<span class="ph">Clean, no clutter, balanced.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 2 — Premium Showcase Grid                              -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt2">
+            <div class="mid">
+              <div class="head1" style="margin-top:8px;">Talk to a</div>
+              <div class="head2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres" style="margin-top:6px;"><span class="dot"></span> 1,284 Malayalis online · worldwide</div>
+            </div>
+            <div class="actions">
+              <div class="gender-seg" style="align-self:center;">
+                <div class="seg on">♂ Male</div>
+                <div class="seg">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+              <div class="p-grid">
+                <div class="ph"><span class="h">✦ Premium feels like this</span><span class="upg">Upgrade</span></div>
+                <div class="gg">
+                  <div class="it"><span class="e">📷</span><span class="n">Send photos</span></div>
+                  <div class="it"><span class="e">🎙</span><span class="n">Voice notes</span></div>
+                  <div class="it"><span class="e">❤️</span><span class="n">React</span></div>
+                  <div class="it"><span class="e">🚫</span><span class="n">No ads</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>2 · Premium showcase grid</b>iOS-style segmented gender (very small), then a 2×2 premium feature grid card. Shows exactly what premium unlocks.<span class="ph">Most informative premium preview.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 3 — Auto-scrolling Ribbon                              -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt3">
+            <div class="mid">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="head1" style="margin-top:8px;">Talk to a</div>
+              <div class="head2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres" style="margin-top:6px;"><span class="dot"></span> 1,284 online · worldwide</div>
+            </div>
+            <div class="actions">
+              <div class="gender-sm">
+                <div class="gp on">♂ Male</div>
+                <div class="gp">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+              <div class="p-ribbon">
+                <div class="fadeL"></div>
+                <div class="scroll">
+                  <span>📷 Send photos</span><span>🎙 Voice notes</span><span>❤️ Reactions</span><span>👀 Live typing</span><span>💾 Save chats</span><span>🚫 No ads</span><b>✦ Try Premium</b>
+                  <span>📷 Send photos</span><span>🎙 Voice notes</span><span>❤️ Reactions</span><span>👀 Live typing</span><span>💾 Save chats</span><span>🚫 No ads</span><b>✦ Try Premium</b>
+                </div>
+                <div class="fadeR"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>3 · Auto-scrolling ribbon</b>Premium = horizontal ticker that loops through all features endlessly. Subtle, alive, never demands attention.<span class="ph">Best for "feels alive" without nagging.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 4 — Locked feature teasers                             -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt4">
+            <div class="mid">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="head1" style="margin-top:8px;">Talk to a</div>
+              <div class="head2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres" style="margin-top:6px;"><span class="dot"></span> 1,284 Malayalis online</div>
+            </div>
+            <div class="actions">
+              <div class="gender-icon" style="justify-content:center;">
+                <div class="gi on">♂</div>
+                <div class="gi">♀</div>
+                <span style="font-size:11.5px; color:var(--muted); align-self:center; padding-left:6px;">tap to switch</span>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+              <div class="pre-label">✦ UNLOCK WITH PREMIUM</div>
+              <div class="p-locked">
+                <div class="lk"><div class="e">📷</div><div class="n">Photos</div></div>
+                <div class="lk"><div class="e">🎙</div><div class="n">Voice</div></div>
+                <div class="lk"><div class="e">❤️</div><div class="n">React</div></div>
+                <div class="lk"><div class="e">💾</div><div class="n">Save</div></div>
+                <div class="lk"><div class="e">🚫</div><div class="n">No ads</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>4 · Locked teasers</b>Gender = tiny icon-only round buttons. Premium features shown as 5 grey-locked tiles with 🔒 — desire by deprivation.<span class="ph">Highest premium conversion intent.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 5 — Floating roll                                      -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt5">
+            <div class="mid">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="head1" style="margin-top:8px;">Talk to a</div>
+              <div class="head2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres" style="margin-top:6px;"><span class="dot"></span> 1,284 online</div>
+            </div>
+            <div class="actions">
+              <div class="gender-seg" style="align-self:center;">
+                <div class="seg on">♂ Male</div>
+                <div class="seg">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+              <div class="p-float">
+                <div class="ic">✦</div>
+                <div class="roll">
+                  <ul>
+                    <li>📷 Send photos &amp; videos</li>
+                    <li>🎙 Record voice notes</li>
+                    <li>❤️ React to messages</li>
+                    <li>💾 Save your best chats</li>
+                    <li>🚫 No ads, ever</li>
+                  </ul>
+                </div>
+                <div class="upg-arr">›</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>5 · Floating roll</b>Premium = pill-shaped bar whose center text rotates through features one at a time (every 2.4s).<span class="ph">Compact + animated, draws eye gently.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 6 — Vertical side strip                                -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt6">
+            <div class="p-side">
+              <div class="lab">PREMIUM</div>
+              <div class="ic">📷</div>
+              <div class="ic">🎙</div>
+              <div class="ic">❤️</div>
+              <div class="ic">💾</div>
+              <div class="ic">🚫</div>
+            </div>
+            <div class="mid">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="head1" style="margin-top:8px;">Talk to a</div>
+              <div class="head2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres" style="margin-top:6px;"><span class="dot"></span> 1,284 online</div>
+            </div>
+            <div class="actions">
+              <div class="gender-sm">
+                <div class="gp on">♂ Male</div>
+                <div class="gp">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>6 · Side strip</b>Vertical pill on right edge with stacked premium icons + brass label. Doesn't fight the hero for space.<span class="ph">Persistent but quiet — never interrupts.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 7 — Bento                                              -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt7">
+            <div class="mid">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="head1" style="margin-top:8px;">Talk to a</div>
+              <div class="head2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres pres-chip" style="margin-top:6px;"><span class="dot"></span> 1,284 Malayalis online</div>
+            </div>
+            <div class="actions">
+              <div class="gender-sm">
+                <div class="gp on">♂ Male</div>
+                <div class="gp">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+              <div class="p-bento">
+                <div class="head"><span class="h">✦ Random Malayali Premium</span><span class="upg">Upgrade</span></div>
+                <div class="cell"><span class="e">📷</span><span class="n">Photos</span></div>
+                <div class="cell"><span class="e">🎙</span><span class="n">Voice notes</span></div>
+                <div class="cell"><span class="e">❤️</span><span class="n">React</span></div>
+                <div class="cell"><span class="e">🚫</span><span class="n">No ads</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>7 · Bento card</b>Tight 2×2 bento with the full brand line at top. Each cell = one feature. Modern (Apple/Linear vibe).<span class="ph">Premium-feel, designer-y.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 8 — Feature rotator with dots                          -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt8">
+            <div class="mid">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="head1" style="margin-top:8px;">Talk to a</div>
+              <div class="head2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres" style="margin-top:6px;"><span class="dot"></span> 1,284 online · worldwide</div>
+            </div>
+            <div class="actions">
+              <div class="gender-sm">
+                <div class="gp on">♂ Male</div>
+                <div class="gp">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+              <div class="p-rotator">
+                <div class="top"><span class="h">✦ INSIDE PREMIUM</span><span class="upg">Try</span></div>
+                <div class="feat">
+                  <span class="e">🎙</span>
+                  <div><div class="nm">Voice notes</div><div class="ds">Record &amp; send up to 60s</div></div>
+                </div>
+                <div class="dots"><i></i><i class="on"></i><i></i><i></i><i></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>8 · Feature rotator</b>Premium = a small card showing ONE feature richly (icon + name + description) with dot navigator below. Auto-cycles every ~3s.<span class="ph">Most descriptive — explains WHY each feature matters.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 9 — Stories top strip                                  -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt9">
+            <div class="strip-wrap">
+              <div class="strip-label">✦ PREMIUM SNEAK PEEK</div>
+              <div class="p-stories">
+                <div class="story"><div class="ring"><div class="inner">📷</div></div><div class="lbl">Photos</div></div>
+                <div class="story"><div class="ring"><div class="inner">🎙</div></div><div class="lbl">Voice</div></div>
+                <div class="story"><div class="ring"><div class="inner">❤️</div></div><div class="lbl">React</div></div>
+                <div class="story"><div class="ring"><div class="inner">👀</div></div><div class="lbl">Live</div></div>
+                <div class="story"><div class="ring"><div class="inner">💾</div></div><div class="lbl">Save</div></div>
+                <div class="story"><div class="ring"><div class="inner">🚫</div></div><div class="lbl">No ads</div></div>
+              </div>
+            </div>
+            <div class="mid">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="head1" style="margin-top:8px;">Talk to a</div>
+              <div class="head2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres" style="margin-top:6px;"><span class="dot"></span> 1,284 Malayalis online</div>
+            </div>
+            <div class="actions">
+              <div class="gender-seg" style="align-self:center;">
+                <div class="seg on">♂ Male</div>
+                <div class="seg">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>9 · Stories top strip</b>Instagram-style story circles for premium features at the top. Tap any → see what unlocks.<span class="ph">Familiar gesture, high engagement.</span></div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- OPTION 10 — Footer band                                       -->
+    <!-- ============================================================ -->
+    <div class="device">
+      <div class="phone"><div class="statusbar"><span>9:41</span><span>5G  100</span></div>
+        <div class="screen">
+          <div class="topbar"><div class="logo-mark sm"><span>മ</span></div><span class="gear">⚙</span></div>
+          <div class="opt10">
+            <div class="mid">
+              <div class="logo-mark"><span>മ</span></div>
+              <div class="head1" style="margin-top:8px;">Talk to a</div>
+              <div class="head2">Random Malayali</div>
+              <div class="sub">Someone interesting is online right now</div>
+              <div class="pres" style="margin-top:6px;"><span class="dot"></span> 1,284 Malayalis online · worldwide</div>
+            </div>
+            <div class="actions">
+              <div class="gender-sm">
+                <div class="gp on">♂ Male</div>
+                <div class="gp">♀ Female</div>
+              </div>
+              <div class="cta">💬 Start chatting</div>
+            </div>
+            <div class="p-band">
+              <div class="top"><span class="h">✦ PREMIUM INCLUDES</span><span class="upg">$4.99/mo</span></div>
+              <div class="row">
+                <div class="it"><span>📷</span><span class="lab">Photos</span></div>
+                <div class="it"><span>🎙</span><span class="lab">Voice</span></div>
+                <div class="it"><span>❤️</span><span class="lab">React</span></div>
+                <div class="it"><span>👀</span><span class="lab">Live</span></div>
+                <div class="it"><span>💾</span><span class="lab">Save</span></div>
+                <div class="it"><span>🚫</span><span class="lab">No ads</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap"><b>10 · Footer band</b>Full-width premium band sits at bottom edge of screen with all 6 features + price. Pinned, always visible.<span class="ph">Most-features-shown · clear pricing.</span></div>
+    </div>
+
+  </div>
+
+  <div class="legend">
+    <h3>Quick comparison</h3>
+    <table>
+      <thead><tr><th>#</th><th>Premium style</th><th>Gender style</th><th>Best for</th></tr></thead>
+      <tbody>
+        <tr><td><b>1</b></td><td>Icon strip + Upgrade pill</td><td>Compact full-width pills</td><td>Clean classic, low risk</td></tr>
+        <tr><td><b>2</b></td><td>2×2 feature grid card</td><td>iOS segmented control</td><td>Best <b>premium explanation</b> in one card</td></tr>
+        <tr><td><b>3</b></td><td>Auto-scrolling ribbon</td><td>Compact pills</td><td>Feels alive, gentle nag</td></tr>
+        <tr><td><b>4</b></td><td>5 locked tiles w/ 🔒</td><td>Round icon-only chips</td><td>Highest <b>premium conversion intent</b></td></tr>
+        <tr><td><b>5</b></td><td>Single floating bar, rolling text</td><td>iOS segmented</td><td>Minimal footprint, animated</td></tr>
+        <tr><td><b>6</b></td><td>Vertical side strip</td><td>Compact pills</td><td>Persistent without blocking</td></tr>
+        <tr><td><b>7</b></td><td>Bento card 2×2</td><td>Compact pills</td><td>Modern designer aesthetic</td></tr>
+        <tr><td><b>8</b></td><td>Single feature card + dot nav</td><td>Compact pills</td><td>Most <b>descriptive</b> per feature</td></tr>
+        <tr><td><b>9</b></td><td>Stories-style circle row on top</td><td>iOS segmented</td><td>Familiar gesture, fun</td></tr>
+        <tr><td><b>10</b></td><td>Full-width footer band w/ price</td><td>Compact pills</td><td>Most features visible + price</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="foot">
+  All 10 share the brand mark, headline, sub line, presence, smaller gender, and Start chatting CTA — only the premium sneak peek style and a few details differ. Reply with the number (or a mix — e.g. <b>"2 with 4's gender"</b>, <b>"10 but rotating like 5"</b>) and I implement.
+</div>
+
+</body>
+</html>

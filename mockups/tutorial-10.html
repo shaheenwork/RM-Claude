@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutorial — 10 On-Brand Options</title>
+<style>
+  :root{
+    --deep:#0C0814;--navy:#120E1C;--end:#080610;--card:#1A1426;--elev:#221A30;
+    --border:rgba(240,232,245,.08);
+    --pink:#E04A8C;--violet:#6E4FE0;--aurora:#66D7FF;
+    --gold:#FFD062;--goldDim:#FFA040;--pinkSoft:#F08AB5;
+    --tp:#F0E8F5;--ts:#B4A6C2;--tm:#7A6F87;--green:#00C779;--red:#FF5252;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#070510;color:var(--tp);
+    font-family:-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;
+    padding:44px 22px 80px;line-height:1.5}
+  .serif{font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-weight:400}
+  h1{font-size:28px;font-weight:800;letter-spacing:-.5px;text-align:center;margin-bottom:6px}
+  .lede{text-align:center;color:var(--ts);font-size:13px;max-width:760px;margin:0 auto 4px}
+  .note{text-align:center;color:var(--tm);font-size:11.5px;max-width:760px;margin:0 auto 34px}
+
+  .grid{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;max-width:1320px;margin:0 auto}
+  .opt{width:236px;display:flex;flex-direction:column}
+  .ohead{margin-bottom:10px}
+  .onum{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1px;
+    background:rgba(224,74,140,.15);color:var(--pink);padding:3px 8px;border-radius:99px}
+  .ohead h2{font-size:15px;font-weight:700;margin-top:6px}
+  .ohead .dsc{font-size:11px;color:var(--ts);margin-top:3px;min-height:48px}
+
+  .ph{width:236px;height:472px;border-radius:30px;position:relative;overflow:hidden;
+    background:linear-gradient(180deg,var(--deep),var(--end));
+    border:1px solid rgba(255,255,255,.07);
+    box-shadow:0 22px 44px -16px rgba(0,0,0,.7),inset 0 0 0 5px #050309}
+  .blob{position:absolute;border-radius:50%;filter:blur(48px);pointer-events:none}
+  .bp{width:170px;height:170px;background:var(--pink);top:-50px;right:-44px;opacity:.42}
+  .bv{width:150px;height:150px;background:var(--violet);bottom:-44px;left:-44px;opacity:.4}
+  .bg{width:160px;height:160px;background:var(--gold);top:-44px;right:-36px;opacity:.28}
+  .ba{width:160px;height:160px;background:var(--aurora);bottom:-46px;left:-40px;opacity:.26}
+  .scr{position:absolute;inset:0;display:flex;flex-direction:column;padding:24px 20px 20px;z-index:3}
+  .skip{align-self:flex-end;font-size:10.5px;color:var(--tm)}
+  .b{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+  .bl{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left}
+  .h{font-size:21px;font-weight:800;letter-spacing:-.4px;line-height:1.12}
+  .hs{font-size:25px;line-height:1.05}
+  .sub{font-size:11.5px;color:var(--ts);margin-top:9px;max-width:185px}
+  .dots{display:flex;gap:5px;justify-content:center;margin:10px 0}
+  .dt{width:5px;height:5px;border-radius:6px;background:rgba(240,232,245,.2)}
+  .dt.on{width:18px;background:var(--pink)}
+  .dt.on.g{background:var(--gold)}.dt.on.a{background:var(--aurora)}
+  .cta{height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:13px;color:#fff;
+    background:linear-gradient(135deg,var(--pink),var(--violet));
+    box-shadow:0 8px 20px -8px rgba(224,74,140,.65)}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;
+    padding:5px 10px;border-radius:99px}
+  .ring{border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .arc{font-size:10.5px;color:var(--ts);margin-top:10px;border-top:1px solid var(--border);padding-top:9px}
+  .arc b{color:var(--tp)} .arc span{color:var(--tm)}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 13px;width:100%}
+  .glass{background:rgba(240,232,245,.05);border:1px solid rgba(240,232,245,.1);
+    backdrop-filter:blur(8px);border-radius:13px}
+  .bin{align-self:flex-start;background:rgba(240,232,245,.07);border:1px solid var(--border);
+    border-radius:13px;border-bottom-left-radius:4px;padding:7px 10px;font-size:10.5px;max-width:78%}
+  .bout{align-self:flex-end;background:linear-gradient(135deg,var(--pink),var(--violet));
+    color:#fff;border-radius:13px;border-bottom-right-radius:4px;padding:7px 10px;font-size:10.5px;max-width:78%}
+  .fg{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;margin-top:10px}
+  .fc{background:var(--card);border:1px solid var(--border);border-radius:10px;
+    padding:8px 4px;text-align:center;font-size:9px;font-weight:600;color:var(--ts)}
+  .fc .i{font-size:15px;display:block;margin-bottom:2px}
+  .pulse{position:absolute;border-radius:50%;border:1px solid rgba(224,74,140,.3)}
+  .av{position:absolute;width:24px;height:24px;border-radius:50%;display:flex;
+    align-items:center;justify-content:center;font-size:11px}
+</style>
+</head>
+<body>
+
+  <h1>StrangerChat — 10 Tutorial Options</h1>
+  <p class="lede">All on existing app design: deep gradient + blurred blobs, glass cards, serif-italic accent, pink→violet CTA, amber=premium.</p>
+  <p class="note">Each shows its signature slide. 4-slide content arc listed below each (Hook → No-signup → Express → Control).</p>
+
+  <div class="grid">
+
+    <!-- 1 SPOTLIGHT -->
+    <div class="opt">
+      <div class="ohead"><span class="onum">01</span><h2>Spotlight</h2>
+        <div class="dsc">Single glow orb + serif accent. Mirrors Home "stranger" greeting. Calm, premium.</div></div>
+      <div class="ph"><div class="blob bp"></div><div class="blob bv"></div><div class="scr">
+        <div class="skip">Skip</div>
+        <div class="b">
+          <div class="ring" style="width:108px;height:108px;background:radial-gradient(circle,rgba(224,74,140,.3),transparent 70%)">
+            <div class="ring" style="width:74px;height:74px;background:rgba(224,74,140,.1);border:1px solid rgba(224,74,140,.32);font-size:30px">💬</div></div>
+          <div class="h" style="margin-top:26px">Talk to anyone,</div>
+          <div class="h hs serif" style="color:var(--pinkSoft)">anonymously</div>
+          <div class="sub">Real strangers worldwide. No name, no trace.</div>
+        </div>
+        <div class="dots"><span class="dt on"></span><span class="dt"></span><span class="dt"></span><span class="dt"></span></div>
+        <div class="cta">Next →</div>
+      </div></div>
+      <div class="arc"><b>Arc:</b> <span>anonymous →</span> no signup → <span>rich chat →</span> in control + free credits</div>
+    </div>
+
+    <!-- 2 LIVE CHAT PEEK -->
+    <div class="opt">
+      <div class="ohead"><span class="onum">02</span><h2>Live Chat Peek</h2>
+        <div class="dsc">Real bubbles (glass in, gradient out). Shows the actual product UI. Most concrete.</div></div>
+      <div class="ph"><div class="blob bp"></div><div class="blob bv"></div><div class="scr">
+        <div class="skip">Skip</div>
+        <div class="bl" style="gap:6px">
+          <div style="font-size:18px;font-weight:800;align-self:center;margin-bottom:6px">Say it your way</div>
+          <div class="bin">where you from? 🙂</div>
+          <div class="bout">guess 😏</div>
+          <div class="bin">📷 nice pic!</div>
+          <div class="bout">🎙️ ▮▮▮▮▮ 0:06</div>
+          <div class="chip" style="align-self:flex-end;background:var(--card);border:1px solid var(--border)">😂 react</div>
+        </div>
+        <div class="dots"><span class="dt"></span><span class="dt"></span><span class="dt on g"></span><span class="dt"></span></div>
+        <div class="cta">Next →</div>
+      </div></div>
+      <div class="arc"><b>Arc:</b> <span>match →</span> no signup → <span>real chat demo →</span> safety → CTA</div>
+    </div>
+
+    <!-- 3 MATCH CORE -->
+    <div class="opt">
+      <div class="ohead"><span class="onum">03</span><h2>Match Core</h2>
+        <div class="dsc">Reuses the matchmaking pulse-core + orbiting avatars. Strong app-identity tie.</div></div>
+      <div class="ph"><div class="blob bp"></div><div class="blob bv"></div><div class="scr">
+        <div class="skip">Skip</div>
+        <div class="b">
+          <div style="position:relative;width:150px;height:150px;display:flex;align-items:center;justify-content:center">
+            <div class="pulse" style="width:150px;height:150px"></div>
+            <div class="pulse" style="width:110px;height:110px"></div>
+            <div class="ring" style="width:64px;height:64px;background:linear-gradient(135deg,var(--pink),var(--violet));font-size:24px;box-shadow:0 0 28px rgba(224,74,140,.5)">🔎</div>
+            <div class="av" style="top:6px;left:24px;background:linear-gradient(135deg,#66D7FF,#6E4FE0)">🙂</div>
+            <div class="av" style="bottom:10px;right:18px;background:linear-gradient(135deg,#FFD062,#FFA040)">😎</div>
+          </div>
+          <div class="h" style="margin-top:18px">A stranger is</div>
+          <div class="h hs serif" style="color:var(--pinkSoft)">one tap away</div>
+          <div class="chip" style="margin-top:14px;background:rgba(0,199,121,.1);color:var(--green)">● 1,240+ online</div>
+        </div>
+        <div class="dots"><span class="dt on"></span><span class="dt"></span><span class="dt"></span><span class="dt"></span></div>
+        <div class="cta">Next →</div>
+      </div></div>
+      <div class="arc"><b>Arc:</b> <span>instant match →</span> no signup → <span>rich chat →</span> control + credits</div>
+    </div>
+
+    <!-- 4 STAT CARD STACK -->
+    <div class="opt">
+      <div class="ohead"><span class="onum">04</span><h2>Stat Card Stack</h2>
+        <div class="dsc">Stacked glass fact-cards, app card style. One idea per card, scannable.</div></div>
+      <div class="ph"><div class="blob bv"></div><div class="blob bp"></div><div class="scr">
+        <div class="skip">Skip</div>
+        <div class="bl" style="gap:8px">
+          <div style="font-size:18px;font-weight:800;margin-bottom:4px">Why people stay</div>
+          <div class="card glass" style="display:flex;gap:9px;align-items:center"><span style="font-size:16px">🕶️</span><div style="font-size:11px"><b>100% anonymous</b><br><span style="color:var(--tm);font-size:9.5px">no name attached</span></div></div>
+          <div class="card glass" style="display:flex;gap:9px;align-items:center"><span style="font-size:16px">⚡</span><div style="font-size:11px"><b>Instant match</b><br><span style="color:var(--tm);font-size:9.5px">tap once, you're in</span></div></div>
+          <div class="card glass" style="display:flex;gap:9px;align-items:center"><span style="font-size:16px">⏳</span><div style="font-size:11px"><b>Nothing stored</b><br><span style="color:var(--tm);font-size:9.5px">chats vanish</span></div></div>
+        </div>
+        <div class="dots"><span class="dt on"></span><span class="dt"></span><span class="dt"></span><span class="dt"></span></div>
+        <div class="cta">Next →</div>
+      </div></div>
+      <div class="arc"><b>Arc:</b> <span>trust facts →</span> no signup → <span>features →</span> control + credits</div>
+    </div>
+
+    <!-- 5 THREE NOs -->
+    <div class="opt">
+      <div class="ohead"><span class="onum">05</span><h2>Three NOs</h2>
+        <div class="dsc">Friction as hero: struck "no email / phone / signup". Pink accent. Punchy.</div></div>
+      <div class="ph"><div class="blob bp"></div><div class="blob bv"></div><div class="scr">
+        <div class="skip">Skip</div>
+        <div class="bl">
+          <div style="font-size:12px;color:var(--tm);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px">Setup time: 0s</div>
+          <div style="font-size:26px;font-weight:900;line-height:1.18">
+            <div style="text-decoration:line-through;text-decoration-color:var(--pink)">No email</div>
+            <div style="text-decoration:line-through;text-decoration-color:var(--pink)">No phone</div>
+            <div style="text-decoration:line-through;text-decoration-color:var(--pink)">No signup</div>
+          </div>
+          <div class="sub" style="max-width:none">Open the app, tap once, you're chatting.</div>
+        </div>
+        <div class="dots"><span class="dt"></span><span class="dt on"></span><span class="dt"></span><span class="dt"></span></div>
+        <div class="cta">Next →</div>
+      </div></div>
+      <div class="arc"><b>Arc:</b> <span>anonymous →</span> the 3 NOs → <span>rich chat →</span> control + credits</div>
+    </div>
+
+    <!-- 6 FEATURE CONSTELLATION -->
+    <div class="opt">
+      <div class="ohead"><span class="onum">06</span><h2>Constellation</h2>
+        <div class="dsc">Feature icons orbit a brand mark, amber premium tint. Playful but contained.</div></div>
+      <div class="ph"><div class="blob bg"></div><div class="blob bv"></div><div class="scr">
+        <div class="skip">Skip</div>
+        <div class="b">
+          <div style="position:relative;width:160px;height:160px;display:flex;align-items:center;justify-content:center">
+            <div class="pulse" style="width:160px;height:160px;border-color:rgba(255,208,98,.25)"></div>
+            <div class="ring" style="width:58px;height:58px;background:linear-gradient(135deg,var(--pink),var(--violet));font-size:22px">✦</div>
+            <div class="av" style="top:0;left:50px;width:30px;height:30px;background:rgba(255,208,98,.14);border:1px solid rgba(255,208,98,.3);font-size:14px">📷</div>
+            <div class="av" style="top:46px;right:0;width:30px;height:30px;background:rgba(255,208,98,.14);border:1px solid rgba(255,208,98,.3);font-size:14px">🎙️</div>
+            <div class="av" style="bottom:0;left:54px;width:30px;height:30px;background:rgba(255,208,98,.14);border:1px solid rgba(255,208,98,.3);font-size:14px">🎞️</div>
+            <div class="av" style="top:46px;left:0;width:30px;height:30px;background:rgba(255,208,98,.14);border:1px solid rgba(255,208,98,.3);font-size:14px">❤️</div>
+          </div>
+          <div class="h" style="margin-top:16px">More ways to</div>
+          <div class="h hs serif" style="color:var(--gold)">express</div>
+        </div>
+        <div class="dots"><span class="dt"></span><span class="dt"></span><span class="dt on g"></span><span class="dt"></span></div>
+        <div class="cta">Next →</div>
+      </div></div>
+      <div class="arc"><b>Arc:</b> <span>anon →</span> no signup → <span>feature orbit →</span> control + credits</div>
+    </div>
+
+    <!-- 7 EDITORIAL SERIF -->
+    <div class="opt">
+      <div class="ohead"><span class="onum">07</span><h2>Editorial Serif</h2>
+        <div class="dsc">App serif-italic dominant, numbered kicker, big statement. Premium magazine.</div></div>
+      <div class="ph"><div class="blob bp"></div><div class="blob bv"></div><div class="scr">
+        <div class="skip">skip</div>
+        <div class="bl">
+          <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--tm);margin-bottom:14px">01 — anonymity</div>
+          <div style="font-size:24px;font-weight:800;line-height:1.05">talk to</div>
+          <div class="serif" style="font-size:46px;color:var(--pink);line-height:.95">strangers</div>
+          <div style="width:38px;height:3px;background:var(--pink);margin:16px 0"></div>
+          <div class="sub" style="max-width:none">Your identity never leaves your phone.</div>
+        </div>
+        <div class="dots"><span class="dt on"></span><span class="dt"></span><span class="dt"></span><span class="dt"></span></div>
+        <div class="cta">Next</div>
+      </div></div>
+      <div class="arc"><b>Arc:</b> <span>anon →</span> no signup → <span>express →</span> control + credits</div>
+    </div>
+
+    <!-- 8 GRADIENT HERO BAND -->
+    <div class="opt">
+      <div class="ohead"><span class="onum">08</span><h2>Hero Band</h2>
+        <div class="dsc">Top brand-gradient band w/ art, content card below. Mirrors Premium plan card.</div></div>
+      <div class="ph"><div class="scr" style="padding:0">
+        <div style="height:210px;background:linear-gradient(135deg,var(--pink),var(--violet));
+          display:flex;align-items:center;justify-content:center;position:relative">
+          <div class="skip" style="position:absolute;top:24px;right:20px;color:rgba(255,255,255,.8)">Skip</div>
+          <div style="font-size:54px">💬</div>
+        </div>
+        <div style="flex:1;padding:24px 20px;display:flex;flex-direction:column">
+          <div class="h">Chat without</div>
+          <div class="h hs serif" style="color:var(--pinkSoft)">giving up you</div>
+          <div class="sub" style="max-width:none">Anonymous strangers, real conversations. No trace left behind.</div>
+          <div style="flex:1"></div>
+          <div class="dots"><span class="dt on"></span><span class="dt"></span><span class="dt"></span><span class="dt"></span></div>
+          <div class="cta">Next →</div>
+        </div>
+      </div></div>
+      <div class="arc"><b>Arc:</b> <span>anon →</span> no signup → <span>rich chat →</span> control + credits</div>
+    </div>
+
+    <!-- 9 PRIVACY SHIELD -->
+    <div class="opt">
+      <div class="ohead"><span class="onum">09</span><h2>Privacy First</h2>
+        <div class="dsc">Breathing shield core + glass trust rows. Leads with the privacy wedge.</div></div>
+      <div class="ph"><div class="blob ba"></div><div class="blob bp"></div><div class="scr">
+        <div class="skip">Skip</div>
+        <div class="b">
+          <div class="ring" style="width:96px;height:96px;background:radial-gradient(circle,rgba(102,215,255,.24),transparent 70%)">
+            <div class="ring" style="width:66px;height:66px;background:rgba(102,215,255,.1);border:1px solid rgba(102,215,255,.34);font-size:28px">🛡️</div></div>
+          <div class="h" style="margin-top:22px">Private by</div>
+          <div class="h hs serif" style="color:var(--pinkSoft)">design</div>
+          <div style="width:100%;margin-top:16px;display:flex;flex-direction:column;gap:6px">
+            <div class="card glass" style="font-size:10px;text-align:left">🔒 No login — ever</div>
+            <div class="card glass" style="font-size:10px;text-align:left">⏳ Chats auto-expire</div>
+          </div>
+        </div>
+        <div class="dots"><span class="dt on a"></span><span class="dt"></span><span class="dt"></span><span class="dt"></span></div>
+        <div class="cta">Next →</div>
+      </div></div>
+      <div class="arc"><b>Arc:</b> <span>privacy →</span> no signup → <span>express →</span> app lock + credits</div>
+    </div>
+
+    <!-- 10 CONVERSATIONAL STORY -->
+    <div class="opt">
+      <div class="ohead"><span class="onum">10</span><h2>Story (A liked)</h2>
+        <div class="dsc">Narrative line + serif hook + chat woven in. The cinematic feel you liked.</div></div>
+      <div class="ph"><div class="blob bp"></div><div class="blob bv"></div><div class="scr">
+        <div class="skip">Skip</div>
+        <div class="bl">
+          <div style="font-size:20px;font-weight:800">Somewhere, a stranger</div>
+          <div class="serif" style="font-size:26px;color:var(--pinkSoft);margin-bottom:12px">is about to say hi</div>
+          <div class="bin">hey 👋 random q...</div>
+          <div class="bout" style="margin-top:6px">😏 go on</div>
+          <div class="chip" style="margin-top:14px;align-self:flex-start;background:rgba(0,199,121,.1);color:var(--green)">● 1,240+ online now</div>
+        </div>
+        <div class="dots"><span class="dt on"></span><span class="dt"></span><span class="dt"></span><span class="dt"></span></div>
+        <div class="cta">Next →</div>
+      </div></div>
+      <div class="arc"><b>Arc:</b> <span>story hook →</span> no signup → <span>chat in context →</span> control + credits</div>
+    </div>
+
+  </div>
+</body>
+</html>

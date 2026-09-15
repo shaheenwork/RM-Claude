@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>StrangerChat — Kerala-First Redesign</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manjari:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  /* ── CURRENT (left column) ───────────────────────────────────────────────── */
+  :root {
+    --cur-bg:     #0A0E18;
+    --cur-surf:   #111827;
+    --cur-elev:   #1A2236;
+    --cur-brand:  #00C7E6;
+    --cur-gold:   #E6B800;
+    --cur-t1:     #F0F4FF;
+    --cur-t2:     #A0AABF;
+    --cur-t3:     #6B7790;
+    --cur-border: rgba(255,255,255,0.10);
+  }
+  /* ── KERALA REDESIGN (right column) ───────────────────────────────────────── */
+  :root {
+    --kr-bg:       #0B0F14;
+    --kr-surf:     #141A22;
+    --kr-elev:     #1C242F;
+    --kr-brass:    #D4A857;
+    --kr-brassDp:  #A68340;
+    --kr-teal:     #2BA89A;
+    --kr-rose:     #C8826B;
+    --kr-cream:    #F4ECDC;
+    --kr-ivory:    #A89F8F;
+    --kr-sepia:    #6B6253;
+    --kr-border:   rgba(244,236,220,0.08);
+    --ml: 'Manjari', 'Noto Sans Malayalam', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: #050810;
+    color: var(--cur-t1);
+    font-family: 'Inter', system-ui, sans-serif;
+    margin: 0; padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page-header {
+    padding: 30px 40px 16px;
+    border-bottom: 1px solid #11161f;
+    position: sticky; top: 0; background: #050810; z-index: 10;
+  }
+  .page-header h1 { font-size: 24px; font-weight: 900; margin: 0 0 4px; letter-spacing: -0.5px; }
+  .page-header h1 .ml { font-family: var(--ml); font-weight: 700; color: var(--kr-brass); margin-left: 8px; }
+  .page-header p { font-size: 13px; color: var(--cur-t2); margin: 0; max-width: 800px; }
+
+  section { padding: 36px 40px; border-bottom: 1px solid #11161f; }
+  section h2 { font-size: 18px; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.3px; }
+  section p.lead { color: var(--cur-t2); font-size: 13px; margin: 0 0 24px; max-width: 820px; line-height: 1.6; }
+
+  /* Two-column compare */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    max-width: 1100px;
+  }
+  .col h3 {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px; margin: 0 0 14px;
+    color: var(--cur-t3);
+    text-transform: uppercase;
+  }
+  .col h3.cur { color: #ff8888; }
+  .col h3.new { color: var(--kr-brass); }
+
+  /* Phone frames */
+  .phone {
+    width: 360px;
+    height: 700px;
+    border-radius: 38px;
+    overflow: hidden;
+    border: 6px solid #181b22;
+    box-shadow: 0 24px 50px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .phone.cur { background: var(--cur-bg); }
+  .phone.kr  { background: var(--kr-bg); }
+  .phone::before {
+    content: ""; position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    width: 90px; height: 22px; background: #050810; border-radius: 14px; z-index: 999;
+  }
+
+  /* Status bar */
+  .status {
+    height: 36px; padding: 12px 22px 0;
+    display: flex; justify-content: space-between;
+    font-size: 11px; font-weight: 700;
+  }
+  .status.cur { color: var(--cur-t1); }
+  .status.kr  { color: var(--kr-cream); }
+
+  /* ─── HOME: CURRENT ─── */
+  .home-cur {
+    flex: 1; padding: 0 24px 16px;
+    display: flex; flex-direction: column;
+    background: radial-gradient(ellipse 60% 30% at 80% 10%, rgba(0,199,230,0.06), transparent 70%);
+  }
+  .home-cur .top { display:flex; justify-content:flex-end; padding:6px 0; }
+  .home-cur .gear { color: var(--cur-t2); font-size: 18px; }
+  .home-cur .hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; }
+  .home-cur .logo {
+    width:56px; height:56px; border-radius:14px;
+    background: rgba(0,199,230,0.10);
+    border:1px solid var(--cur-border);
+    display:grid; place-items:center; color: var(--cur-brand); font-size: 24px;
+  }
+  .home-cur .title { font-size:24px; font-weight:900; letter-spacing: -0.5px; color: var(--cur-t1); margin-top:4px; }
+  .home-cur .sub { font-size:12px; color: var(--cur-t2); }
+  .home-cur .chip {
+    font-size:11px; color:#00C779; display:inline-flex; align-items:center; gap:6px; margin-top:4px;
+  }
+  .home-cur .chip::before { content:""; width:6px; height:6px; border-radius:99px; background:#00C779; }
+  .home-cur .cta {
+    margin-top: 18px;
+    background: linear-gradient(180deg, var(--cur-brand), #0098B8);
+    color: #001620;
+    font-weight: 900;
+    padding: 16px;
+    border-radius: 99px;
+    text-align: center;
+    font-size: 15px;
+    width: 100%;
+  }
+  .home-cur .premium-card {
+    margin-top: 16px;
+    background: linear-gradient(135deg, #1A2236, #1c1810);
+    border: 1px solid rgba(230,184,0,0.25);
+    border-radius: 16px;
+    padding: 14px;
+  }
+  .home-cur .premium-card .pt { color: var(--cur-gold); font-weight: 800; font-size: 13px; }
+  .home-cur .premium-card .pf { color: var(--cur-t2); font-size: 11px; margin-top: 6px; line-height:1.5; }
+  .home-cur .premium-card .pp { display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
+  .home-cur .price { color: var(--cur-t1); font-weight:700; font-size: 13px; }
+  .home-cur .upgrade { background: linear-gradient(180deg, var(--cur-gold), #B8960C); color:#1a1100; font-weight:900; padding:8px 14px; border-radius:99px; font-size:12px; }
+
+  /* ─── HOME: KERALA ─── */
+  .home-kr {
+    flex:1; padding: 0 24px 16px;
+    display:flex; flex-direction:column;
+    background:
+      radial-gradient(ellipse 60% 30% at 80% 10%, rgba(212,168,87,0.10), transparent 70%),
+      radial-gradient(ellipse 70% 40% at 20% 100%, rgba(43,168,154,0.06), transparent 70%);
+  }
+  .home-kr .top { display:flex; justify-content:flex-end; padding:6px 0; }
+  .home-kr .gear { color: var(--kr-ivory); font-size: 18px; }
+  .home-kr .hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; }
+  .home-kr .logo {
+    width:60px; height:60px; border-radius:50%;
+    background: radial-gradient(circle, rgba(212,168,87,0.18) 0%, rgba(212,168,87,0.04) 70%);
+    border:1px solid rgba(212,168,87,0.32);
+    display:grid; place-items:center; color: var(--kr-brass); font-size: 24px;
+    box-shadow: 0 0 32px rgba(212,168,87,0.18);
+  }
+  .home-kr .title { font-size:24px; font-weight:900; letter-spacing: -0.5px; color: var(--kr-cream); margin-top:4px; }
+  .home-kr .sub-ml {
+    font-family: var(--ml); color: var(--kr-ivory); font-size: 13px; line-height:1.4;
+    margin-top: 2px;
+  }
+  .home-kr .sub-en {
+    font-size: 11px; color: var(--kr-sepia); margin-top: 2px;
+    letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .home-kr .chip {
+    font-size:11px; color:#73A857; display:inline-flex; align-items:center; gap:6px; margin-top:4px;
+    font-family: var(--ml);
+  }
+  .home-kr .chip::before { content:""; width:6px; height:6px; border-radius:99px; background:#73A857; box-shadow:0 0 8px #73A857; }
+  .home-kr .cta {
+    margin-top: 18px;
+    background: linear-gradient(180deg, var(--kr-brass), var(--kr-brassDp));
+    color: #1a1100;
+    font-weight: 900;
+    padding: 16px;
+    border-radius: 99px;
+    text-align: center;
+    font-size: 15px;
+    width: 100%;
+    box-shadow: 0 6px 22px rgba(212,168,87,0.20);
+    letter-spacing: 0.2px;
+  }
+  .home-kr .cta .ml { font-family: var(--ml); font-weight: 700; margin-left: 4px; font-size: 12px; opacity: 0.85; }
+  .home-kr .premium-card {
+    margin-top: 16px;
+    background: linear-gradient(135deg, var(--kr-elev), #221a0e);
+    border: 1px solid rgba(212,168,87,0.30);
+    border-radius: 16px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Subtle kalamezhuthu-style texture suggestion */
+  .home-kr .premium-card::after {
+    content: ""; position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 90% -10%, rgba(212,168,87,0.10), transparent 30%);
+    pointer-events: none;
+  }
+  .home-kr .premium-card .pt { color: var(--kr-brass); font-weight: 800; font-size: 13px; letter-spacing: 0.3px; }
+  .home-kr .premium-card .pf { color: var(--kr-ivory); font-size: 11px; margin-top: 6px; line-height:1.5; }
+  .home-kr .premium-card .pp { display:flex; justify-content:space-between; align-items:center; margin-top: 12px; }
+  .home-kr .price { color: var(--kr-cream); font-weight:700; font-size: 13px; }
+  .home-kr .upgrade { background: var(--kr-brass); color:#1a1100; font-weight:900; padding:8px 14px; border-radius:99px; font-size:12px; letter-spacing:0.3px; }
+  .home-kr .footer-line {
+    margin-top: 10px;
+    font-family: var(--ml);
+    font-size: 12px;
+    color: var(--kr-sepia);
+    text-align: center;
+  }
+
+  /* Color palette tiles */
+  .palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .swatch {
+    border-radius: 12px;
+    padding: 16px 12px 12px;
+    border: 1px solid var(--cur-border);
+    background: var(--cur-surf);
+  }
+  .swatch .chip { width: 100%; height: 50px; border-radius: 8px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05); }
+  .swatch .name { font-size: 11px; font-weight: 700; color: var(--cur-t1); }
+  .swatch .hex { font-size: 10px; color: var(--cur-t3); font-family: monospace; margin-top: 2px; }
+  .swatch .why { font-size: 10px; color: var(--cur-t2); margin-top: 6px; line-height: 1.4; }
+
+  /* Buttons / cards comparison */
+  .row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .btn-cur-cyan {
+    background: linear-gradient(180deg, var(--cur-brand), #0098B8);
+    color: #001620; font-weight: 900; padding: 14px 28px;
+    border-radius: 99px; font-size: 14px;
+  }
+  .btn-cur-gold {
+    background: linear-gradient(180deg, var(--cur-gold), #B8960C);
+    color: #1a1100; font-weight: 900; padding: 14px 28px;
+    border-radius: 99px; font-size: 14px;
+  }
+  .btn-kr-brass {
+    background: linear-gradient(180deg, var(--kr-brass), var(--kr-brassDp));
+    color: #1a1100; font-weight: 900; padding: 14px 28px;
+    border-radius: 99px; font-size: 14px; letter-spacing: 0.2px;
+    box-shadow: 0 4px 16px rgba(212,168,87,0.25);
+  }
+  .btn-kr-teal {
+    background: var(--kr-teal); color: #03261f; font-weight: 800; padding: 14px 28px;
+    border-radius: 99px; font-size: 14px;
+  }
+
+  /* Typography demo */
+  .typo-demo {
+    background: var(--kr-surf);
+    border: 1px solid var(--kr-border);
+    border-radius: 14px;
+    padding: 20px;
+    max-width: 560px;
+  }
+  .typo-demo .t-en { color: var(--kr-cream); font-size: 28px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.2; }
+  .typo-demo .t-ml { font-family: var(--ml); color: var(--kr-brass); font-size: 22px; font-weight: 700; margin-top: 6px; line-height: 1.4; }
+  .typo-demo .t-body { color: var(--kr-ivory); font-size: 14px; margin-top: 14px; line-height: 1.6; }
+  .typo-demo .t-mix { color: var(--kr-cream); font-size: 14px; margin-top: 14px; }
+  .typo-demo .t-mix .mng { color: var(--kr-brass); }
+
+  /* Match found cards */
+  .match-cur, .match-kr {
+    border-radius: 16px;
+    padding: 28px 18px;
+    text-align: center;
+    border: 1px solid var(--cur-border);
+    width: 280px;
+  }
+  .match-cur { background: var(--cur-surf); }
+  .match-kr  {
+    background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(212,168,87,0.18), transparent 70%), var(--kr-surf);
+    border-color: rgba(212,168,87,0.25);
+  }
+  .match-cur .title { color: var(--cur-t1); font-weight: 800; font-size: 17px; }
+  .match-cur .sub   { color: var(--cur-t2); font-size: 12px; margin-top: 4px; }
+  .match-kr .title-en  { color: var(--kr-cream); font-weight: 900; font-size: 18px; letter-spacing: -0.2px; }
+  .match-kr .title-ml  { font-family: var(--ml); color: var(--kr-brass); font-size: 14px; margin-top: 4px; }
+  .match-kr .sub      { color: var(--kr-ivory); font-size: 12px; margin-top: 10px; font-family: var(--ml); }
+
+  /* Share card mockup */
+  .share-card {
+    width: 220px;
+    aspect-ratio: 9/16;
+    border-radius: 18px;
+    overflow: hidden;
+    background:
+      linear-gradient(180deg, var(--kr-bg) 0%, #1c1810 100%);
+    border: 1px solid rgba(212,168,87,0.35);
+    padding: 22px 16px;
+    display: flex; flex-direction: column;
+  }
+  .share-card .badge {
+    font-family: var(--ml); color: var(--kr-brass); font-size: 13px; font-weight: 700;
+  }
+  .share-card .big-text {
+    color: var(--kr-cream); font-weight: 900; font-size: 18px;
+    letter-spacing: -0.3px; line-height: 1.3; margin-top: 14px;
+  }
+  .share-card .em-row { display:flex; gap:10px; margin-top: auto; }
+  .share-card .em { font-size: 28px; }
+  .share-card .footer { color: var(--kr-sepia); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; margin-top: 14px; }
+
+  /* Microcopy comparison table */
+  .micro-table {
+    width: 100%;
+    border-collapse: collapse;
+    max-width: 900px;
+  }
+  .micro-table th {
+    text-align: left; font-size: 11px; color: var(--cur-t3); padding: 12px 14px;
+    border-bottom: 1px solid var(--cur-border);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .micro-table td {
+    padding: 14px; font-size: 13px;
+    border-bottom: 1px solid #11161f;
+    vertical-align: top;
+  }
+  .micro-table td.cur { color: var(--cur-t2); }
+  .micro-table td.new { color: var(--kr-cream); }
+  .micro-table td.new .mng { color: var(--kr-brass); }
+  .micro-table td.new .ml { font-family: var(--ml); color: var(--kr-brass); }
+  .micro-table td.where { color: var(--cur-t1); font-weight: 700; width: 180px; }
+
+  /* Annotation box */
+  .annotation {
+    margin-top: 16px;
+    background: rgba(212,168,87,0.06);
+    border-left: 3px solid var(--kr-brass);
+    padding: 14px 16px;
+    border-radius: 0 8px 8px 0;
+    font-size: 12px;
+    color: var(--kr-ivory);
+    max-width: 820px;
+    line-height: 1.6;
+  }
+  .annotation b { color: var(--kr-brass); }
+  .annotation .ml { font-family: var(--ml); }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>StrangerChat — Kerala-First Redesign <span class="ml">കേരളത്തിന്റെ കൂട്ടം</span></h1>
+  <p>Phase 1 mockup. Subtle Kerala signals, English-primary UI, Malayalam/Manglish only at emotional touchpoints. NOT a translation. NOT a tourism app. Aim: "made for us" feeling, modern startup quality.</p>
+</div>
+
+<!-- ──────────────── 1. COLOR PALETTE ──────────────── -->
+<section>
+  <h2>1. Color System — "Monsoon Brass"</h2>
+  <p class="lead">Brass replaces cyan as primary brand. Teal stays secondary (backwater vibe, not Silicon Valley). Cream text instead of pure white — like newsprint warmth. Toned greens, no festival saturation.</p>
+
+  <div class="palette">
+    <div class="swatch"><div class="chip" style="background:#0B0F14"></div><div class="name">Background</div><div class="hex">#0B0F14</div><div class="why">Monsoon night sky. Slightly warmer than current navy.</div></div>
+    <div class="swatch"><div class="chip" style="background:#141A22"></div><div class="name">Surface</div><div class="hex">#141A22</div><div class="why">Wet asphalt feel. Calm depth.</div></div>
+    <div class="swatch"><div class="chip" style="background:#1C242F"></div><div class="name">Elevated</div><div class="hex">#1C242F</div><div class="why">Cinema hall ambient. Premium card surface.</div></div>
+    <div class="swatch"><div class="chip" style="background:#D4A857"></div><div class="name">Brand · Brass</div><div class="hex">#D4A857</div><div class="why">Temple brass + nilavilakku. Cultural memory. NOT yellow.</div></div>
+    <div class="swatch"><div class="chip" style="background:#A68340"></div><div class="name">Brass Deep</div><div class="hex">#A68340</div><div class="why">Aged brass for hover/press states.</div></div>
+    <div class="swatch"><div class="chip" style="background:#2BA89A"></div><div class="name">Accent · Teal</div><div class="hex">#2BA89A</div><div class="why">Backwater monsoon. Replaces neon cyan. Local-coastal.</div></div>
+    <div class="swatch"><div class="chip" style="background:#C8826B"></div><div class="name">Accent · Rose</div><div class="hex">#C8826B</div><div class="why">Kerala dusk / terracotta. Soft warning state.</div></div>
+    <div class="swatch"><div class="chip" style="background:#73A857"></div><div class="name">Success</div><div class="hex">#73A857</div><div class="why">Wet leaf, not festival green.</div></div>
+    <div class="swatch"><div class="chip" style="background:#F4ECDC"></div><div class="name">Text Primary</div><div class="hex">#F4ECDC</div><div class="why">Old paper / cream. Reads like Mathrubhumi page.</div></div>
+    <div class="swatch"><div class="chip" style="background:#A89F8F"></div><div class="name">Text Secondary</div><div class="hex">#A89F8F</div><div class="why">Aged ivory. Captions, subtitles.</div></div>
+    <div class="swatch"><div class="chip" style="background:#6B6253"></div><div class="name">Text Tertiary</div><div class="hex">#6B6253</div><div class="why">Sepia. Muted hints.</div></div>
+  </div>
+</section>
+
+<!-- ──────────────── 2. TYPOGRAPHY ──────────────── -->
+<section>
+  <h2>2. Typography — Inter + Manjari</h2>
+  <p class="lead">English primary (Inter, unchanged). Malayalam accent via <b>Manjari</b> — a clean modern Malayalam sans-serif by SMC. Pairs well with Inter, premium feel, not folk-y. Used only at emotional touchpoints.</p>
+
+  <div class="typo-demo">
+    <div class="t-en">StrangerChat</div>
+    <div class="t-ml">സംസാരിക്കാം. അജ്ഞാതമായി.</div>
+    <div class="t-body">English body text in Inter. Body copy stays English so it never feels like a translated app. Reads fast, comfortable for English-fluent Mallus.</div>
+    <div class="t-mix">Manglish microcopy where it adds emotional impact: <span class="mng">"naadan trust"</span>, <span class="mng">"kittunilla"</span>, <span class="mng">"vaa parayam"</span> — feels like a friend, not a marketing app.</div>
+  </div>
+
+  <div class="annotation">
+    <b>Why this works:</b> Malayalam at top = instant signal "this is for us." English body = no friction. Manglish in microcopy = feels like a Mallu friend wrote the app. <b>Manjari font</b> reads premium (used by Malayalam Wikipedia, Mathrubhumi blogs). No Anjali / no government-y old fonts.
+  </div>
+</section>
+
+<!-- ──────────────── 3. HOMEPAGE COMPARISON ──────────────── -->
+<section>
+  <h2>3. Homepage — Before vs After</h2>
+  <p class="lead">Same composition, Kerala-aware palette + one Malayalam moment + one Manglish moment. Reads recognizably "for Mallus" without losing modern startup feel.</p>
+
+  <div class="compare">
+    <!-- CURRENT -->
+    <div class="col">
+      <h3 class="cur">CURRENT</h3>
+      <div class="phone cur">
+        <div class="status cur">9:41<span>●●●● 5G ■</span></div>
+        <div class="home-cur">
+          <div class="top"><span class="gear">⚙</span></div>
+          <div class="hero">
+            <div class="logo">💬</div>
+            <div class="title">StrangerChat</div>
+            <div class="sub">Anonymous · Private · Free</div>
+            <div class="chip">1,247 online</div>
+            <div class="cta">⚡ Start Anonymous Chat</div>
+            <div class="premium-card">
+              <div class="pt">✨ StrangerChat Premium</div>
+              <div class="pf">Photos · Voice notes · Reactions · Save chats</div>
+              <div class="pp">
+                <div class="price">$4.99 <span style="color:#A0AABF;font-weight:400;font-size:11px;">/month</span></div>
+                <div class="upgrade">Upgrade</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KERALA -->
+    <div class="col">
+      <h3 class="new">KERALA REDESIGN</h3>
+      <div class="phone kr">
+        <div class="status kr">9:41<span>●●●● 5G ■</span></div>
+        <div class="home-kr">
+          <div class="top"><span class="gear">⚙</span></div>
+          <div class="hero">
+            <div class="logo">💬</div>
+            <div class="title">StrangerChat</div>
+            <div class="sub-ml">സംസാരിക്കാം. അജ്ഞാതമായി.</div>
+            <div class="sub-en">Anonymous · No traces</div>
+            <div class="chip">1,247 ആളുകൾ ഓൺലൈൻ</div>
+            <div class="cta">⚡ Start Chat <span class="ml">വാ</span></div>
+            <div class="premium-card">
+              <div class="pt">✨ Premium</div>
+              <div class="pf">Photos · Voice · Reactions · GIFs · Save chats · No ads</div>
+              <div class="pp">
+                <div class="price">₹399 <span style="color:#A89F8F;font-weight:400;font-size:11px;">/month</span></div>
+                <div class="upgrade">Upgrade</div>
+              </div>
+            </div>
+            <div class="footer-line">പേടിക്കണ്ട. ആരും അറിയില്ല.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <b>Key changes:</b><br>
+    • <b>Logo glow:</b> brass radial (nilavilakku) instead of cyan circle — single biggest cultural recognizer.<br>
+    • <b>Malayalam subtitle:</b> "<span class="ml">സംസാരിക്കാം. അജ്ഞാതമായി.</span>" = "Let's talk. Anonymously." Sets emotional tone in 0.3s.<br>
+    • <b>Online chip in Malayalam:</b> "<span class="ml">1,247 ആളുകൾ ഓൺലൈൻ</span>" — social proof feels local.<br>
+    • <b>CTA "വാ"</b> (come): a single warm Malayalam word at the action moment. Tiny, powerful.<br>
+    • <b>Price in ₹:</b> $4.99 → ₹399. Crucial — dollar pricing kills trust for KL/diaspora-Mallu users.<br>
+    • <b>Footer reassurance:</b> "<span class="ml">പേടിക്കണ്ട. ആരും അറിയില്ല.</span>" = "Don't worry. No one will know." Addresses the #1 anxiety of anonymous-chat users in conservative Kerala homes.
+  </div>
+</section>
+
+<!-- ──────────────── 4. BUTTONS / CARDS ──────────────── -->
+<section>
+  <h2>4. Buttons & Cards</h2>
+  <p class="lead">Flat brass + subtle glow replaces neon gradients. Same scale + spring physics, warmer signal.</p>
+
+  <h3 style="color: #ff8888; font-size:11px; letter-spacing:1.5px; margin: 16px 0 10px;">CURRENT</h3>
+  <div class="row">
+    <button class="btn-cur-cyan" style="border:0;cursor:pointer;">⚡ Start Anonymous Chat</button>
+    <button class="btn-cur-gold" style="border:0;cursor:pointer;">Upgrade</button>
+  </div>
+
+  <h3 style="color: var(--kr-brass); font-size:11px; letter-spacing:1.5px; margin: 28px 0 10px;">KERALA REDESIGN</h3>
+  <div class="row">
+    <button class="btn-kr-brass" style="border:0;cursor:pointer;">⚡ Start Chat &nbsp;<span style="font-family:var(--ml);font-size:13px;opacity:.85;">വാ</span></button>
+    <button class="btn-kr-teal" style="border:0;cursor:pointer;">View Saved Chats</button>
+    <button class="btn-kr-brass" style="border:0;cursor:pointer;">Upgrade</button>
+  </div>
+</section>
+
+<!-- ──────────────── 5. MATCH FOUND ──────────────── -->
+<section>
+  <h2>5. Match-Found Moment</h2>
+  <p class="lead">The single most emotional moment in the app. Current is generic. New version uses a brass-lamp ignite glow + Malayalam micro-line.</p>
+
+  <div class="compare">
+    <div class="col">
+      <h3 class="cur">CURRENT</h3>
+      <div class="match-cur">
+        <div style="font-size: 40px;">😎</div>
+        <div class="title" style="margin-top:12px;">Finding a stranger</div>
+        <div class="sub">Connecting around the world</div>
+      </div>
+    </div>
+    <div class="col">
+      <h3 class="new">KERALA REDESIGN</h3>
+      <div class="match-kr">
+        <div style="font-size: 40px;">😎</div>
+        <div class="title-en" style="margin-top:12px;">Connected</div>
+        <div class="title-ml">ഇപ്പോൾ കിട്ടി.</div>
+        <div class="sub">Hi parayy. അജ്ഞാതമായി.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <b>Why this works:</b> "<span class="ml">ഇപ്പോൾ കിട്ടി.</span>" (got one now) is the kind of phrase a Mallu friend would use casually. Pairs with the brass radial glow animation — feels like a Kerala evening lamp lighting. <b>Manglish "Hi parayy"</b> (say hi) lowers social anxiety better than English "Say hi to your stranger."
+  </div>
+</section>
+
+<!-- ──────────────── 6. SHARE CARD (VIRAL) ──────────────── -->
+<section>
+  <h2>6. Story-Shareable Match Card (NEW feature)</h2>
+  <p class="lead">After a good chat ends, generate a 9:16 Insta-Story-ready card. Tap to share to WhatsApp or Instagram Story. Designed to spread in Mallu social circles. This is the single biggest growth lever.</p>
+
+  <div class="row" style="gap: 24px;">
+    <div class="share-card">
+      <div class="badge">StrangerChat</div>
+      <div class="big-text">Today I met an anonymous Malayali stranger.</div>
+      <div style="font-family: var(--ml); color: var(--kr-cream); font-size: 14px; margin-top: 10px; font-weight: 700;">"ഇനിയും കാണാം." 👋</div>
+      <div class="em-row">
+        <div class="em">😎</div>
+        <div class="em">🎨</div>
+      </div>
+      <div class="footer">strangerchat.app</div>
+    </div>
+
+    <div style="max-width: 360px; color: var(--cur-t2); font-size: 13px; line-height: 1.7;">
+      <b style="color: var(--kr-brass);">Why this triggers Mallu virality:</b><br>
+      • Vertical 9:16 = Instagram Story ready, single-tap share<br>
+      • Aesthetic-grade design (matches Mallu Insta thumbnail style)<br>
+      • Malayalam ending phrase feels personal not corporate<br>
+      • Brass + dark = premium movie-poster vibe (Mallu cinema-thumb aesthetic)<br>
+      • Anonymous emojis preserve privacy → safe to share<br>
+      • <b>Footer in tiny caps</b> = restrained branding, not desperate<br><br>
+      <b>Variants:</b> "Funny chat ended" / "Voice note exchanged" / "Saved a great convo" — each generates a different card design.
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────── 7. MICROCOPY ──────────────── -->
+<section>
+  <h2>7. Microcopy Rewrite</h2>
+  <p class="lead">English primary. Manglish/Malayalam ONLY where it adds emotion. One moment per screen max.</p>
+
+  <table class="micro-table">
+    <tr>
+      <th style="width:180px;">WHERE</th>
+      <th>CURRENT</th>
+      <th>KERALA REDESIGN</th>
+    </tr>
+    <tr>
+      <td class="where">Home subtitle</td>
+      <td class="cur">Anonymous · Private · Free</td>
+      <td class="new"><span class="ml">സംസാരിക്കാം. അജ്ഞാതമായി.</span><br><span style="color:var(--kr-sepia);font-size:11px;">Anonymous · No traces</span></td>
+    </tr>
+    <tr>
+      <td class="where">Home CTA</td>
+      <td class="cur">⚡ Start Anonymous Chat</td>
+      <td class="new">⚡ Start Chat <span class="ml">വാ</span></td>
+    </tr>
+    <tr>
+      <td class="where">Online count</td>
+      <td class="cur">1,247 online</td>
+      <td class="new"><span class="ml">1,247 ആളുകൾ ഓൺലൈൻ</span></td>
+    </tr>
+    <tr>
+      <td class="where">Matchmaking — searching</td>
+      <td class="cur">Finding a stranger…</td>
+      <td class="new"><span class="ml">ആരെങ്കിലും വേണോ?</span><br><span style="color:var(--kr-sepia);font-size:11px;">Looking around…</span></td>
+    </tr>
+    <tr>
+      <td class="where">Match found header</td>
+      <td class="cur">You're connected — say Hi!</td>
+      <td class="new">Connected · Hi <span class="mng">parayy</span></td>
+    </tr>
+    <tr>
+      <td class="where">Empty saved chats</td>
+      <td class="cur">No saved chats yet</td>
+      <td class="new"><span class="mng">Onnum sookshichittilla</span><br><span style="color:var(--kr-sepia);font-size:11px;">Save your best chats here</span></td>
+    </tr>
+    <tr>
+      <td class="where">Report submitted</td>
+      <td class="cur">Report submitted. Thank you.</td>
+      <td class="new">Got it. <span class="mng">Reviewed cheyyam</span>.</td>
+    </tr>
+    <tr>
+      <td class="where">App lock title</td>
+      <td class="cur">StrangerChat Locked</td>
+      <td class="new">Locked · <span class="ml">പൂട്ടി</span></td>
+    </tr>
+    <tr>
+      <td class="where">Network error</td>
+      <td class="cur">No internet connection</td>
+      <td class="new"><span class="mng">Network kittunilla.</span> Try again.</td>
+    </tr>
+    <tr>
+      <td class="where">Account delete confirm</td>
+      <td class="cur">Permanently erase all your data</td>
+      <td class="new">Permanent aanu. <span class="mng">Mottam mayikkum.</span></td>
+    </tr>
+    <tr>
+      <td class="where">Premium card subtitle</td>
+      <td class="cur">Send photos & audio without Premium</td>
+      <td class="new">Photos · Voice · Reactions · GIFs · <span class="mng">Athu mathi.</span></td>
+    </tr>
+    <tr>
+      <td class="where">Watch ad to save</td>
+      <td class="cur">Watch ad to save this chat</td>
+      <td class="new"><span class="mng">1 ad kandu</span> · save this chat</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ──────────────── 8. ICONOGRAPHY ──────────────── -->
+<section>
+  <h2>8. Iconography (subtle Kerala signals)</h2>
+  <p class="lead">No Kathakali. No coconut. No boats. Just abstract textures + warm-light cues.</p>
+
+  <div class="row" style="gap: 32px;">
+    <div style="text-align:center;">
+      <div style="width:80px;height:80px;border-radius:50%;background:radial-gradient(circle, rgba(212,168,87,0.32) 0%, rgba(212,168,87,0.04) 70%);display:grid;place-items:center;margin:0 auto 8px;border:1px solid rgba(212,168,87,0.32);">
+        <div style="font-size:30px;color:var(--kr-brass);">💬</div>
+      </div>
+      <div style="color:var(--kr-ivory);font-size:11px;">Brass glow logo<br>(nilavilakku reference)</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="display:flex;gap:6px;margin-bottom:8px;justify-content:center;">
+        <div style="width:8px;height:24px;background:var(--kr-teal);border-radius:99px;opacity:0.4;"></div>
+        <div style="width:8px;height:32px;background:var(--kr-teal);border-radius:99px;opacity:0.7;"></div>
+        <div style="width:8px;height:18px;background:var(--kr-teal);border-radius:99px;opacity:0.5;"></div>
+      </div>
+      <div style="color:var(--kr-ivory);font-size:11px;">Monsoon-drop loader<br>(animated)</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:80px;height:80px;border-radius:14px;background:var(--kr-elev);border:1px solid rgba(212,168,87,0.20);display:grid;place-items:center;margin:0 auto 8px;position:relative;overflow:hidden;">
+        <div style="position:absolute;inset:0;background-image:radial-gradient(circle at 30% 30%, rgba(212,168,87,0.15), transparent 50%);"></div>
+        <div style="font-size:26px;color:var(--kr-brass);position:relative;">✨</div>
+      </div>
+      <div style="color:var(--kr-ivory);font-size:11px;">Premium card<br>(subtle texture overlay)</div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <b>Rule:</b> Use Kerala signals via <b>light + warmth</b>, not via traditional motifs. A brass glow says "evening at home" without screaming "Kerala." A monsoon-drop loader says "rain" without raining coconut graphics on the user.
+  </div>
+</section>
+
+<!-- ──────────────── 9. VIRAL MECHANICS ──────────────── -->
+<section>
+  <h2>9. Social & Virality — Mallu-specific</h2>
+  <p class="lead">Mallus = WhatsApp + Instagram heavy users. Build sharing into every emotional moment.</p>
+
+  <ol style="color:var(--cur-t2); font-size: 13px; line-height: 1.9; max-width: 820px;">
+    <li><b style="color:var(--kr-brass);">Story-Share Match Card</b> — after chat ends, "Save this moment" button → generates 9:16 image (shown above) → opens Insta Story / WhatsApp Status share intent.</li>
+    <li><b style="color:var(--kr-brass);">WhatsApp-first share sheet</b> — make WhatsApp the prominent option, not generic "Share". Pre-fill message in Manglish: "<span style="color:var(--kr-brass);">Ee app try cheyy — strangers ne kandupidikam. https://strangerchat.app/r/RAH47</span>"</li>
+    <li><b style="color:var(--kr-brass);">Referral codes in Manglish format</b> — "RAH47" (initials + digit). Mallus screenshot + share codes in college WhatsApp groups constantly. Both invitee + inviter get 1 week Premium.</li>
+    <li><b style="color:var(--kr-brass);">College / hostel mode (phase 2)</b> — optional "Match with college mates" toggle. Triggers organic adoption inside campuses (NIT-C, GEC, CUSAT, etc.).</li>
+    <li><b style="color:var(--kr-brass);">Voice-note meme moments</b> — when user sends a long voice note, show a tiny Manglish chip: "<span class="ml" style="font-family:var(--ml);">vaaya thurannu...</span>" (opened the mouth → started talking) — internet-native humor.</li>
+    <li><b style="color:var(--kr-brass);">Easter egg keywords</b> — typing "lalettan", "mohanlal", "appani", "vada" triggers special floating reactions. Subtle, delights Mallu power users, creates "did you know about THIS feature" word-of-mouth.</li>
+    <li><b style="color:var(--kr-brass);">"From Kerala" badge</b> — opt-in, premium-only. Lets users signal they're Mallu to match. Big retention hook for diaspora users.</li>
+  </ol>
+</section>
+
+<!-- ──────────────── 10. TRACTION RATIONALE ──────────────── -->
+<section>
+  <h2>10. Why this drives Malayali adoption</h2>
+  <p class="lead">Recognition + restraint = "this is for us" without "this is OUR app and nobody else's."</p>
+
+  <div style="max-width: 820px; color: var(--cur-t2); font-size: 13px; line-height: 1.8;">
+    <p><b style="color: var(--kr-brass);">1. Instant recognition (3 seconds).</b> Brass glow + one Malayalam line + Manjari typeface = a Mallu opens the app, smiles within 3 seconds. No other anonymous chat app feels like this.</p>
+    <p><b style="color: var(--kr-brass);">2. No localization friction.</b> All technical UI stays English. Navigation, buttons, errors, settings — Mallus comfortable. They don't need a Malayalam Settings page; they need a Malayalam <i>feeling</i>.</p>
+    <p><b style="color: var(--kr-brass);">3. WhatsApp viral compatibility.</b> Manglish share copy reads like a friend wrote it. Mallu WhatsApp groups will forward an app that says "Ee app try cheyy" — they will NOT forward one that says "Discover meaningful conversations."</p>
+    <p><b style="color: var(--kr-brass);">4. Diaspora homesickness.</b> ₹ pricing + Malayalam at emotional points + warm cream palette = NRI Mallus in GCC/US feel a tug of home. Their churn rate drops.</p>
+    <p><b style="color: var(--kr-brass);">5. Premium without "tacky regional" stigma.</b> Brass is a premium color globally (Apple's gold, Stripe's amber). Kerala association is subconscious. App looks like a modern Bangalore-tier startup, not a panchayat website.</p>
+    <p><b style="color: var(--kr-brass);">6. Privacy reassurance addresses the #1 anxiety.</b> "<span class="ml" style="font-family: var(--ml); color: var(--kr-brass);">പേടിക്കണ്ട. ആരും അറിയില്ല.</span>" speaks to the conservative Mallu household concern that "amma will find out". This single line could 2× retention.</p>
+  </div>
+</section>
+
+<!-- ──────────────── STOP ──────────────── -->
+<section style="background: linear-gradient(180deg, transparent, rgba(212,168,87,0.06));">
+  <h2 style="color: var(--kr-brass);">⏸ STOP — Awaiting your approval</h2>
+  <p class="lead">No code changes yet. Phase 1 complete. Review the mockups + audit. Tell me:</p>
+
+  <ol style="color: var(--cur-t2); font-size: 13px; line-height: 1.9; max-width: 820px;">
+    <li><b style="color: var(--kr-cream);">Is the brass-monsoon palette right?</b> Or too earthy / too premium / wrong direction?</li>
+    <li><b style="color: var(--kr-cream);">Malayalam dosage acceptable?</b> Add more / remove some / which moments specifically.</li>
+    <li><b style="color: var(--kr-cream);">Microcopy tone OK?</b> Too casual / not casual enough / change specific phrases.</li>
+    <li><b style="color: var(--kr-cream);">Share/viral mechanics priority?</b> Which to build first (story card, referral, easter eggs).</li>
+    <li><b style="color: var(--kr-cream);">Approve all → Phase 2 code implementation?</b> Or do partial approval.</li>
+  </ol>
+
+  <p style="color: var(--kr-ivory); font-size: 12px; margin-top: 20px; font-style: italic;">Once you confirm, Phase 2: implement Tokens.kt color refactor → typography → microcopy → match-found moment → share card generator. Incremental, with screenshots after each.</p>
+</section>
+
+</body>
+</html>

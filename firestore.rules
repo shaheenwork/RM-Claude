@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Subscriptions: written ONLY by Cloud Functions (Admin SDK bypasses rules).
+    // Clients can read their own doc to check premium status.
+    match /subscriptions/{uid} {
+      allow read:  if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Reports: clients can file a report; no client reads.
+    match /reports/{docId} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if false;
+    }
+
+    // Bans: server-writes only. Clients read their own doc to check ban status.
+    match /banned_sessions/{uid} {
+      allow read:  if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Saved chats: owner reads and writes their own docs.
+    match /saved_chats/{docId} {
+      allow read:          if request.auth != null && resource.data.sessionId == request.auth.uid;
+      allow create:        if request.auth != null && request.resource.data.sessionId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.sessionId == request.auth.uid;
+
+      match /messages/{msgId} {
+        allow read, write: if request.auth != null &&
+          get(/databases/$(database)/documents/saved_chats/$(docId)).data.sessionId == request.auth.uid;
+      }
+    }
+
+    // Analytics: clients write events, no reads.
+    match /analytics/{docId} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if false;
+    }
+
+    // Notification schedule and sent-log: Cloud Functions only.
+    match /notifSchedule/{docId} {
+      allow read, write: if false;
+    }
+    match /notifSent/{docId} {
+      allow read, write: if false;
+    }
+  }
+}
