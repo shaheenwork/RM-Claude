@@ -46,5 +46,53 @@ service cloud.firestore {
     match /notifSent/{docId} {
       allow read, write: if false;
     }
+
+    // Admin login — one static username/password pair (see adminLogin in
+    // functions/index.js). Never client-readable/writable at all: the
+    // password hash must never reach a client, and the callable is the only
+    // thing allowed to check it or create it.
+    match /adminCredentials/{docId} {
+      allow read, write: if false;
+    }
+
+    // Marks an anonymous uid as a logged-in admin session (written by
+    // adminLogin only). A client may read its OWN session doc to check its
+    // own status; it can never read anyone else's or write any of them.
+    match /adminSessions/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Moderation index — server-maintained denormalized chat metadata for the
+    // admin app (see functions/index.js: matchOnQueue, onChatMessageCreated,
+    // onReportCreated, cleanupRooms). Read gated on having a logged-in admin
+    // session; never client-written.
+    match /adminChatIndex/{roomId} {
+      allow read: if request.auth != null &&
+        exists(/databases/$(database)/documents/adminSessions/$(request.auth.uid));
+      // Admins may flip only their own moderation flags (read/unread, favorite);
+      // every other field is maintained by the Cloud Functions triggers.
+      allow update: if request.auth != null &&
+        exists(/databases/$(database)/documents/adminSessions/$(request.auth.uid)) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['adminUnread', 'favorite']);
+      allow create, delete: if false;
+    }
+
+    // Photo gallery index for the admin app — one doc per IMAGE message
+    // (functions/index.js: onChatMessageCreated, backfillAdminChatIndex).
+    // Same read gate as adminChatIndex; never client-written.
+    match /adminPhotos/{photoId} {
+      allow read: if request.auth != null &&
+        exists(/databases/$(database)/documents/adminSessions/$(request.auth.uid));
+      allow write: if false;
+    }
+
+    // Intervention audit trail and backfill progress — Cloud Functions only.
+    match /adminInterventions/{docId=**} {
+      allow read, write: if false;
+    }
+    match /adminMeta/{docId} {
+      allow read, write: if false;
+    }
   }
 }

@@ -24,7 +24,7 @@
 
     "rooms": {
       "$roomId": {
-        ".read": "auth != null && (data.child('participants/0').val() == auth.uid || data.child('participants/1').val() == auth.uid)",
+        ".read": "auth != null && (data.child('participants/0').val() == auth.uid || data.child('participants/1').val() == auth.uid || root.child('adminSessions').child(auth.uid).exists())",
         ".write": "auth != null && ((newData.child('participants/0').val() == auth.uid || newData.child('participants/1').val() == auth.uid) || (data.child('participants/0').val() == auth.uid || data.child('participants/1').val() == auth.uid))",
 
         "messages": {
@@ -63,13 +63,41 @@
     },
 
     "reportedRooms": {
-      ".read": false,
       "$roomId": {
+        ".read": "auth != null && root.child('adminSessions').child(auth.uid).exists()",
         ".write": "auth != null"
       }
     },
 
     "archivedRooms": {
+      ".write": false,
+      "$roomId": {
+        ".read": "auth != null && root.child('adminSessions').child(auth.uid).exists()"
+      }
+    },
+
+    "adminSessions": {
+      ".read": false,
+      ".write": false
+    },
+
+    "blocks": {
+      "$uid": {
+        ".read":  "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+
+    "blockedBy": {
+      ".read": false,
+      "$uid": {
+        "$other": {
+          ".write": "auth != null && auth.uid == $other"
+        }
+      }
+    },
+
+    "recentPairs": {
       ".read": false,
       ".write": false
     }

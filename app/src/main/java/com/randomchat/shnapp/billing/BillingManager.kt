@@ -233,15 +233,10 @@ class BillingManager(
             Constants.PRODUCT_PREMIUM_MONTHLY to 1,
             Constants.PRODUCT_PREMIUM_YEARLY  to 2
         )
-        val periodLabels = mapOf(
-            Constants.PRODUCT_PREMIUM_WEEKLY  to "Weekly",
-            Constants.PRODUCT_PREMIUM_MONTHLY to "Monthly",
-            Constants.PRODUCT_PREMIUM_YEARLY  to "Yearly"
-        )
 
         _plans.value = detailsList
             .sortedBy { sortOrder[it.productId] ?: 99 }
-            .mapNotNull { it.toPlan(periodLabels[it.productId] ?: it.productId) }
+            .mapNotNull { it.toPlan() }
     }
 
     /**
@@ -249,13 +244,29 @@ class BillingManager(
      * offers are ignored on purpose: their first pricing phase (e.g. "Free") would
      * otherwise be shown as the plan price.
      */
-    private fun ProductDetails.toPlan(periodLabel: String): PremiumPlan? {
+    private fun ProductDetails.toPlan(): PremiumPlan? {
         val offers = subscriptionOfferDetails.orEmpty()
-        val offer = offers.firstOrNull { it.offerId == null } ?: offers.firstOrNull() ?: return null
+        // Filter out the explicitly inactive "py" base plan, because Play might still return it.
+        val basePlans = offers.filter { it.offerId == null && it.basePlanId != "py" }
+        // Prefer the new "yearly" plan if present, otherwise fallback to the latest base plan or offer.
+        val offer = basePlans.firstOrNull { it.basePlanId == "yearly" }
+            ?: basePlans.lastOrNull()
+            ?: offers.lastOrNull()
+            ?: return null
+            
         val phase = offer.pricingPhases.pricingPhaseList.lastOrNull() ?: return null
+        
+        val dynamicPeriod = when (phase.billingPeriod) {
+            "P1W" -> "Weekly"
+            "P1M" -> "Monthly"
+            "P3M" -> "Quarterly"
+            "P1Y" -> "Yearly"
+            else -> "Premium"
+        }
+
         return PremiumPlan(
             productId      = productId,
-            period         = periodLabel,
+            period         = dynamicPeriod,
             formattedPrice = phase.formattedPrice,
             offerToken     = offer.offerToken,
             priceMicros    = phase.priceAmountMicros,

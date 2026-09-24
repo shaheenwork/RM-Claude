@@ -175,12 +175,6 @@ private fun paywallCopyFor(source: String): PaywallCopy = when (source) {
     )
 }
 
-private val PERIOD_LABELS = mapOf(
-    Constants.PRODUCT_PREMIUM_WEEKLY  to "Weekly",
-    Constants.PRODUCT_PREMIUM_MONTHLY to "Monthly",
-    Constants.PRODUCT_PREMIUM_YEARLY  to "Yearly"
-)
-
 /** Plan with the lowest per-week price — labelled only when it is strictly the cheapest. */
 private fun bestValuePlanId(plans: List<PremiumPlan>): String? {
     val priced = plans.mapNotNull { plan -> PlanPricing.perWeekMicros(plan)?.let { plan to it } }
@@ -477,7 +471,7 @@ fun PremiumScreen(
 
                 Spacer(Modifier.height(32.dp))
 
-                val activePeriod = PERIOD_LABELS[activePlanId] ?: "Premium"
+                val activePeriod = plans.find { it.productId == activePlanId }?.period ?: "Premium"
 
                 Row(
                     modifier = Modifier
