@@ -9,6 +9,7 @@ import com.android.billingclient.api.BillingClient.BillingResponseCode
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
@@ -139,9 +140,14 @@ class BillingManager(
         }
     }
 
+    private val pendingPurchasesParams = PendingPurchasesParams.newBuilder()
+        .enableOneTimeProducts()
+        .enablePrepaidPlans()
+        .build()
+
     private val billingClient = BillingClient.newBuilder(context)
         .setListener(purchasesUpdatedListener)
-        .enablePendingPurchases()
+        .enablePendingPurchases(pendingPurchasesParams)
         .build()
 
     fun connect() {
@@ -217,14 +223,16 @@ class BillingManager(
                 }
             ).build()
 
-        val (result, detailsList) = suspendCancellableCoroutine<Pair<BillingResult, List<ProductDetails>>> { cont ->
-            billingClient.queryProductDetailsAsync(params) { r, list -> cont.resume(r to list) }
+        val (result, res) = suspendCancellableCoroutine { cont ->
+            billingClient.queryProductDetailsAsync(params) { r, productDetailsResult -> cont.resume(r to productDetailsResult) }
         }
         if (result.responseCode != BillingResponseCode.OK) {
             // Keep the last good plans; the paywall calls refresh() when it opens.
             Log.w(TAG, "queryProductDetails failed: ${result.responseCode} ${result.debugMessage}")
             return
         }
+
+        val detailsList = res.getProductDetailsList().orEmpty()
 
         productDetailsMap = detailsList.associateBy { it.productId }
 
