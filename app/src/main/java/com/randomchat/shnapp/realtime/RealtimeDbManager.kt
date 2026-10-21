@@ -31,6 +31,10 @@ class RealtimeDbManager {
         // updateChildren merges — preserves existing fields like `ip`
         ref.updateChildren(mapOf("online" to true, "lastSeen" to ServerValue.TIMESTAMP))
         ref.onDisconnect().updateChildren(mapOf("online" to false, "lastSeen" to ServerValue.TIMESTAMP))
+
+        // Atomic counter for bandwidth-efficient online count (reads 4 bytes instead of entire /presence tree)
+        root.child("stats").child("onlineCount").setValue(ServerValue.increment(1))
+        root.child("stats").child("onlineCount").onDisconnect().setValue(ServerValue.increment(-1))
     }
 
     suspend fun fetchAndStoreIp(sessionId: String) {
@@ -54,6 +58,7 @@ class RealtimeDbManager {
     fun setOffline(sessionId: String) {
         root.child(Constants.PATH_PRESENCE).child(sessionId)
             .updateChildren(mapOf("online" to false, "lastSeen" to ServerValue.TIMESTAMP))
+        root.child("stats").child("onlineCount").setValue(ServerValue.increment(-1))
     }
 
     /** Permanently removes user's RTDB footprint: presence, queue, assignments. */
@@ -70,13 +75,13 @@ class RealtimeDbManager {
         // Room data is shared between two users — server-side cleanup expected.
     }
 
-    /** Live count of sessions with online == true in /presence. */
+    /** Lightweight live count of online users reading stats/onlineCount (4 bytes/update). */
     fun observeOnlineCount(): Flow<Int> = callbackFlow {
-        val ref = root.child(Constants.PATH_PRESENCE)
+        val ref = root.child("stats").child("onlineCount")
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val count = snapshot.children.count { it.child("online").getValue(Boolean::class.java) == true }
-                trySend(count)
+                val count = snapshot.getValue(Int::class.java) ?: 0
+                trySend(if (count < 0) 0 else count)
             }
             override fun onCancelled(error: DatabaseError) { trySend(0) }
         }
