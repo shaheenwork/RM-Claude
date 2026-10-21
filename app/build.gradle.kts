@@ -11,16 +11,16 @@ android {
     // intentionally — changing it would force a 56-file package refactor with zero
     // Play Store / functional benefit. Only applicationId matters for the listing.
     namespace = "com.randomchat.shnapp"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         // Play Store identity — MUST match the originally-published app to recover
         // the existing listing + 100k installs.
         applicationId = "com.shaheen.randomchat"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 60
-        versionName = "1.2"
+        targetSdk = 36
+        versionCode = 61
+        versionName = "1.21"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
