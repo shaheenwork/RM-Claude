@@ -192,6 +192,11 @@ fun ChatScreen(
     var reactionsReady by remember { mutableStateOf(false) }
     var flyingEmoji by remember { mutableStateOf<String?>(null) }
 
+    // Log Meta Chat_Screen_Viewed when screen is composed
+    LaunchedEffect(Unit) {
+        com.randomchat.shnapp.meta.MetaAnalyticsManager.logChatScreenViewed()
+    }
+
     // Reset baseline whenever we enter a new room
     LaunchedEffect(currentRoomId) {
         prevReactions = emptyMap()
@@ -203,6 +208,7 @@ fun ChatScreen(
         if (isStrangerConnected && !chatEnded) {
             haptics.match()
             com.randomchat.shnapp.utils.Telemetry.chatStarted()
+            com.randomchat.shnapp.meta.MetaAnalyticsManager.logChatStarted()
         }
     }
 

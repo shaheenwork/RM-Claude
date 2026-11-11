@@ -52,6 +52,9 @@ class SessionManager(private val context: Context) {
     private val analyticsOnboardingLoggedKey   = booleanPreferencesKey("an_onboarding_logged")
     private val analyticsFirstMatchLoggedKey   = booleanPreferencesKey("an_first_match_logged")
     private val analyticsFirstChatMsgLoggedKey = booleanPreferencesKey("an_first_chat_msg_logged")
+    // Meta one-shot analytics gates
+    private val metaFirstMsgLoggedKey           = booleanPreferencesKey("meta_first_msg_logged")
+    private val metaFirstChatCompletedLoggedKey = booleanPreferencesKey("meta_first_chat_completed_logged")
     // Rewarded-ad daily-cap tracking
     private val rewardEarnsTodayKey     = intPreferencesKey("reward_earns_today")
     private val lastRewardEarnMsKey     = longPreferencesKey("last_reward_earn_ms")
@@ -271,6 +274,19 @@ class SessionManager(private val context: Context) {
     }
     suspend fun markAnalyticsFirstChatMsgLogged() {
         context.dataStore.edit { it[analyticsFirstChatMsgLoggedKey] = true }
+    }
+
+    // ── Meta one-shot analytics gates ─────────────────────────────────────────
+    val metaFirstMsgLoggedFlow: Flow<Boolean> = context.dataStore.data
+        .map { it[metaFirstMsgLoggedKey] ?: false }
+    val metaFirstChatCompletedLoggedFlow: Flow<Boolean> = context.dataStore.data
+        .map { it[metaFirstChatCompletedLoggedKey] ?: false }
+
+    suspend fun markMetaFirstMsgLogged() {
+        context.dataStore.edit { it[metaFirstMsgLoggedKey] = true }
+    }
+    suspend fun markMetaFirstChatCompletedLogged() {
+        context.dataStore.edit { it[metaFirstChatCompletedLoggedKey] = true }
     }
 
     // ── Rewarded-ad daily cap ─────────────────────────────────────────────────

@@ -187,10 +187,23 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                             }
                         }
 
+                        // Log Meta Match_Found event
+                        com.randomchat.shnapp.meta.MetaAnalyticsManager.logMatchFound()
+
                         chatManager.attachRoom(roomId)
                     }
                     else -> {}
                 }
+            }
+        }
+    }
+
+    private fun checkAndLogFirstChatCompleted() {
+        viewModelScope.launch {
+            val realMsgs = messages.value.count { it.type != MessageType.SYSTEM }
+            if (realMsgs > 4 && !sessionManager.metaFirstChatCompletedLoggedFlow.first()) {
+                com.randomchat.shnapp.meta.MetaAnalyticsManager.logFirstChatCompleted()
+                sessionManager.markMetaFirstChatCompletedLogged()
             }
         }
     }
@@ -200,6 +213,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
             roomStatus.collect { status ->
                 if (status == "ENDED" && _isStrangerConnected.value) {
                     _chatEnded.value = true
+                    checkAndLogFirstChatCompleted()
                     // Clean up assignment so the next startSearch() doesn't re-attach to this room
                     matchmakingManager.cancelSearch()
                 }
@@ -291,6 +305,10 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                 Telemetry.firstChatMsgSent()
                 sessionManager.markAnalyticsFirstChatMsgLogged()
             }
+            if (!sessionManager.metaFirstMsgLoggedFlow.first()) {
+                com.randomchat.shnapp.meta.MetaAnalyticsManager.logFirstMessageSent()
+                sessionManager.markMetaFirstMsgLogged()
+            }
         }
     }
 
@@ -327,6 +345,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     fun endChat() {
         viewModelScope.launch {
+            checkAndLogFirstChatCompleted()
             chatManager.endChat()
             _chatEnded.value = true
             matchmakingManager.cancelSearch()
@@ -533,6 +552,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                     chatManager.setActivity(null)
                     chatManager.removePendingMessage(pendingId)
                     sendMediaMessage(url, MessageType.AUDIO)
+                    com.randomchat.shnapp.meta.MetaAnalyticsManager.logVoiceNoteSent()
                 } catch (e: Exception) {
                     Log.e("ChatViewModel", "Audio upload failed: ${e.message}")
                     chatManager.setActivity(null)

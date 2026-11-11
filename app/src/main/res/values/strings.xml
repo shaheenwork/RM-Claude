@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Random Malayali</string>
+    <!-- Meta Facebook SDK Configuration (Replace with actual App ID and Client Token from Meta Developer Dashboard) -->
+    <string name="facebook_app_id">2465819640560378</string>
+    <string name="facebook_client_token">85c5a3ab5eb2ae5df1a59cdf49b2cc78</string>
 </resources>

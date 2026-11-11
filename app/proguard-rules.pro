@@ -85,3 +85,9 @@
 # ── Keep our utility object members reachable via reflection ─────────────────
 -keep class com.randomchat.shnapp.utils.Telemetry { *; }
 -keep class com.randomchat.shnapp.utils.PiiDetector { *; }
+
+# ── Meta (Facebook) SDK ───────────────────────────────────────────────────────
+-keep class com.facebook.** { *; }
+-dontwarn com.facebook.**
+-keepattributes *Annotation*,Signature
+-keepclassmembers class com.facebook.FacebookActivity { *; }

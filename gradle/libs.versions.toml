@@ -15,6 +15,8 @@ coil = "2.7.0"
 datastorePreferences = "1.1.1"
 splashscreen = "1.0.1"
 mlkitTextRecognition = "16.0.1"
+facebookSdk = "19.0.1"
+installreferrer = "2.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -48,6 +50,8 @@ firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashly
 
 play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
 billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billingKtx" }
+facebook-core = { group = "com.facebook.android", name = "facebook-core", version.ref = "facebookSdk" }
+android-installreferrer = { group = "com.android.installreferrer", name = "installreferrer", version.ref = "installreferrer" }
 
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }

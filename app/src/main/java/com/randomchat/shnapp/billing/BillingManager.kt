@@ -109,6 +109,7 @@ class BillingManager(
                 purchased.forEach { p ->
                     p.products.firstOrNull { it in Constants.ALL_PREMIUM_PRODUCTS }?.let { id ->
                         Telemetry.premiumPurchased(id, source, via)
+                        logMetaPurchase(id)
                     }
                 }
                 if (purchased.isNotEmpty()) {
@@ -381,6 +382,23 @@ class BillingManager(
                 _activePlanId.value = null
                 onPremiumRevoked()
             }
+        }
+    }
+
+    private fun logMetaPurchase(productId: String) {
+        try {
+            val details = productDetailsMap[productId]
+            val offer = details?.subscriptionOfferDetails?.firstOrNull()
+            val phase = offer?.pricingPhases?.pricingPhaseList?.lastOrNull()
+            val amount = if (phase != null) {
+                java.math.BigDecimal.valueOf(phase.priceAmountMicros).divide(java.math.BigDecimal.valueOf(1_000_000L))
+            } else {
+                java.math.BigDecimal.ZERO
+            }
+            val currencyCode = phase?.priceCurrencyCode ?: "USD"
+            com.randomchat.shnapp.meta.MetaAnalyticsManager.logPurchase(amount, currencyCode, productId)
+        } catch (e: Exception) {
+            Log.w(TAG, "logMetaPurchase failed: ${e.message}")
         }
     }
 

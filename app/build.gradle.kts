@@ -85,6 +85,8 @@ dependencies {
 
     implementation(libs.play.services.ads)
     implementation(libs.billing.ktx)
+    implementation(libs.facebook.core)
+    implementation(libs.android.installreferrer)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.coil.compose)
     implementation(libs.coil.gif)

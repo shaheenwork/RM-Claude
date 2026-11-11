@@ -34,6 +34,9 @@ class RandomChatApp : Application() {
         // Telemetry — central wrapper for Crashlytics keys + Analytics events
         Telemetry.init(this)
 
+        // Meta App Events SDK initialization & activation
+        com.randomchat.shnapp.meta.MetaAnalyticsManager.init(this)
+
         // Coil — register GIF decoder globally so MessageBubble's AsyncImage
         // can play animated GIFs received from Tenor picker.
         coil.Coil.setImageLoader(
