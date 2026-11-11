@@ -53,10 +53,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.viewinterop.AndroidView
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
 import com.randomchat.shnapp.ads.AdMobManager
 import com.randomchat.shnapp.billing.PaywallSource
 import androidx.compose.material.icons.Icons
@@ -606,45 +602,6 @@ fun ChatScreen(
                         textAlign = TextAlign.Center
                     )
 
-                    // ── Ad slot — labeled & bordered so it never reads as broken UI ──
-                    if (!isPremium && com.randomchat.shnapp.utils.Constants.ADS_ENABLED) {
-                        Spacer(Modifier.height(16.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .border(1.dp, SubtleBorder, RoundedCornerShape(12.dp))
-                                .background(Color(0xFF0D1712))
-                        ) {
-                            AndroidView(
-                                factory = { ctx ->
-                                    AdView(ctx).apply {
-                                        setAdSize(AdSize.BANNER)
-                                        adUnitId = com.randomchat.shnapp.utils.Constants.ADMOB_BANNER_ID
-                                        loadAd(AdRequest.Builder().build())
-                                    }
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(4.dp)
-                            )
-                            Text(
-                                "AD",
-                                color = TextMuted,
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp,
-                                modifier = Modifier
-                                    .align(Alignment.TopStart)
-                                    .background(
-                                        Color.Black.copy(alpha = 0.35f),
-                                        RoundedCornerShape(topStart = 12.dp, bottomEnd = 7.dp)
-                                    )
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
-                        }
-                    }
-
                     Spacer(Modifier.height(18.dp))
 
                     // ── Premium save upsell (free, after a real conversation) ─
@@ -811,22 +768,6 @@ fun ChatScreen(
                         haptics.tick()
                         onNavigateToPremium(PaywallSource.LIVE_TYPING)
                     }
-                )
-            }
-
-            // ── Active-chat banner — between messages and composer ────────────
-            // Hidden during recording (recording bar replaces composer),
-            // when chat ends (ended section has its own banner), and for premium users.
-            if (!chatEnded && !isPremium && !isRecording && com.randomchat.shnapp.utils.Constants.ADS_ENABLED) {
-                AndroidView(
-                    factory = { ctx ->
-                        AdView(ctx).apply {
-                            setAdSize(AdSize.BANNER)
-                            adUnitId = com.randomchat.shnapp.utils.Constants.ADMOB_BANNER_ID
-                            loadAd(AdRequest.Builder().build())
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
