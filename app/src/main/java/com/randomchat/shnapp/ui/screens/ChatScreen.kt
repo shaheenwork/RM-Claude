@@ -53,7 +53,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
-import com.randomchat.shnapp.ads.AdMobManager
 import com.randomchat.shnapp.billing.PaywallSource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -610,11 +609,10 @@ fun ChatScreen(
 
                     Spacer(Modifier.height(18.dp))
 
-                    // ── Premium save upsell (free, after a real conversation) ─
-                    val goodChat = messages.count {
+                    // ── Premium save upsell (free, unsaved chat) ─
+                    val showPremiumSave = !isPremium && !chatSaved && messages.any {
                         it.type != com.randomchat.shnapp.model.MessageType.SYSTEM
-                    } >= GOOD_CHAT_MIN_MESSAGES
-                    val showPremiumSave = !isPremium && !chatSaved && goodChat
+                    }
                     LaunchedEffect(showPremiumSave) {
                         if (showPremiumSave) com.randomchat.shnapp.utils.Telemetry.upsellShown("chat_end_save")
                     }
@@ -648,70 +646,6 @@ fun ChatScreen(
                                 color = Color(0xFF3A2A00),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Spacer(Modifier.height(9.dp))
-                    }
-
-                    // ── Save strip (free, unsaved) — brass, full-width ────────
-                    if (!isPremium && messages.isNotEmpty() && !chatSaved && com.randomchat.shnapp.utils.Constants.ADS_ENABLED) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(PremiumGold.copy(alpha = 0.08f))
-                                .border(1.dp, PremiumGold.copy(alpha = 0.35f), RoundedCornerShape(24.dp))
-                                .clickable {
-                                    com.randomchat.shnapp.utils.Telemetry.rewardedAdTap("save_chat")
-                                    if (AdMobManager.getInstance(context).isRewardedReady()) {
-                                        AdMobManager.getInstance(context).showRewardedIfReady(
-                                            activity       = activity,
-                                            onRewarded     = { viewModel.saveChat() },
-                                            onNotAvailable = {
-                                                com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("save_chat")
-                                                scope.launch {
-                                                    snackbarHostState.showSnackbar(
-                                                        "Ad not ready — try again in a moment."
-                                                    )
-                                                }
-                                            },
-                                            onDismissed    = {
-                                                // onRewarded fires before onDismissed,
-                                                // so chatSaved is already true if user earned reward
-                                                if (viewModel.chatSaved.value) {
-                                                    scope.launch {
-                                                        snackbarHostState.showSnackbar("Chat saved ✓")
-                                                    }
-                                                } else {
-                                                    com.randomchat.shnapp.utils.Telemetry.rewardedAdDismissed("save_chat")
-                                                }
-                                            }
-                                        )
-                                    } else {
-                                        com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("save_chat")
-                                        scope.launch {
-                                            snackbarHostState.showSnackbar(
-                                                "Ad not ready — try again in a moment."
-                                            )
-                                        }
-                                    }
-                                }
-                                .padding(vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                Icons.Default.Bookmark,
-                                contentDescription = null,
-                                tint = PremiumGold,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                "Watch ad to save this chat",
-                                color = PremiumGold,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold
                             )
                         }
                         Spacer(Modifier.height(9.dp))
@@ -1333,53 +1267,9 @@ fun ChatScreen(
                 showGifPicker = true
             },
             onWatchAd = {
-                // Gate-driven: route between Ready / Cooldown / CapReached
-                when (val g = rewardGate) {
-                    is RewardGate.CapReached -> {
-                        // Cap hit — close attach sheet, surface upsell
-                        haptics.tick()
-                        showAttachSheet = false
-                        showRewardCapSheet = true
-                    }
-                    is RewardGate.Cooldown -> {
-                        // Recently earned — show cooldown snackbar, no ad
-                        haptics.tick()
-                        val secs = g.secondsLeft
-                        val msg = if (secs >= 60)
-                            "Next free credit in ${secs / 60}m ${secs % 60}s"
-                        else
-                            "Next free credit in ${secs}s"
-                        scope.launch { snackbarHostState.showSnackbar(msg) }
-                    }
-                    is RewardGate.Ready -> {
-                        // Inline rewarded ad flow — earn +1 photo, +1 voice, +1 GIF credit
-                        haptics.tick()
-                        com.randomchat.shnapp.utils.Telemetry.rewardedAdTap("attach_sheet")
-                        if (AdMobManager.getInstance(context).isRewardedReady()) {
-                            AdMobManager.getInstance(context).showRewardedIfReady(
-                                activity = activity,
-                                onRewarded = {
-                                    haptics.success()
-                                    // Single entry point — bumps cap counter + grants credits
-                                    viewModel.recordRewardEarn()
-                                    com.randomchat.shnapp.utils.Telemetry.rewardedAdEarned("attach_sheet")
-                                    // Keep sheet open so user sees the credit update + can attach
-                                },
-                                onNotAvailable = {
-                                    com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("attach_sheet")
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar("Ad not ready — try again in a moment.")
-                                    }
-                                }
-                            )
-                        } else {
-                            com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("attach_sheet")
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Ad not ready — try again in a moment.")
-                            }
-                        }
-                    }
-                }
+                haptics.tick()
+                showAttachSheet = false
+                onNavigateToPremium(PaywallSource.PHOTO)
             }
         )
     }
@@ -1817,8 +1707,7 @@ private fun AttachSheetRewardRow(
     rewardGate: RewardGate,
     onClick: () -> Unit
 ) {
-    val isCap = rewardGate is RewardGate.CapReached
-    val accent = if (isCap) PremiumGold else AccentCyan
+    val accent = PremiumGold
     val bg = accent.copy(alpha = 0.08f)
     val borderC = accent.copy(alpha = 0.30f)
 
@@ -1840,11 +1729,7 @@ private fun AttachSheetRewardRow(
                 .background(accent.copy(alpha = 0.15f), CircleShape)
         ) {
             Text(
-                when (rewardGate) {
-                    is RewardGate.Ready    -> "▶"
-                    is RewardGate.Cooldown -> "⏳"
-                    is RewardGate.CapReached -> "✦"
-                },
+                "✦",
                 color = accent,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold
@@ -1853,33 +1738,20 @@ private fun AttachSheetRewardRow(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                when (rewardGate) {
-                    is RewardGate.Ready      -> "Watch a short ad"
-                    is RewardGate.Cooldown   -> "Refilling soon"
-                    is RewardGate.CapReached -> "Unlimited with Premium"
-                },
+                "Unlimited with Premium",
                 color = accent,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                when (rewardGate) {
-                    is RewardGate.Ready      -> "Earn 1 Photo + 1 Voice + 1 GIF"
-                    is RewardGate.Cooldown   -> "Next free credit in ${formatCooldownShort(rewardGate.secondsLeft)}"
-                    is RewardGate.CapReached -> "No daily limit · Tap to upgrade"
-                },
+                "Earn free credits on Home or tap to upgrade",
                 color = accent.copy(alpha = 0.72f),
                 fontSize = 11.sp
             )
         }
 
-        // Right-edge badge
         Text(
-            when (rewardGate) {
-                is RewardGate.Ready      -> "${rewardGate.watchesLeft} LEFT"
-                is RewardGate.Cooldown   -> formatCooldownShort(rewardGate.secondsLeft)
-                is RewardGate.CapReached -> "UPGRADE"
-            },
+            "UPGRADE",
             color = accent,
             fontSize = 10.sp,
             fontWeight = FontWeight.Black,

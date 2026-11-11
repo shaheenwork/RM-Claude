@@ -199,12 +199,22 @@ fun AppNavHost(
 
     val scope = rememberCoroutineScope()
 
-    // Interstitial ad trigger
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
+
+    // Suppress App Open Ads while on private ChatScreen
+    LaunchedEffect(currentRoute) {
+        (context.applicationContext as? android.app.Application)?.let { app ->
+            com.randomchat.shnapp.ads.AppOpenAdManager.getInstance(app).isChatActive = (currentRoute == Routes.CHAT)
+        }
+    }
+
+    // Interstitial ad trigger — ONLY show on non-chat screen (HOME route) to comply with AdMob policy
     val triggerInterstitial by chatViewModel.triggerInterstitial.collectAsState()
     // "Tired of ads?" sheet — follows a shown interstitial, rate-limited in SessionManager.
     var showAdFreeSheet by remember { mutableStateOf(false) }
-    LaunchedEffect(triggerInterstitial) {
-        if (triggerInterstitial) {
+    LaunchedEffect(triggerInterstitial, currentRoute) {
+        if (triggerInterstitial && currentRoute == Routes.HOME) {
             AdMobManager.getInstance(context).showInterstitialIfReady(
                 context as android.app.Activity
             ) { shown ->
@@ -259,8 +269,6 @@ fun AppNavHost(
     }
 
     // Stage 2 — when user is back on Home with a pending ask, surface rationale.
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = currentBackStackEntry?.destination?.route
     LaunchedEffect(currentRoute) {
         if (currentRoute != Routes.HOME) return@LaunchedEffect
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return@LaunchedEffect

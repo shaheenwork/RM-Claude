@@ -47,6 +47,8 @@ class AppOpenAdManager private constructor(private val app: Application) :
     private var isPremium           = false
     private var isOnboardingComplete = false
     private var isSuppressingAds      = false
+    /** True while user is inside a private chat screen. Prevents ads on private communications. */
+    var isChatActive                = false
     private var loadTime            = 0L
 
     /**
@@ -155,6 +157,10 @@ class AppOpenAdManager private constructor(private val app: Application) :
         }
         if (!isOnboardingComplete) {
             Log.d(TAG, "Skip: onboarding not complete")
+            return
+        }
+        if (isChatActive) {
+            Log.d(TAG, "Skip: user is in private chat screen")
             return
         }
         if (isSuppressingAds) {
