@@ -339,14 +339,8 @@ fun SettingsScreen(
 
         // Banner ad pinned at bottom — non-premium + ADS_ENABLED only
         if (!isPremium && Constants.ADS_ENABLED) {
-            AndroidView(
-                factory = { ctx ->
-                    AdView(ctx).apply {
-                        setAdSize(AdSize.BANNER)
-                        adUnitId = Constants.ADMOB_BANNER_ID
-                        loadAd(AdRequest.Builder().build())
-                    }
-                },
+            com.randomchat.shnapp.ui.components.AdBanner(
+                placement = "settings_bottom",
                 modifier = Modifier.fillMaxWidth()
             )
         }

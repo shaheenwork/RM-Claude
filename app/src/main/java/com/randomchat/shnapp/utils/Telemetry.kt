@@ -169,6 +169,29 @@ object Telemetry {
             putLong("age_ms", ageMs)
         }
 
+    // ── Banner ad funnel ──────────────────────────────────────────────────────
+    fun bannerLoadRequested(placement: String) =
+        logEvent(EVENT_BANNER_LOAD_REQ) { putString("placement", placement) }
+
+    fun bannerLoadSucceeded(placement: String, latencyMs: Long) =
+        logEvent(EVENT_BANNER_LOAD_OK) {
+            putString("placement", placement)
+            putLong("latency_ms", latencyMs)
+        }
+
+    fun bannerLoadFailed(placement: String, errorCode: Int, errorMessage: String) =
+        logEvent(EVENT_BANNER_LOAD_FAIL) {
+            putString("placement", placement)
+            putInt("code", errorCode)
+            putString("message", errorMessage)
+        }
+
+    fun bannerImpressionRecorded(placement: String) =
+        logEvent(EVENT_BANNER_IMPRESSION) { putString("placement", placement) }
+
+    fun bannerClicked(placement: String) =
+        logEvent(EVENT_BANNER_CLICKED) { putString("placement", placement) }
+
     // ── Gender — user property (slice-by) + per-selection event ───────────────
     /** Persistent user property — re-apply each session so EVERY event can be sliced by gender. */
     fun setUserGender(gender: String) {
@@ -242,6 +265,13 @@ object Telemetry {
     private const val EVENT_REWARDED_SHOW_FAIL    = "rewarded_show_failed"
     private const val EVENT_REWARDED_IMPRESSION   = "rewarded_impression_rec"
     private const val EVENT_REWARDED_EXPIRED      = "rewarded_ad_expired"
+
+    // Banner-ad funnel
+    private const val EVENT_BANNER_LOAD_REQ       = "banner_load_requested"
+    private const val EVENT_BANNER_LOAD_OK        = "banner_load_succeeded"
+    private const val EVENT_BANNER_LOAD_FAIL      = "banner_load_failed"
+    private const val EVENT_BANNER_IMPRESSION     = "banner_impression_rec"
+    private const val EVENT_BANNER_CLICKED        = "banner_clicked"
 
     // Gender
     private const val EVENT_GENDER_SELECTED      = "gender_selected"
