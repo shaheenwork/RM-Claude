@@ -22,9 +22,9 @@ import java.util.Date
  * Manages App Open Ads for maximum impression rate.
  *
  * Strategy:
- *  • Preloads ad when app enters background or when explicitly requested.
+ *  • Preloads ad on SDK init, after ad dismissal, or when returning to foreground.
  *  • Enforces 10-second minimum background duration gate to eliminate transient app switch ads.
- *  • Prevents unconsumed preload waste by avoiding immediate reload on ad dismissal.
+ *  • Provides a 3-second grace window on foreground return if ad loading is slightly delayed.
  *  • Premium users and private chat sessions ([isChatActive]) are always protected.
  *  • Full Telemetry funnel tracking for requests, fills, displays, suppressions, and impressions.
  */
@@ -48,6 +48,8 @@ class AppOpenAdManager private constructor(private val app: Application) :
     var isChatActive                  = false
     private var loadTime              = 0L
     private var lastBackgroundTimeMs  = 0L
+    private var appForegroundTimeMs   = 0L
+    private var isWaitingForAdToShow  = false
 
     /**
      * Tracks how many activities are in the STARTED state (not stopped).
@@ -64,7 +66,8 @@ class AppOpenAdManager private constructor(private val app: Application) :
     companion object {
         private const val TAG                      = "AppOpenAdManager"
         private const val AD_EXPIRY_MS             = 4 * 60 * 60 * 1_000L  // AdMob 4h TTL
-        private const val MIN_BACKGROUND_DURATION  = 10_000L               // 10s min background threshold
+        private const val MIN_BACKGROUND_DURATION  = 5_000L                // 5s min background threshold
+        private const val FOREGROUND_SHOW_WINDOW_MS = 3_000L               // 3s window to show ad on foreground return
 
         @Volatile private var instance: AppOpenAdManager? = null
 
@@ -128,11 +131,25 @@ class AppOpenAdManager private constructor(private val app: Application) :
                     loadTime    = Date().time
                     isLoadingAd = false
                     Telemetry.appOpenLoadSucceeded(latencyMs)
+
+                    // Foreground return grace window check:
+                    // If user came to foreground and is waiting for an ad that was still loading
+                    if (isWaitingForAdToShow && numActivitiesStarted > 0 && !isShowingAd) {
+                        val timeSinceForeground = System.currentTimeMillis() - appForegroundTimeMs
+                        if (timeSinceForeground < FOREGROUND_SHOW_WINDOW_MS) {
+                            Log.d(TAG, "Ad finished loading within foreground window (${timeSinceForeground}ms) — showing now")
+                            isWaitingForAdToShow = false
+                            currentActivity?.let { showAdIfAvailable(it) }
+                        } else {
+                            isWaitingForAdToShow = false
+                        }
+                    }
                 }
 
                 override fun onAdFailedToLoad(error: LoadAdError) {
                     Log.d(TAG, "Ad failed to load: [${error.code}] ${error.message}")
                     isLoadingAd = false
+                    isWaitingForAdToShow = false
                     Telemetry.appOpenLoadFailed(error.code, error.message)
                 }
             }
@@ -146,12 +163,13 @@ class AppOpenAdManager private constructor(private val app: Application) :
         if (!Constants.ADS_ENABLED) return
         if (isShowingAd) return
 
-        // 10-second minimum background duration gate
+        // 5-second minimum background duration gate
         if (lastBackgroundTimeMs > 0L) {
             val bgDurationMs = System.currentTimeMillis() - lastBackgroundTimeMs
             if (bgDurationMs < MIN_BACKGROUND_DURATION) {
-                Log.d(TAG, "Skip: app backgrounded for only ${bgDurationMs}ms (< 10s threshold)")
+                Log.d(TAG, "Skip: app backgrounded for only ${bgDurationMs}ms (< 5s threshold)")
                 Telemetry.appOpenSuppressed("min_background")
+                isWaitingForAdToShow = false
                 return
             }
         }
@@ -159,27 +177,32 @@ class AppOpenAdManager private constructor(private val app: Application) :
         if (isPremium) {
             Log.d(TAG, "Skip: premium user")
             Telemetry.appOpenSuppressed("premium")
+            isWaitingForAdToShow = false
             return
         }
         if (!isOnboardingComplete) {
             Log.d(TAG, "Skip: onboarding not complete")
             Telemetry.appOpenSuppressed("onboarding_incomplete")
+            isWaitingForAdToShow = false
             return
         }
         if (isChatActive) {
             Log.d(TAG, "Skip: user is in private chat screen")
             Telemetry.appOpenSuppressed("chat_active")
+            isWaitingForAdToShow = false
             return
         }
         if (isSuppressingAds) {
             Log.d(TAG, "Skip: ads suppressed via flag")
             Telemetry.appOpenSuppressed("billing_suppressed")
             isSuppressingAds = false
+            isWaitingForAdToShow = false
             return
         }
         if (AdMobManager.getInstance(app).isShowingFullScreenAd) {
             Log.d(TAG, "Skip: interstitial or full screen ad already on screen")
             Telemetry.appOpenSuppressed("interstitial_showing")
+            isWaitingForAdToShow = false
             return
         }
 
@@ -194,14 +217,19 @@ class AppOpenAdManager private constructor(private val app: Application) :
                 Telemetry.appOpenSuppressed("ad_expired")
                 appOpenAd = null
             } else {
-                Log.d(TAG, "Skip: no valid ad available — reloading")
+                Log.d(TAG, "Skip: no valid ad available — requesting load")
                 Telemetry.appOpenSuppressed("no_ad_available")
+            }
+            // Enable waiting flag on genuine return from background
+            if (lastBackgroundTimeMs > 0L) {
+                isWaitingForAdToShow = true
             }
             loadAd()
             return
         }
 
         val ad = appOpenAd ?: return
+        isWaitingForAdToShow = false
 
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdShowedFullScreenContent() {
@@ -219,8 +247,9 @@ class AppOpenAdManager private constructor(private val app: Application) :
                 appOpenAd   = null
                 isShowingAd = false
                 AdMobManager.getInstance(app).isShowingFullScreenAd = false
-                Log.d(TAG, "Ad dismissed")
+                Log.d(TAG, "Ad dismissed — preloading next ad")
                 Telemetry.appOpenDismissed()
+                loadAd()
             }
 
             override fun onAdFailedToShowFullScreenContent(error: AdError) {
@@ -229,6 +258,7 @@ class AppOpenAdManager private constructor(private val app: Application) :
                 AdMobManager.getInstance(app).isShowingFullScreenAd = false
                 Log.e(TAG, "Ad failed to show: [${error.code}] ${error.message}")
                 Telemetry.appOpenShowFailed(error.code, error.message)
+                loadAd()
             }
         }
 
@@ -244,6 +274,7 @@ class AppOpenAdManager private constructor(private val app: Application) :
             numActivitiesStarted++
             if (numActivitiesStarted == 1) {
                 // 0 → 1: app came to foreground (cold start or from background)
+                appForegroundTimeMs = System.currentTimeMillis()
                 showAdIfAvailable(activity)
             }
         }
@@ -255,7 +286,7 @@ class AppOpenAdManager private constructor(private val app: Application) :
             if (numActivitiesStarted == 0) {
                 // 1 → 0: app entered background
                 lastBackgroundTimeMs = System.currentTimeMillis()
-                // Preload an ad while in background so it's ready for next return
+                isWaitingForAdToShow = false
                 if (!isAdAvailable()) {
                     loadAd()
                 }
