@@ -14,6 +14,7 @@ import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import com.randomchat.shnapp.utils.Constants
+import com.randomchat.shnapp.utils.Telemetry
 
 class AdMobManager(private val context: Context) {
 
@@ -25,10 +26,11 @@ class AdMobManager(private val context: Context) {
      */
     var isShowingFullScreenAd = false
 
-    private var interstitialAd   : InterstitialAd? = null
-    private var rewardedAd       : RewardedAd?     = null
-    private var isLoadingRewarded = false
-    private var isInitialized     = false
+    private var interstitialAd       : InterstitialAd? = null
+    private var rewardedAd           : RewardedAd?     = null
+    private var rewardedAdLoadedTime : Long            = 0L
+    private var isLoadingRewarded    = false
+    private var isInitialized         = false
 
     // ── Initialisation ────────────────────────────────────────────────────────
 
@@ -38,7 +40,7 @@ class AdMobManager(private val context: Context) {
         MobileAds.initialize(context) {
             isInitialized = true
             preloadInterstitial()
-            preloadRewarded()
+            // Intent-driven loading: Rewarded ads are loaded when user visits Home or opens Chat media options.
             // App Open Ad preload — runs after SDK is ready.
             AppOpenAdManager.getInstance(app).preloadAd()
         }
@@ -94,76 +96,145 @@ class AdMobManager(private val context: Context) {
 
     // ── Rewarded ──────────────────────────────────────────────────────────────
 
-    fun preloadRewarded() {
+    /**
+     * Intent-driven preload for Rewarded Ads.
+     * Drops expired ads (TTL > 4h) and prevents duplicate concurrent load calls.
+     */
+    fun preloadRewarded(placement: String = "general") {
+        if (!Constants.ADS_ENABLED) return
+
+        // Drop cached ad if it has passed AdMob's 4-hour TTL
+        if (rewardedAd != null && System.currentTimeMillis() - rewardedAdLoadedTime >= AD_EXPIRY_MS) {
+            val ageMs = System.currentTimeMillis() - rewardedAdLoadedTime
+            Log.d(TAG, "Discarding expired rewarded ad ($ageMs ms old)")
+            Telemetry.rewardedAdExpired(placement, ageMs)
+            rewardedAd = null
+            rewardedAdLoadedTime = 0L
+        }
+
         if (isLoadingRewarded || rewardedAd != null) return
         isLoadingRewarded = true
-        Log.d("AdMobManager", "Loading rewarded ad…")
+        val loadStartTime = System.currentTimeMillis()
+        Log.d(TAG, "Loading rewarded ad for placement [$placement]…")
+        Telemetry.rewardedLoadRequested(placement)
+
         RewardedAd.load(
             context,
             Constants.ADMOB_REWARDED_ID,
             AdRequest.Builder().build(),
             object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(ad: RewardedAd) {
-                    Log.d("AdMobManager", "Rewarded ad loaded ✓")
-                    rewardedAd        = ad
-                    isLoadingRewarded = false
+                    val latencyMs = System.currentTimeMillis() - loadStartTime
+                    Log.d(TAG, "Rewarded ad loaded ✓ (${latencyMs}ms)")
+                    rewardedAd           = ad
+                    rewardedAdLoadedTime = System.currentTimeMillis()
+                    isLoadingRewarded    = false
+                    Telemetry.rewardedLoadSucceeded(placement, latencyMs)
                 }
+
                 override fun onAdFailedToLoad(error: LoadAdError) {
-                    Log.d("AdMobManager", "Rewarded ad failed: ${error.message}")
-                    rewardedAd        = null
-                    isLoadingRewarded = false
+                    Log.d(TAG, "Rewarded ad failed to load: [${error.code}] ${error.message}")
+                    rewardedAd           = null
+                    rewardedAdLoadedTime = 0L
+                    isLoadingRewarded    = false
+                    Telemetry.rewardedLoadFailed(placement, error.code, error.message)
                 }
             }
         )
     }
 
     /**
-     * Show the rewarded ad if one is loaded.
+     * Show the rewarded ad if one is loaded and fresh.
      *
-     * @param onRewarded    Called when the user completes the ad and earns the reward.
-     * @param onNotAvailable Called when no ad is ready (treat as soft failure — let user try again).
-     * @param onDismissed   Called when the ad is dismissed WITHOUT earning (user skipped early).
+     * @param activity       Current active foreground Activity.
+     * @param placement      Semantic identifier of the trigger surface (e.g. "home_credits", "chat_attach").
+     * @param onRewarded     Called when user completes the ad and earns the reward.
+     * @param onNotAvailable Called when no ad is ready (triggers load + soft failure handling).
+     * @param onDismissed    Called when the ad is dismissed WITHOUT earning.
      */
     fun showRewardedIfReady(
         activity      : Activity,
+        placement     : String = "general",
         onRewarded    : () -> Unit,
         onNotAvailable: () -> Unit = {},
         onDismissed   : () -> Unit = {}
     ) {
         if (!Constants.ADS_ENABLED) { onNotAvailable(); return }
-        val ad = rewardedAd
-        if (ad == null) {
+
+        if (activity.isFinishing || activity.isDestroyed) {
+            Log.w(TAG, "Cannot show rewarded ad: Activity is finishing or destroyed")
             onNotAvailable()
-            preloadRewarded()
             return
         }
+
+        val ready = isRewardedReady()
+        Telemetry.rewardedShowAttempted(placement, ready)
+
+        if (!ready) {
+            onNotAvailable()
+            preloadRewarded(placement)
+            return
+        }
+
+        val ad = rewardedAd ?: run {
+            onNotAvailable()
+            preloadRewarded(placement)
+            return
+        }
+
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdShowedFullScreenContent() {
                 isShowingFullScreenAd = true
+                Telemetry.rewardedShowSucceeded(placement)
             }
+
+            override fun onAdImpression() {
+                Telemetry.rewardedImpressionRecorded(placement)
+            }
+
             override fun onAdDismissedFullScreenContent() {
                 rewardedAd            = null
+                rewardedAdLoadedTime  = 0L
                 isShowingFullScreenAd = false
-                preloadRewarded()
+                Telemetry.rewardedAdDismissed(placement)
                 onDismissed()
             }
+
             override fun onAdFailedToShowFullScreenContent(error: AdError) {
                 rewardedAd            = null
+                rewardedAdLoadedTime  = 0L
                 isShowingFullScreenAd = false
-                preloadRewarded()
+                Log.e(TAG, "Rewarded ad failed to show: [${error.code}] ${error.message}")
+                Telemetry.rewardedShowFailed(placement, error.code, error.message)
                 onNotAvailable()
+                preloadRewarded(placement)
             }
         }
-        // The reward callback fires before onAdDismissed
-        ad.show(activity) { _ -> onRewarded() }
+
+        ad.show(activity) { _ ->
+            Telemetry.rewardedAdEarned(placement)
+            onRewarded()
+        }
     }
 
-    /** True if a rewarded ad is loaded and ready to show instantly. */
-    fun isRewardedReady() = Constants.ADS_ENABLED && rewardedAd != null
+    /** True if a non-expired rewarded ad is loaded and ready to show instantly. */
+    fun isRewardedReady(): Boolean {
+        if (!Constants.ADS_ENABLED) return false
+        if (rewardedAd == null) return false
+        if (System.currentTimeMillis() - rewardedAdLoadedTime >= AD_EXPIRY_MS) {
+            rewardedAd           = null
+            rewardedAdLoadedTime = 0L
+            return false
+        }
+        return true
+    }
 
     // ── Singleton ─────────────────────────────────────────────────────────────
 
     companion object {
+        private const val TAG          = "AdMobManager"
+        private const val AD_EXPIRY_MS = 4 * 60 * 60 * 1_000L  // AdMob 4-hour TTL
+
         @Volatile private var instance: AdMobManager? = null
         fun getInstance(context: Context): AdMobManager =
             instance ?: synchronized(this) {

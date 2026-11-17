@@ -350,13 +350,20 @@ fun HomeScreen(
 
                 // ── Free media credits — watch ad to earn ──
                 if (!isPremium && Constants.ADS_ENABLED) {
+                    // Preload rewarded ad when user is on Home screen & gate is Ready
+                    androidx.compose.runtime.LaunchedEffect(rewardGate) {
+                        if (rewardGate is RewardGate.Ready) {
+                            AdMobManager.getInstance(context).preloadRewarded("home_credits")
+                        }
+                    }
+
                     Spacer(Modifier.height(10.dp))
                     RewardsCard(
                         rewardGate = rewardGate,
                         onEarnCredits = {
                             // Gate may have just flipped between subscribe + tap.
                             // Re-check current state before showing the ad.
-                            when (val g = rewardGate) {
+                            when (rewardGate) {
                                 is RewardGate.CapReached -> {
                                     haptics.tick()
                                     showCapSheet = true
@@ -368,36 +375,27 @@ fun HomeScreen(
                                 is RewardGate.Ready -> {
                                     haptics.tick()
                                     com.randomchat.shnapp.utils.Telemetry.rewardedAdTap("home_credits")
-                                    if (AdMobManager.getInstance(context).isRewardedReady()) {
-                                        AdMobManager.getInstance(context).showRewardedIfReady(
-                                            activity       = activity,
-                                            onRewarded     = {
-                                                haptics.success()
-                                                viewModel.addRewardedCredits()
-                                                com.randomchat.shnapp.utils.Telemetry.rewardedAdEarned("home_credits")
-                                                Toast.makeText(
-                                                    context,
-                                                    "+1 Photo & Voice credit added",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
-                                            },
-                                            onNotAvailable = {
-                                                com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("home_credits")
-                                                Toast.makeText(
-                                                    context,
-                                                    "Ad not ready yet — try again in a moment.",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
-                                        )
-                                    } else {
-                                        com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("home_credits")
-                                        Toast.makeText(
-                                            context,
-                                            "Ad not ready yet — try again in a moment.",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
+                                    AdMobManager.getInstance(context).showRewardedIfReady(
+                                        activity       = activity,
+                                        placement      = "home_credits",
+                                        onRewarded     = {
+                                            haptics.success()
+                                            viewModel.addRewardedCredits()
+                                            Toast.makeText(
+                                                context,
+                                                "+1 Photo & Voice credit added",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        },
+                                        onNotAvailable = {
+                                            com.randomchat.shnapp.utils.Telemetry.rewardedAdUnavailable("home_credits")
+                                            Toast.makeText(
+                                                context,
+                                                "Ad loading — please try again in a moment.",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    )
                                 }
                             }
                         },

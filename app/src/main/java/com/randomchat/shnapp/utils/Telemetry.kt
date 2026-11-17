@@ -128,6 +128,47 @@ object Telemetry {
     fun rewardedAdDismissed(source: String) =
         logEvent(EVENT_REWARDED_DISMISSED) { putString("source", source) }
 
+    fun rewardedLoadRequested(placement: String) =
+        logEvent(EVENT_REWARDED_LOAD_REQ) { putString("placement", placement) }
+
+    fun rewardedLoadSucceeded(placement: String, latencyMs: Long) =
+        logEvent(EVENT_REWARDED_LOAD_OK) {
+            putString("placement", placement)
+            putLong("latency_ms", latencyMs)
+        }
+
+    fun rewardedLoadFailed(placement: String, errorCode: Int, errorMessage: String) =
+        logEvent(EVENT_REWARDED_LOAD_FAIL) {
+            putString("placement", placement)
+            putInt("code", errorCode)
+            putString("message", errorMessage)
+        }
+
+    fun rewardedShowAttempted(placement: String, isReady: Boolean) =
+        logEvent(EVENT_REWARDED_SHOW_ATTEMPT) {
+            putString("placement", placement)
+            putBoolean("is_ready", isReady)
+        }
+
+    fun rewardedShowSucceeded(placement: String) =
+        logEvent(EVENT_REWARDED_SHOW_OK) { putString("placement", placement) }
+
+    fun rewardedShowFailed(placement: String, errorCode: Int, errorMessage: String) =
+        logEvent(EVENT_REWARDED_SHOW_FAIL) {
+            putString("placement", placement)
+            putInt("code", errorCode)
+            putString("message", errorMessage)
+        }
+
+    fun rewardedImpressionRecorded(placement: String) =
+        logEvent(EVENT_REWARDED_IMPRESSION) { putString("placement", placement) }
+
+    fun rewardedAdExpired(placement: String, ageMs: Long) =
+        logEvent(EVENT_REWARDED_EXPIRED) {
+            putString("placement", placement)
+            putLong("age_ms", ageMs)
+        }
+
     // ── Gender — user property (slice-by) + per-selection event ───────────────
     /** Persistent user property — re-apply each session so EVERY event can be sliced by gender. */
     fun setUserGender(gender: String) {
@@ -190,9 +231,17 @@ object Telemetry {
     private const val EVENT_CHAT_5PLUS_MSGS      = "chat_5plus_msgs"
 
     // Rewarded-ad funnel
-    private const val EVENT_REWARDED_TAP         = "rewarded_tap"
-    private const val EVENT_REWARDED_UNAVAILABLE = "rewarded_unavailable"
-    private const val EVENT_REWARDED_DISMISSED   = "rewarded_dismissed"
+    private const val EVENT_REWARDED_TAP          = "rewarded_tap"
+    private const val EVENT_REWARDED_UNAVAILABLE  = "rewarded_unavailable"
+    private const val EVENT_REWARDED_DISMISSED    = "rewarded_dismissed"
+    private const val EVENT_REWARDED_LOAD_REQ     = "rewarded_load_requested"
+    private const val EVENT_REWARDED_LOAD_OK      = "rewarded_load_succeeded"
+    private const val EVENT_REWARDED_LOAD_FAIL    = "rewarded_load_failed"
+    private const val EVENT_REWARDED_SHOW_ATTEMPT = "rewarded_show_attempted"
+    private const val EVENT_REWARDED_SHOW_OK      = "rewarded_show_succeeded"
+    private const val EVENT_REWARDED_SHOW_FAIL    = "rewarded_show_failed"
+    private const val EVENT_REWARDED_IMPRESSION   = "rewarded_impression_rec"
+    private const val EVENT_REWARDED_EXPIRED      = "rewarded_ad_expired"
 
     // Gender
     private const val EVENT_GENDER_SELECTED      = "gender_selected"
