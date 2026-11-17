@@ -192,6 +192,39 @@ object Telemetry {
     fun bannerClicked(placement: String) =
         logEvent(EVENT_BANNER_CLICKED) { putString("placement", placement) }
 
+    // ── App Open ad funnel ────────────────────────────────────────────────────
+    fun appOpenLoadRequested() = logEvent(EVENT_APP_OPEN_LOAD_REQ)
+
+    fun appOpenLoadSucceeded(latencyMs: Long) =
+        logEvent(EVENT_APP_OPEN_LOAD_OK) { putLong("latency_ms", latencyMs) }
+
+    fun appOpenLoadFailed(errorCode: Int, errorMessage: String) =
+        logEvent(EVENT_APP_OPEN_LOAD_FAIL) {
+            putInt("code", errorCode)
+            putString("message", errorMessage)
+        }
+
+    fun appOpenShowAttempted(isReady: Boolean) =
+        logEvent(EVENT_APP_OPEN_SHOW_ATTEMPT) { putBoolean("is_ready", isReady) }
+
+    fun appOpenShowSucceeded() = logEvent(EVENT_APP_OPEN_SHOW_OK)
+
+    fun appOpenShowFailed(errorCode: Int, errorMessage: String) =
+        logEvent(EVENT_APP_OPEN_SHOW_FAIL) {
+            putInt("code", errorCode)
+            putString("message", errorMessage)
+        }
+
+    fun appOpenSuppressed(reason: String) =
+        logEvent(EVENT_APP_OPEN_SUPPRESSED) { putString("reason", reason) }
+
+    fun appOpenImpressionRecorded() = logEvent(EVENT_APP_OPEN_IMPRESSION)
+
+    fun appOpenDismissed() = logEvent(EVENT_APP_OPEN_DISMISSED)
+
+    fun appOpenExpired(ageMs: Long) =
+        logEvent(EVENT_APP_OPEN_EXPIRED) { putLong("age_ms", ageMs) }
+
     // ── Gender — user property (slice-by) + per-selection event ───────────────
     /** Persistent user property — re-apply each session so EVERY event can be sliced by gender. */
     fun setUserGender(gender: String) {
@@ -272,6 +305,18 @@ object Telemetry {
     private const val EVENT_BANNER_LOAD_FAIL      = "banner_load_failed"
     private const val EVENT_BANNER_IMPRESSION     = "banner_impression_rec"
     private const val EVENT_BANNER_CLICKED        = "banner_clicked"
+
+    // App Open-ad funnel
+    private const val EVENT_APP_OPEN_LOAD_REQ     = "app_open_load_requested"
+    private const val EVENT_APP_OPEN_LOAD_OK      = "app_open_load_succeeded"
+    private const val EVENT_APP_OPEN_LOAD_FAIL    = "app_open_load_failed"
+    private const val EVENT_APP_OPEN_SHOW_ATTEMPT = "app_open_show_attempted"
+    private const val EVENT_APP_OPEN_SHOW_OK      = "app_open_show_succeeded"
+    private const val EVENT_APP_OPEN_SHOW_FAIL    = "app_open_show_failed"
+    private const val EVENT_APP_OPEN_SUPPRESSED   = "app_open_suppressed"
+    private const val EVENT_APP_OPEN_IMPRESSION   = "app_open_impression_rec"
+    private const val EVENT_APP_OPEN_DISMISSED    = "app_open_dismissed"
+    private const val EVENT_APP_OPEN_EXPIRED      = "app_open_expired"
 
     // Gender
     private const val EVENT_GENDER_SELECTED      = "gender_selected"
