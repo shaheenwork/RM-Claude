@@ -34,6 +34,19 @@ class AdMobManager(private val context: Context) {
 
     // ── Initialisation ────────────────────────────────────────────────────────
 
+    /**
+     * Gather UMP privacy consent first, then initialize MobileAds SDK if consent requirements are met.
+     */
+    fun gatherConsentAndInitialize(activity: Activity, onComplete: () -> Unit = {}) {
+        if (!Constants.ADS_ENABLED) { onComplete(); return }
+        ConsentManager.getInstance(context).gatherConsent(activity) { canRequest ->
+            if (canRequest) {
+                initialize()
+            }
+            onComplete()
+        }
+    }
+
     fun initialize() {
         if (!Constants.ADS_ENABLED) return  // master switch off — no SDK init, no preloads
         if (isInitialized) return

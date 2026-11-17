@@ -142,6 +142,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // Gather Google UMP privacy consent & initialize AdMob SDK
+        if (Constants.ADS_ENABLED) {
+            AdMobManager.getInstance(this).gatherConsentAndInitialize(this)
+        }
+
         // Detect launch-from-push so AppNavHost can auto-start matchmaking after splash.
         val launchedFromPush = intent?.getStringExtra("src") == "push"
         // Paywall reminder push → open the paywall after splash. Fresh starts only,

@@ -84,6 +84,7 @@ dependencies {
     implementation(libs.firebase.crashlytics)
 
     implementation(libs.play.services.ads)
+    implementation(libs.play.services.ump)
     implementation(libs.billing.ktx)
     implementation(libs.facebook.core)
     implementation(libs.android.installreferrer)

@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -314,6 +315,21 @@ fun SettingsScreen(
                     onClick = { uriHandler.openUri(Constants.URL_TERMS_OF_SERVICE) }
                 )
                 SettingsRowDivider()
+                if (com.randomchat.shnapp.ads.ConsentManager.getInstance(context).isPrivacyOptionsRequired()) {
+                    SettingsRow(
+                        icon = Icons.Default.PrivacyTip,
+                        title = "Ad Privacy Settings",
+                        subtitle = "Manage your ad consent preferences",
+                        grouped = true,
+                        onClick = {
+                            (context as? android.app.Activity)?.let { act ->
+                                com.randomchat.shnapp.ads.ConsentManager.getInstance(context)
+                                    .showPrivacyOptionsForm(act) {}
+                            }
+                        }
+                    )
+                    SettingsRowDivider()
+                }
                 SettingsRow(
                     icon = Icons.Default.Info,
                     title = "App Version",
