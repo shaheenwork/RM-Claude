@@ -4,6 +4,10 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import android.util.Log
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
@@ -15,21 +19,24 @@ import com.randomchat.shnapp.utils.Telemetry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.Date
 
 /**
  * Manages App Open Ads for maximum impression rate.
  *
  * Strategy:
+ *  • Uses [ProcessLifecycleOwner] to reliably detect process-level foreground/background transitions.
  *  • Preloads ad on SDK init, after ad dismissal, or when returning to foreground.
- *  • Enforces 10-second minimum background duration gate to eliminate transient app switch ads.
- *  • Provides a 3-second grace window on foreground return if ad loading is slightly delayed.
+ *  • Enforces 5-second minimum background duration gate to eliminate transient app switch ads.
+ *  • Provides an 8-second grace window on foreground return if ad loading is slightly delayed.
  *  • Premium users and private chat sessions ([isChatActive]) are always protected.
  *  • Full Telemetry funnel tracking for requests, fills, displays, suppressions, and impressions.
  */
 class AppOpenAdManager private constructor(private val app: Application) :
-    Application.ActivityLifecycleCallbacks {
+    Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
 
     // ── State ─────────────────────────────────────────────────────────────────
 
@@ -49,16 +56,10 @@ class AppOpenAdManager private constructor(private val app: Application) :
     private var loadTime              = 0L
     private var lastBackgroundTimeMs  = 0L
     private var appForegroundTimeMs   = 0L
+    private var pendingBgDurationMs   = -1L
     private var isWaitingForAdToShow  = false
 
-    /**
-     * Tracks how many activities are in the STARTED state (not stopped).
-     * Foreground ↔ background transitions are detected by 0 → 1 and 1 → 0 edges.
-     * The counter is frozen while an ad is showing to avoid false transitions.
-     */
-    private var numActivitiesStarted = 0
-
-    /** Always points to the topmost non-ad activity. */
+    /** Always points to the topmost active activity. */
     private var currentActivity: Activity? = null
 
     // ── Companion ─────────────────────────────────────────────────────────────
@@ -67,7 +68,7 @@ class AppOpenAdManager private constructor(private val app: Application) :
         private const val TAG                      = "AppOpenAdManager"
         private const val AD_EXPIRY_MS             = 4 * 60 * 60 * 1_000L  // AdMob 4h TTL
         private const val MIN_BACKGROUND_DURATION  = 5_000L                // 5s min background threshold
-        private const val FOREGROUND_SHOW_WINDOW_MS = 3_000L               // 3s window to show ad on foreground return
+        private const val FOREGROUND_SHOW_WINDOW_MS = 8_000L               // 8s window to show ad on foreground return
 
         @Volatile private var instance: AppOpenAdManager? = null
 
@@ -80,11 +81,12 @@ class AppOpenAdManager private constructor(private val app: Application) :
     // ── Public API ────────────────────────────────────────────────────────────
 
     /**
-     * Register lifecycle callbacks and start tracking premium status.
+     * Register lifecycle callbacks and start tracking process lifecycle and premium status.
      * Call once from [Application.onCreate] — before any activity starts.
      */
     fun register() {
         app.registerActivityLifecycleCallbacks(this)
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         scope.launch {
             sessionManager.isPremiumFlow.collect { isPremium = it }
         }
@@ -109,19 +111,57 @@ class AppOpenAdManager private constructor(private val app: Application) :
         loadAd()
     }
 
+    // ── Process Lifecycle Observer ───────────────────────────────────────────
+
+    override fun onStart(owner: LifecycleOwner) {
+        appForegroundTimeMs = System.currentTimeMillis()
+        val bgDurationMs = if (lastBackgroundTimeMs > 0L) {
+            System.currentTimeMillis() - lastBackgroundTimeMs
+        } else {
+            -1L
+        }
+        lastBackgroundTimeMs = 0L
+
+        currentActivity?.let { activity ->
+            showAdIfAvailable(activity, bgDurationMs)
+        } ?: run {
+            if (bgDurationMs >= 0L) {
+                pendingBgDurationMs = bgDurationMs
+            }
+        }
+    }
+
+    override fun onStop(owner: LifecycleOwner) {
+        lastBackgroundTimeMs = System.currentTimeMillis()
+        isWaitingForAdToShow = false
+        if (!isAdAvailable()) {
+            loadAd()
+        }
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     private fun loadAd() {
         if (!Constants.ADS_ENABLED) return
+        if (!AdMobManager.getInstance(app).isInitialized) {
+            Log.d(TAG, "Skip load: MobileAds SDK not initialized yet")
+            return
+        }
         if (isLoadingAd || isAdAvailable()) return
         isLoadingAd = true
         val loadStartTime = System.currentTimeMillis()
         Log.d(TAG, "Loading app open ad…")
         Telemetry.appOpenLoadRequested()
 
+        val adUnitId = if (com.randomchat.shnapp.BuildConfig.DEBUG) {
+            "ca-app-pub-3940256099942544/9257395921" // Google official App Open test ID for debug builds
+        } else {
+            Constants.ADMOB_APP_OPEN_ID
+        }
+
         AppOpenAd.load(
             app,
-            Constants.ADMOB_APP_OPEN_ID,
+            adUnitId,
             AdRequest.Builder().build(),
             object : AppOpenAd.AppOpenAdLoadCallback() {
                 override fun onAdLoaded(ad: AppOpenAd) {
@@ -134,7 +174,8 @@ class AppOpenAdManager private constructor(private val app: Application) :
 
                     // Foreground return grace window check:
                     // If user came to foreground and is waiting for an ad that was still loading
-                    if (isWaitingForAdToShow && numActivitiesStarted > 0 && !isShowingAd) {
+                    val isAppInForeground = ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+                    if (isWaitingForAdToShow && isAppInForeground && !isShowingAd) {
                         val timeSinceForeground = System.currentTimeMillis() - appForegroundTimeMs
                         if (timeSinceForeground < FOREGROUND_SHOW_WINDOW_MS) {
                             Log.d(TAG, "Ad finished loading within foreground window (${timeSinceForeground}ms) — showing now")
@@ -159,19 +200,16 @@ class AppOpenAdManager private constructor(private val app: Application) :
     private fun isAdAvailable(): Boolean =
         appOpenAd != null && Date().time - loadTime < AD_EXPIRY_MS
 
-    private fun showAdIfAvailable(activity: Activity) {
+    private fun showAdIfAvailable(activity: Activity, bgDurationMs: Long = -1L) {
         if (!Constants.ADS_ENABLED) return
         if (isShowingAd) return
 
-        // 5-second minimum background duration gate
-        if (lastBackgroundTimeMs > 0L) {
-            val bgDurationMs = System.currentTimeMillis() - lastBackgroundTimeMs
-            if (bgDurationMs < MIN_BACKGROUND_DURATION) {
-                Log.d(TAG, "Skip: app backgrounded for only ${bgDurationMs}ms (< 5s threshold)")
-                Telemetry.appOpenSuppressed("min_background")
-                isWaitingForAdToShow = false
-                return
-            }
+        // 5-second minimum background duration gate (only evaluated when returning from background)
+        if (bgDurationMs >= 0L && bgDurationMs < MIN_BACKGROUND_DURATION) {
+            Log.d(TAG, "Skip: app backgrounded for only ${bgDurationMs}ms (< 5s threshold)")
+            Telemetry.appOpenSuppressed("min_background")
+            isWaitingForAdToShow = false
+            return
         }
 
         if (isPremium) {
@@ -179,6 +217,11 @@ class AppOpenAdManager private constructor(private val app: Application) :
             Telemetry.appOpenSuppressed("premium")
             isWaitingForAdToShow = false
             return
+        }
+        if (!isOnboardingComplete) {
+            isOnboardingComplete = runCatching {
+                runBlocking { sessionManager.termsAcceptedFlow.first() }
+            }.getOrDefault(false)
         }
         if (!isOnboardingComplete) {
             Log.d(TAG, "Skip: onboarding not complete")
@@ -220,10 +263,8 @@ class AppOpenAdManager private constructor(private val app: Application) :
                 Log.d(TAG, "Skip: no valid ad available — requesting load")
                 Telemetry.appOpenSuppressed("no_ad_available")
             }
-            // Enable waiting flag on genuine return from background
-            if (lastBackgroundTimeMs > 0L) {
-                isWaitingForAdToShow = true
-            }
+            // Enable waiting flag so when onAdLoaded completes within window, ad will show
+            isWaitingForAdToShow = true
             loadAd()
             return
         }
@@ -271,25 +312,10 @@ class AppOpenAdManager private constructor(private val app: Application) :
     override fun onActivityStarted(activity: Activity) {
         if (!isShowingAd) {
             currentActivity = activity
-            numActivitiesStarted++
-            if (numActivitiesStarted == 1) {
-                // 0 → 1: app came to foreground (cold start or from background)
-                appForegroundTimeMs = System.currentTimeMillis()
-                showAdIfAvailable(activity)
-            }
-        }
-    }
-
-    override fun onActivityStopped(activity: Activity) {
-        if (!isShowingAd) {
-            numActivitiesStarted = maxOf(0, numActivitiesStarted - 1)
-            if (numActivitiesStarted == 0) {
-                // 1 → 0: app entered background
-                lastBackgroundTimeMs = System.currentTimeMillis()
-                isWaitingForAdToShow = false
-                if (!isAdAvailable()) {
-                    loadAd()
-                }
+            val pendingBg = pendingBgDurationMs
+            if (pendingBg >= 0L) {
+                pendingBgDurationMs = -1L
+                showAdIfAvailable(activity, pendingBg)
             }
         }
     }
@@ -304,5 +330,6 @@ class AppOpenAdManager private constructor(private val app: Application) :
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
     override fun onActivityPaused(activity: Activity) {}
+    override fun onActivityStopped(activity: Activity) {}
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 }

@@ -30,7 +30,8 @@ class AdMobManager(private val context: Context) {
     private var rewardedAd           : RewardedAd?     = null
     private var rewardedAdLoadedTime : Long            = 0L
     private var isLoadingRewarded    = false
-    private var isInitialized         = false
+    var isInitialized                 = false
+        private set
 
     // ── Initialisation ────────────────────────────────────────────────────────
 
