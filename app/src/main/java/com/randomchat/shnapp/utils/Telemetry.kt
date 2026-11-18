@@ -128,6 +128,103 @@ object Telemetry {
     fun rewardedAdDismissed(source: String) =
         logEvent(EVENT_REWARDED_DISMISSED) { putString("source", source) }
 
+    fun rewardedLoadRequested(placement: String) =
+        logEvent(EVENT_REWARDED_LOAD_REQ) { putString("placement", placement) }
+
+    fun rewardedLoadSucceeded(placement: String, latencyMs: Long) =
+        logEvent(EVENT_REWARDED_LOAD_OK) {
+            putString("placement", placement)
+            putLong("latency_ms", latencyMs)
+        }
+
+    fun rewardedLoadFailed(placement: String, errorCode: Int, errorMessage: String) =
+        logEvent(EVENT_REWARDED_LOAD_FAIL) {
+            putString("placement", placement)
+            putInt("code", errorCode)
+            putString("message", errorMessage)
+        }
+
+    fun rewardedShowAttempted(placement: String, isReady: Boolean) =
+        logEvent(EVENT_REWARDED_SHOW_ATTEMPT) {
+            putString("placement", placement)
+            putBoolean("is_ready", isReady)
+        }
+
+    fun rewardedShowSucceeded(placement: String) =
+        logEvent(EVENT_REWARDED_SHOW_OK) { putString("placement", placement) }
+
+    fun rewardedShowFailed(placement: String, errorCode: Int, errorMessage: String) =
+        logEvent(EVENT_REWARDED_SHOW_FAIL) {
+            putString("placement", placement)
+            putInt("code", errorCode)
+            putString("message", errorMessage)
+        }
+
+    fun rewardedImpressionRecorded(placement: String) =
+        logEvent(EVENT_REWARDED_IMPRESSION) { putString("placement", placement) }
+
+    fun rewardedAdExpired(placement: String, ageMs: Long) =
+        logEvent(EVENT_REWARDED_EXPIRED) {
+            putString("placement", placement)
+            putLong("age_ms", ageMs)
+        }
+
+    // ── Banner ad funnel ──────────────────────────────────────────────────────
+    fun bannerLoadRequested(placement: String) =
+        logEvent(EVENT_BANNER_LOAD_REQ) { putString("placement", placement) }
+
+    fun bannerLoadSucceeded(placement: String, latencyMs: Long) =
+        logEvent(EVENT_BANNER_LOAD_OK) {
+            putString("placement", placement)
+            putLong("latency_ms", latencyMs)
+        }
+
+    fun bannerLoadFailed(placement: String, errorCode: Int, errorMessage: String) =
+        logEvent(EVENT_BANNER_LOAD_FAIL) {
+            putString("placement", placement)
+            putInt("code", errorCode)
+            putString("message", errorMessage)
+        }
+
+    fun bannerImpressionRecorded(placement: String) =
+        logEvent(EVENT_BANNER_IMPRESSION) { putString("placement", placement) }
+
+    fun bannerClicked(placement: String) =
+        logEvent(EVENT_BANNER_CLICKED) { putString("placement", placement) }
+
+    // ── App Open ad funnel ────────────────────────────────────────────────────
+    fun appOpenLoadRequested() = logEvent(EVENT_APP_OPEN_LOAD_REQ)
+
+    fun appOpenLoadSucceeded(latencyMs: Long) =
+        logEvent(EVENT_APP_OPEN_LOAD_OK) { putLong("latency_ms", latencyMs) }
+
+    fun appOpenLoadFailed(errorCode: Int, errorMessage: String) =
+        logEvent(EVENT_APP_OPEN_LOAD_FAIL) {
+            putInt("code", errorCode)
+            putString("message", errorMessage)
+        }
+
+    fun appOpenShowAttempted(isReady: Boolean) =
+        logEvent(EVENT_APP_OPEN_SHOW_ATTEMPT) { putBoolean("is_ready", isReady) }
+
+    fun appOpenShowSucceeded() = logEvent(EVENT_APP_OPEN_SHOW_OK)
+
+    fun appOpenShowFailed(errorCode: Int, errorMessage: String) =
+        logEvent(EVENT_APP_OPEN_SHOW_FAIL) {
+            putInt("code", errorCode)
+            putString("message", errorMessage)
+        }
+
+    fun appOpenSuppressed(reason: String) =
+        logEvent(EVENT_APP_OPEN_SUPPRESSED) { putString("reason", reason) }
+
+    fun appOpenImpressionRecorded() = logEvent(EVENT_APP_OPEN_IMPRESSION)
+
+    fun appOpenDismissed() = logEvent(EVENT_APP_OPEN_DISMISSED)
+
+    fun appOpenExpired(ageMs: Long) =
+        logEvent(EVENT_APP_OPEN_EXPIRED) { putLong("age_ms", ageMs) }
+
     // ── Gender — user property (slice-by) + per-selection event ───────────────
     /** Persistent user property — re-apply each session so EVERY event can be sliced by gender. */
     fun setUserGender(gender: String) {
@@ -190,9 +287,36 @@ object Telemetry {
     private const val EVENT_CHAT_5PLUS_MSGS      = "chat_5plus_msgs"
 
     // Rewarded-ad funnel
-    private const val EVENT_REWARDED_TAP         = "rewarded_tap"
-    private const val EVENT_REWARDED_UNAVAILABLE = "rewarded_unavailable"
-    private const val EVENT_REWARDED_DISMISSED   = "rewarded_dismissed"
+    private const val EVENT_REWARDED_TAP          = "rewarded_tap"
+    private const val EVENT_REWARDED_UNAVAILABLE  = "rewarded_unavailable"
+    private const val EVENT_REWARDED_DISMISSED    = "rewarded_dismissed"
+    private const val EVENT_REWARDED_LOAD_REQ     = "rewarded_load_requested"
+    private const val EVENT_REWARDED_LOAD_OK      = "rewarded_load_succeeded"
+    private const val EVENT_REWARDED_LOAD_FAIL    = "rewarded_load_failed"
+    private const val EVENT_REWARDED_SHOW_ATTEMPT = "rewarded_show_attempted"
+    private const val EVENT_REWARDED_SHOW_OK      = "rewarded_show_succeeded"
+    private const val EVENT_REWARDED_SHOW_FAIL    = "rewarded_show_failed"
+    private const val EVENT_REWARDED_IMPRESSION   = "rewarded_impression_rec"
+    private const val EVENT_REWARDED_EXPIRED      = "rewarded_ad_expired"
+
+    // Banner-ad funnel
+    private const val EVENT_BANNER_LOAD_REQ       = "banner_load_requested"
+    private const val EVENT_BANNER_LOAD_OK        = "banner_load_succeeded"
+    private const val EVENT_BANNER_LOAD_FAIL      = "banner_load_failed"
+    private const val EVENT_BANNER_IMPRESSION     = "banner_impression_rec"
+    private const val EVENT_BANNER_CLICKED        = "banner_clicked"
+
+    // App Open-ad funnel
+    private const val EVENT_APP_OPEN_LOAD_REQ     = "app_open_load_requested"
+    private const val EVENT_APP_OPEN_LOAD_OK      = "app_open_load_succeeded"
+    private const val EVENT_APP_OPEN_LOAD_FAIL    = "app_open_load_failed"
+    private const val EVENT_APP_OPEN_SHOW_ATTEMPT = "app_open_show_attempted"
+    private const val EVENT_APP_OPEN_SHOW_OK      = "app_open_show_succeeded"
+    private const val EVENT_APP_OPEN_SHOW_FAIL    = "app_open_show_failed"
+    private const val EVENT_APP_OPEN_SUPPRESSED   = "app_open_suppressed"
+    private const val EVENT_APP_OPEN_IMPRESSION   = "app_open_impression_rec"
+    private const val EVENT_APP_OPEN_DISMISSED    = "app_open_dismissed"
+    private const val EVENT_APP_OPEN_EXPIRED      = "app_open_expired"
 
     // Gender
     private const val EVENT_GENDER_SELECTED      = "gender_selected"

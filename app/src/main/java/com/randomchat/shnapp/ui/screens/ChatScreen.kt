@@ -117,13 +117,17 @@ import com.randomchat.shnapp.ui.components.RewardCapSheet
 import com.randomchat.shnapp.ui.components.SystemChip
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.togetherWith
+import android.widget.Toast
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PrivacyTip
+import com.randomchat.shnapp.ads.AdMobManager
+import com.randomchat.shnapp.theme.OnlineGreen
 import com.randomchat.shnapp.theme.PremiumGold
 import com.randomchat.shnapp.ui.dialogs.ReportDialog
+import com.randomchat.shnapp.utils.Telemetry
 import com.randomchat.shnapp.viewmodel.ChatViewModel
 import com.randomchat.shnapp.viewmodel.SaveProgress
 import androidx.compose.runtime.rememberCoroutineScope
@@ -1268,8 +1272,37 @@ fun ChatScreen(
             },
             onWatchAd = {
                 haptics.tick()
-                showAttachSheet = false
-                onNavigateToPremium(PaywallSource.PHOTO)
+                when (rewardGate) {
+                    is RewardGate.Ready -> {
+                        showAttachSheet = false
+                        Telemetry.rewardedAdTap("chat_attach")
+                        AdMobManager.getInstance(context).showRewardedIfReady(
+                            activity       = activity,
+                            placement      = "chat_attach",
+                            onRewarded     = {
+                                haptics.success()
+                                viewModel.recordRewardEarn()
+                                Toast.makeText(
+                                    context,
+                                    "+1 Photo, Voice & GIF credit added!",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            },
+                            onNotAvailable = {
+                                Telemetry.rewardedAdUnavailable("chat_attach")
+                                Toast.makeText(
+                                    context,
+                                    "Ad loading — please try again in a moment.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        )
+                    }
+                    is RewardGate.Cooldown, is RewardGate.CapReached -> {
+                        showAttachSheet = false
+                        onNavigateToPremium(PaywallSource.PHOTO)
+                    }
+                }
             }
         )
     }
@@ -1620,11 +1653,19 @@ private fun AttachSheet(
     onWatchAd: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
+    val context = LocalContext.current
     // Show the rewarded-ad row only when: non-premium, ads enabled, AND any
     // credit type is depleted. The row itself morphs based on [rewardGate].
     val showWatchAd = !isPremium &&
         com.randomchat.shnapp.utils.Constants.ADS_ENABLED &&
         (photoCredits == 0 || audioCredits == 0 || gifCredits == 0)
+
+    // Preload rewarded ad when AttachSheet is open and user can earn
+    LaunchedEffect(showWatchAd, rewardGate) {
+        if (showWatchAd && rewardGate is RewardGate.Ready) {
+            AdMobManager.getInstance(context).preloadRewarded("chat_attach")
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -1696,7 +1737,7 @@ private fun AttachSheet(
 
 /**
  * Rewarded-ad row inside [AttachSheet]. State-driven render:
- *  - Ready    → green "Watch a short ad" w/ "N LEFT" badge
+ *  - Ready    → green "Watch a short ad" w/ "WATCH AD" badge
  *  - Cooldown → muted "Next free credit in Xm" badge
  *  - Cap      → brass "Unlimited — Premium" upsell row → opens PremiumScreen
  *
@@ -1707,7 +1748,27 @@ private fun AttachSheetRewardRow(
     rewardGate: RewardGate,
     onClick: () -> Unit
 ) {
-    val accent = PremiumGold
+    val (title, subtitle, badgeText, accent) = when (rewardGate) {
+        is RewardGate.Ready -> Quadruple(
+            "Watch a short ad for credits",
+            "${rewardGate.watchesLeft} free watch${if (rewardGate.watchesLeft > 1) "es" else ""} left today • +1 Photo, Voice & GIF",
+            "WATCH AD",
+            OnlineGreen
+        )
+        is RewardGate.Cooldown -> Quadruple(
+            "Next free credit ready soon",
+            "Cooldown: ${formatCooldownShort(rewardGate.secondsLeft)} • Upgrade for unlimited",
+            "COOLDOWN",
+            com.randomchat.shnapp.theme.TextMuted
+        )
+        is RewardGate.CapReached -> Quadruple(
+            "Daily ad limit reached",
+            "Upgrade to Premium for unlimited media sharing",
+            "UPGRADE",
+            PremiumGold
+        )
+    }
+
     val bg = accent.copy(alpha = 0.08f)
     val borderC = accent.copy(alpha = 0.30f)
 
@@ -1729,29 +1790,29 @@ private fun AttachSheetRewardRow(
                 .background(accent.copy(alpha = 0.15f), CircleShape)
         ) {
             Text(
-                "✦",
+                if (rewardGate is RewardGate.Ready) "▶" else "✦",
                 color = accent,
-                fontSize = 17.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
             )
         }
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                "Unlimited with Premium",
+                title,
                 color = accent,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                "Earn free credits on Home or tap to upgrade",
+                subtitle,
                 color = accent.copy(alpha = 0.72f),
                 fontSize = 11.sp
             )
         }
 
         Text(
-            "UPGRADE",
+            badgeText,
             color = accent,
             fontSize = 10.sp,
             fontWeight = FontWeight.Black,
@@ -1762,6 +1823,8 @@ private fun AttachSheetRewardRow(
         )
     }
 }
+
+private data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
 
 private fun formatCooldownShort(secondsLeft: Long): String {
     val m = secondsLeft / 60

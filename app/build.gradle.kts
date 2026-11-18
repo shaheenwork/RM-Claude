@@ -19,8 +19,8 @@ android {
         applicationId = "com.shaheen.randomchat"
         minSdk = 26
         targetSdk = 36
-        versionCode = 63
-        versionName = "1.23"
+        versionCode = 67
+        versionName = "1.24"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.splashscreen)
     implementation(libs.androidx.datastore.preferences)
@@ -84,6 +85,7 @@ dependencies {
     implementation(libs.firebase.crashlytics)
 
     implementation(libs.play.services.ads)
+    implementation(libs.play.services.ump)
     implementation(libs.billing.ktx)
     implementation(libs.facebook.core)
     implementation(libs.android.installreferrer)
